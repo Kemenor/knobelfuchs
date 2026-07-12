@@ -9,7 +9,7 @@ Pad 5) reviews these directly. Final app is l10n'd en/de/fr/it as always.
 | File | Screen |
 |---|---|
 | `01-home.html` | Home / mode select — the three modes wear the three triad colours |
-| `02-spielbrett.html` | Game board, portrait — selection (indigo), hint (amber), cleared ghosts, action bar with budgets |
+| `02-spielbrett.html` | Game board, portrait — selection (indigo), hint (orange, persists), cleared ghosts, action bar with budgets |
 | `03-spielbrett-quer.html` | Game board, landscape — board left, thumb rail right (Daily mode chrome) |
 | `04-parameter-und-ende.html` | Free-Form parameter sheet + run-end screen with QR challenge |
 | `05-abenteuer.html` | Story mode ("Abenteuer") level list — sequential unlock, no timers |

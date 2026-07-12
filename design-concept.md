@@ -62,7 +62,8 @@ mode allows (§6). The remaining count sits on the button as neutral information
 the button turns **gray** (quietly unavailable, not alarmed — nothing red).
 
 ### 3.5 Hints
-The **hint button** highlights one currently-valid pair (amber — *information, not
+The **hint button** highlights one currently-valid pair (**fox orange, and it stays
+highlighted until both cells are tapped** — impossible to miss; *information, not
 command*). Each game has a **hint budget** — default **5**, up to **limitless** where
 the mode allows. Pressing hint when **no valid pair exists** shows the button gray and
 points at the add button instead — this **does not consume** a hint (telling you
@@ -194,7 +195,7 @@ the player — it's *manipulating* them.
 | Pair matched | emerald pop, fade to ghost | pluck / confirm |
 | Row collapse | row lifts and dissolves | glass chime |
 | Add rows | new digits step in from below | drop / shuffle |
-| Hint | one amber pulse on the pair | soft question ping |
+| Hint | pair turns orange, **stays until both are tapped** | soft question ping |
 | Quietly unavailable | dim to gray (no shake) | low muted tone |
 | Board cleared | emerald wave across cells | short jingle (the one loud moment; exempt from 250 ms) |
 | Level unlocked | brief pop on the next level | short upbeat |

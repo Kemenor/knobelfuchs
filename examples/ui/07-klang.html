@@ -39,8 +39,8 @@
   .a-row{animation:rowOut .25s ease-in forwards}
   @keyframes rowIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
   .a-add{animation:rowIn .25s ease-out}
-  @keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--amber) 30%,transparent)}}
-  .a-hint{animation:hintPulse .5s ease-in-out;color:var(--amber);background:color-mix(in srgb,var(--amber) 18%,transparent);border:2px solid var(--amber)}
+  @keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--orange) 30%,transparent)}}
+  .a-hint{animation:hintPulse .5s ease-in-out;color:var(--orange);background:color-mix(in srgb,var(--orange) 18%,transparent);border:2px solid var(--orange);cursor:pointer}
   .a-gray{transition:all .25s;opacity:.4;filter:grayscale(1)}
   @keyframes winWave{0%{transform:translateY(0)}30%{transform:translateY(-8px)}60%{transform:translateY(0)}}
   .a-win{animation:winWave .45s ease-in-out;color:var(--emerald);background:color-mix(in srgb,var(--emerald) 16%,transparent);border-color:var(--emerald)}
@@ -61,7 +61,7 @@
     <div class="demo" id="d-sel"><div class="cell">7</div><div class="cell">3</div><div class="cell">5</div></div>
     <div class="snds">
       <button class="snd" onclick="fx('sounds/select_002.ogg', animSel)"><span class="ms">play_arrow</span>A <small>· select</small></button>
-      <button class="snd" onclick="fx('sounds/click_002.ogg', animSel)"><span class="ms">play_arrow</span>B <small>· click</small></button>
+      <button class="snd" onclick="fx('sounds/toggle_001.ogg', animSel)"><span class="ms">play_arrow</span>B <small>· toggle</small></button>
     </div>
   </div>
 
@@ -97,7 +97,8 @@
 
   <div class="event">
     <h3>Tipp</h3>
-    <p>Das gefundene Paar pulsiert einmal bernstein — Information, kein Befehl.</p>
+    <p>Das gefundene Paar wird <b>orange und bleibt orange</b>, bis beide Zellen angetippt
+    sind — nicht zu übersehen. (Hier im Demo: die orangen Zellen antippen.)</p>
     <div class="demo" id="d-hint"><div class="cell">9</div><div class="cell">4</div><div class="cell">1</div></div>
     <div class="snds">
       <button class="snd" onclick="fx('sounds/question_001.ogg', animHint)"><span class="ms">play_arrow</span>A <small>· question</small></button>
@@ -120,9 +121,8 @@
     <p>Der eine laute Moment: Welle über die Zellen, kleiner Jubel — dann wieder Ruhe.</p>
     <div class="demo" id="d-win"><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/jingles_PIZZI07.ogg', animWin)"><span class="ms">play_arrow</span>A <small>· pizzicato</small></button>
-      <button class="snd" onclick="fx('sounds/jingles_PIZZI10.ogg', animWin)"><span class="ms">play_arrow</span>B <small>· pizzicato 2</small></button>
-      <button class="snd" onclick="fx('sounds/jingles_STEEL04.ogg', animWin)"><span class="ms">play_arrow</span>C <small>· steeldrum</small></button>
+      <button class="snd" onclick="fx('sounds/jingles_PIZZI10.ogg', animWin)"><span class="ms">play_arrow</span>A <small>· pizzicato</small></button>
+      <button class="snd" onclick="fx('sounds/jingles_STEEL04.ogg', animWin)"><span class="ms">play_arrow</span>B <small>· steeldrum</small></button>
     </div>
   </div>
 
@@ -192,7 +192,8 @@ function animRow(){ document.querySelectorAll('#d-row .cell').forEach((c,i) =>
 function animAdd(){ document.querySelectorAll('#d-add .cell').forEach((c,i) =>
   setTimeout(() => retrig(c,'a-add'), i*40)); }
 function animHint(){ const c = document.querySelectorAll('#d-hint .cell');
-  retrig(c[0],'a-hint'); retrig(c[2],'a-hint'); }
+  [c[0], c[2]].forEach(el => { el.classList.add('a-hint');
+    el.onclick = () => { el.classList.remove('a-hint'); el.onclick = null; }; }); }
 function animGray(){ const c = document.querySelector('#d-gray .cell');
   c.classList.add('a-gray'); setTimeout(() => c.classList.remove('a-gray'), 900); }
 function animWin(){ document.querySelectorAll('#d-win .cell').forEach((c,i) =>

@@ -33,7 +33,7 @@
   .cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.55rem;font-variant-numeric:tabular-nums;background:var(--card);border:1px solid var(--line);border-radius:10px}
   .cell.gone{color:var(--faded);text-decoration:line-through;opacity:.5;background:transparent;border-style:dashed}
   .cell.sel{color:var(--indigo);background:color-mix(in srgb,var(--indigo) 16%,transparent);border:2px solid var(--indigo)}
-  .cell.hint{color:var(--amber);background:color-mix(in srgb,var(--amber) 18%,transparent);border:2px solid var(--amber)}
+  .cell.hint{color:var(--orange);background:color-mix(in srgb,var(--orange) 18%,transparent);border:2px solid var(--orange)}
 
   .actions{display:flex;justify-content:center;gap:22px;padding-top:4px}
   .act{position:relative;width:76px;height:60px;border-radius:18px;border:none;background:color-mix(in srgb,var(--indigo) 13%,transparent);color:var(--indigo);display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -48,7 +48,7 @@
   <header><h1>🦊 Knobelfuchs — Spielbrett</h1>
   <button class="toggle" onclick="document.body.classList.toggle('dark')">◐ Hell / Dunkel</button></header>
 
-  <p class="cap">Mitten im Spiel <small>· Tablet hochkant · Auswahl indigo · Tipp bernstein · Erledigtes verblasst</small></p>
+  <p class="cap">Mitten im Spiel <small>· Tablet hochkant · Auswahl indigo · Tipp orange (bleibt bis angetippt) · Erledigtes verblasst</small></p>
   <div class="tablet">
     <div class="topbar">
       <div class="back"><span class="ms">arrow_back</span></div>
@@ -82,12 +82,12 @@
 
     <div class="legend">
       <span><span class="dot" style="background:var(--indigo)"></span>ausgewählt</span>
-      <span><span class="dot" style="background:var(--amber)"></span>Tipp: 9 + 1</span>
+      <span><span class="dot" style="background:var(--orange)"></span>Tipp: 9 + 1</span>
       <span><span class="dot" style="background:var(--faded)"></span>schon weg</span>
     </div>
   </div>
 
-  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Der bernsteinfarbene Tipp zeigt <b>9 + 1</b> (diagonal benachbart = 10). Zahlen auf Knopfgrösse ≥ 64 dp, Ziffern in Tabellenziffern. Aufgebrauchte Budgets werden <b>grau, nie rot</b> (siehe Rundenende-Mockup). Auf den Knöpfen: Nachlegen noch 3×, Tipps noch 4×. Die Aktionsknöpfe sind <b>in jedem Modus indigo</b> (indigo = Handlung); die Modusfarbe lebt nur im Chip oben.</p>
+  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Der orange Tipp zeigt <b>9 + 1</b> (diagonal benachbart = 10) und <b>bleibt orange, bis beide Zellen angetippt sind</b> — nicht zu übersehen. Zahlen auf Knopfgrösse ≥ 64 dp, Ziffern in Tabellenziffern. Aufgebrauchte Budgets werden <b>grau, nie rot</b> (siehe Rundenende-Mockup). Auf den Knöpfen: Nachlegen noch 3×, Tipps noch 4×. Die Aktionsknöpfe sind <b>in jedem Modus indigo</b> (indigo = Handlung); die Modusfarbe lebt nur im Chip oben.</p>
 <style>.pagenav{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem}.pagenav a{color:var(--muted);text-decoration:none;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}.pagenav a.on{color:var(--orange);border-color:var(--orange);font-weight:800}</style>
 <nav class="pagenav">
   <a href="01-home.html">01 Home</a>

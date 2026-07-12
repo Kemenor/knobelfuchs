@@ -46,7 +46,7 @@ law applies — nothing in normal play is ever red.
 |---|---|---|
 | Digit (live) | `onSurface` | high contrast, tabular figures |
 | Selected cell | indigo `#8559D0` / `#A98CEE` | filled tonal cell + ring (selection/focus = indigo, per Fuchsbau) |
-| Hinted pair | amber `#E0A33B` / `#EDB45A` | soft tonal fill — *information, not command* |
+| Hinted pair | fox orange `#EA7A24` / `#F39C4E` | tonal fill + border, **persists until both cells are tapped** — impossible to miss (family feedback) |
 | Just matched | emerald `#1FA85D` / `#37CE78` | brief flash, then fades to cleared |
 | Cleared cell | faded taupe digit `#A8988C` / `#B6A79B` | ghost of the old digit, struck — keeps the paper feel and makes line-of-sight legible |
 | Win celebration | fox orange | the one loud moment |
