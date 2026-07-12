@@ -7,19 +7,36 @@ import 'package:knobelfuchs/ui/adventure/adventure_providers.dart';
 import 'package:knobelfuchs/ui/providers.dart';
 
 void main() {
-  group('adventure curve (domain)', () {
-    test('budgets tighten, never below the floor', () {
-      for (var i = 1; i <= kAdventureLevels; i++) {
-        expect(adventureAdds(i), inInclusiveRange(2, 5), reason: 'adds $i');
-        expect(adventureHints(i), inInclusiveRange(1, 5), reason: 'hints $i');
-        if (i > 1) {
-          expect(adventureAdds(i), lessThanOrEqualTo(adventureAdds(i - 1)));
-          expect(adventureHints(i), lessThanOrEqualTo(adventureHints(i - 1)));
+  group('adventure structure (50 levels, 5 chapters)', () {
+    test('curated seed list is complete, unique, and namespaced', () {
+      expect(kAdventureSeeds.length, kAdventureLevels);
+      expect(kAdventureSeeds.toSet().length, kAdventureLevels); // unique
+      for (final seed in kAdventureSeeds) {
+        expect(seed.startsWith('level:'), isTrue, // uniform-deal namespace
+            reason: seed);
+      }
+    });
+
+    test('budgets tighten within a chapter and reset at the next', () {
+      for (var level = 1; level <= kAdventureLevels; level++) {
+        expect(adventureAdds(level), inInclusiveRange(2, 5));
+        expect(adventureHints(level), inInclusiveRange(1, 5));
+        final pos = (level - 1) % kChapterLength;
+        if (pos > 0) {
+          // monotone within the chapter
+          expect(adventureAdds(level),
+              lessThanOrEqualTo(adventureAdds(level - 1)));
+          expect(adventureHints(level),
+              lessThanOrEqualTo(adventureHints(level - 1)));
+        } else if (level > 1) {
+          // chapter boundary: budgets reset to generous
+          expect(adventureAdds(level), 5);
+          expect(adventureHints(level), 5);
         }
       }
     });
 
-    test('factor ramps 0.9 → 1.0 (§4.1)', () {
+    test('factor ramps 0.9 → 1.0 across all 50 (§4.1)', () {
       expect(adventureFactor(1), closeTo(0.9, 1e-9));
       expect(adventureFactor(kAdventureLevels), closeTo(1.0, 1e-9));
       for (var i = 2; i <= kAdventureLevels; i++) {
@@ -27,12 +44,16 @@ void main() {
       }
     });
 
+    test('slots stay level:N — re-curating seeds never breaks progress', () {
+      expect(adventureSlot(7), 'level:7');
+      expect(adventureSeedKey(7), isNot('level:7')); // curated, decoupled
+    });
+
     test('configs are deterministic with computed targets', () {
       final a = adventureConfig(6);
       final b = adventureConfig(6);
       expect(a.target, isNotNull);
       expect(a.target, b.target);
-      expect(a.seed, 'level:6');
     });
   });
 
@@ -52,7 +73,7 @@ void main() {
       final t = DateTime(2026, 7, 10);
       return db.into(db.runResults).insert(RunResultsCompanion.insert(
             slot: 'level:$level',
-            seed: 'level:$level',
+            seed: adventureSeedKey(level),
             score: score,
             cleared: false,
             targetBeaten: beaten,

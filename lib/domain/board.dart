@@ -145,16 +145,19 @@ class Board {
     return null;
   }
 
-  int countAvailablePairs() {
-    var n = 0;
+  /// All currently valid pairs, each exactly once (i < j).
+  List<(int, int)> availablePairs() {
+    final out = <(int, int)>[];
     for (var i = 0; i < cells.length; i++) {
       if (cells[i].cleared) continue;
       for (final j in _forwardCandidates(i)) {
-        if (valuesMatch(i, j)) n++;
+        if (valuesMatch(i, j)) out.add((i, j));
       }
     }
-    return n;
+    return out;
   }
+
+  int countAvailablePairs() => availablePairs().length;
 
   /// Clears two cells, then removes every fully-cleared row (§3.3).
   /// Returns the new board and the number of rows removed.
