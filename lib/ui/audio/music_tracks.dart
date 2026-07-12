@@ -25,4 +25,9 @@ const List<MusicTrack> kMusicTracks = [
   MusicTrack('music/bossa-antigua.mp3', 'Bossa Antigua'),
   MusicTrack('music/george-street-shuffle.mp3', 'George Street Shuffle'),
   MusicTrack('music/wallpaper.mp3', 'Wallpaper'),
+  MusicTrack('music/airport-lounge.mp3', 'Airport Lounge'),
+  MusicTrack('music/fretless.mp3', 'Fretless'),
+  MusicTrack('music/daily-beetle.mp3', 'Daily Beetle'),
+  MusicTrack('music/life-of-riley.mp3', 'Life of Riley'),
+  MusicTrack('music/bass-walker.mp3', 'Bass Walker'),
 ];

@@ -22,7 +22,10 @@ Pad 5) reviews these directly. Final app is l10n'd en/de/fr/it as always.
 required; credited anyway). Event → file mapping lives in `design-concept.md` §10.
 
 `music/` holds background-music candidates by **Kevin MacLeod (incompetech.com), CC BY
-4.0** — the mp3s are **gitignored** (≈ 29 MB). Re-fetch into `music/` with:
+4.0** — the mp3s are **gitignored**. Re-fetch into `music/` with the commands below.
+The app copies in `assets/music/` are these files re-encoded to **128 kbps**
+(`ffmpeg -i in.mp3 -vn -codec:a libmp3lame -b:a 128k out.mp3`) — background music
+at 45 % volume doesn't need source bitrate, and it halves the bundle.
 
 ```powershell
 $u = 'https://incompetech.com/music/royalty-free/mp3-royaltyfree'
@@ -33,6 +36,11 @@ Invoke-WebRequest "$u/Carefree.mp3" -OutFile music/carefree.mp3
 Invoke-WebRequest "$u/Bossa%20Antigua.mp3" -OutFile music/bossa-antigua.mp3
 Invoke-WebRequest "$u/George%20Street%20Shuffle.mp3" -OutFile music/george-street-shuffle.mp3
 Invoke-WebRequest "$u/Wallpaper.mp3" -OutFile music/wallpaper.mp3
+Invoke-WebRequest "$u/Airport%20Lounge.mp3" -OutFile music/airport-lounge.mp3
+Invoke-WebRequest "$u/Fretless.mp3" -OutFile music/fretless.mp3
+Invoke-WebRequest "$u/Daily%20Beetle.mp3" -OutFile music/daily-beetle.mp3
+Invoke-WebRequest "$u/Life%20of%20Riley.mp3" -OutFile music/life-of-riley.mp3
+Invoke-WebRequest "$u/Bass%20Walker.mp3" -OutFile music/bass-walker.mp3
 ```
 
 Terminology in the mockups (l10n keys later): *Nachlegen* = add rows · *Tipp* = hint ·

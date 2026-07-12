@@ -333,8 +333,9 @@ opt-out-able in two taps:
   switch — dislike a track and the rotation simply skips it. The per-level /
   per-board selection above always draws from the *enabled* pool; new tracks
   default to on (the disliked set is what's stored). All tracks off = silence,
-  honestly. Pool: seven Kevin MacLeod tracks (CC BY 4.0). Track titles are
-  proper names, never localized.
+  honestly. Pool: twelve Kevin MacLeod tracks (CC BY 4.0), re-encoded to
+  128 kbps (~47 MB — quiet background loops don't need source bitrate).
+  Track titles are proper names, never localized.
 - **Audition & now playing:** each jukebox row has a play button (works on
   switched-off tracks too — hear before you judge); the previewed track keeps
   playing as menu music. The row of the track currently on shows an indigo
