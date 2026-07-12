@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/seed.dart';
@@ -35,50 +38,79 @@ const List<String> _musicTracks = [
   'music/porch-swing-days.mp3',
 ];
 
+/// Neither track ever fights the other (or other apps) for audio focus —
+/// that was the bug where a match SFX silenced the music.
+final AudioContext _mixContext = AudioContext(
+  android: const AudioContextAndroid(
+    isSpeakerphoneOn: false,
+    stayAwake: false,
+    contentType: AndroidContentType.music,
+    usageType: AndroidUsageType.game,
+    audioFocus: AndroidAudioFocus.none,
+  ),
+  iOS: AudioContextIOS(
+    category: AVAudioSessionCategory.ambient, // respects the silent switch
+    options: const {AVAudioSessionOptions.mixWithOthers},
+  ),
+);
+
 final audioServiceProvider = Provider<AudioService>((ref) {
   final service = AudioService(ref);
   ref.onDispose(service.dispose);
   return service;
 });
 
-class AudioService {
+enum _MusicContext { none, menu, game }
+
+/// Two tracks (tablet feedback, 2026-07-12):
+/// - **Animation track**: one player; a new sound always ends the previous.
+/// - **Background track**: menu plays from the jukebox (random pool pick),
+///   a game start picks its own track (fixed per level, seed-rotated
+///   otherwise). Backgrounding the app always *stops* music.
+class AudioService with WidgetsBindingObserver {
   final Ref ref;
-  final List<AudioPlayer> _fxPool = [];
-  int _fxIndex = 0;
-  AudioPlayer? _music;
+  final AudioPlayer _fx = AudioPlayer();
+  final AudioPlayer _music = AudioPlayer();
+  _MusicContext _context = _MusicContext.none;
+  String? _track;
 
   AudioService(this.ref) {
-    for (var i = 0; i < 4; i++) {
-      _fxPool.add(AudioPlayer()..setPlayerMode(PlayerMode.lowLatency));
-    }
-    // Live music volume: follow the settings slider.
+    _fx.setPlayerMode(PlayerMode.lowLatency);
+    _fx.setAudioContext(_mixContext);
+    _music.setReleaseMode(ReleaseMode.loop);
+    _music.setAudioContext(_mixContext);
+    WidgetsBinding.instance.addObserver(this);
+
     ref.listen<Settings>(settingsProvider, (prev, next) {
-      final music = _music;
-      if (music == null) return;
-      music.setVolume(next.musicVolume);
-      if (prev?.musicOn == true && !next.musicOn) music.pause();
-      if (prev?.musicOn == false && next.musicOn) music.resume();
+      _music.setVolume(next.musicVolume);
+      if (prev?.musicOn == true && !next.musicOn) _music.stop();
+      if (prev?.musicOn == false && next.musicOn) _restart();
     });
   }
 
-  void play(SoundEvent event) {
+  /// Animation track: end the previous sound, start the new one.
+  Future<void> play(SoundEvent event) async {
     final settings = ref.read(settingsProvider);
     if (settings.effectsVolume <= 0) return;
-    final player = _fxPool[_fxIndex];
-    _fxIndex = (_fxIndex + 1) % _fxPool.length;
-    player.play(AssetSource(_soundFiles[event]!),
+    await _fx.stop();
+    await _fx.play(AssetSource(_soundFiles[event]!),
         volume: settings.effectsVolume);
   }
 
-  /// Adventure: fixed track per level; Free Form & Daily: the pool rotates
-  /// deterministically by seed (§10.1). Music only during a foregrounded game.
-  Future<void> startMusicFor({required String slot, required String seed}) async {
-    final settings = ref.read(settingsProvider);
-    final track = _trackFor(slot, seed);
-    final music = _music ??= AudioPlayer()..setReleaseMode(ReleaseMode.loop);
-    await music.stop();
-    if (!settings.musicOn) return;
-    await music.play(AssetSource(track), volume: settings.musicVolume);
+  /// Menu = the jukebox: a random pool track, kept while browsing menus.
+  Future<void> playMenuMusic() async {
+    if (_context == _MusicContext.menu) return;
+    _context = _MusicContext.menu;
+    _track = _musicTracks[Random().nextInt(_musicTracks.length)];
+    await _restart();
+  }
+
+  /// A game picks its own track: fixed per adventure level, seed-rotated
+  /// for free/daily (§10.1).
+  Future<void> playGameMusic({required String slot, required String seed}) async {
+    _context = _MusicContext.game;
+    _track = _trackFor(slot, seed);
+    await _restart();
   }
 
   String _trackFor(String slot, String seed) {
@@ -89,17 +121,38 @@ class AudioService {
     return _musicTracks[seedHash(seed).abs() % _musicTracks.length];
   }
 
-  Future<void> stopMusic() async => _music?.stop();
-  Future<void> pauseMusic() async => _music?.pause();
+  Future<void> _restart() async {
+    await _music.stop();
+    final settings = ref.read(settingsProvider);
+    final track = _track;
+    if (!settings.musicOn || track == null || _context == _MusicContext.none) {
+      return;
+    }
+    await _music.play(AssetSource(track), volume: settings.musicVolume);
+  }
 
-  Future<void> resumeMusic() async {
-    if (ref.read(settingsProvider).musicOn) await _music?.resume();
+  Future<void> stopMusic() async {
+    _context = _MusicContext.none;
+    _track = null;
+    await _music.stop();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Backgrounding always stops music — never a sound from a closed den.
+    // (`inactive` is ignored: dialogs and the shade shouldn't kill the track.)
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      _music.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      _restart();
+    }
   }
 
   void dispose() {
-    for (final p in _fxPool) {
-      p.dispose();
-    }
-    _music?.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _fx.dispose();
+    _music.dispose();
   }
 }

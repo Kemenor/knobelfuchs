@@ -58,7 +58,7 @@
   "ruleActionsTitle": "I tuoi tre pulsanti",
   "ruleActionsBody": "Aggiungi copia tutti i numeri rimasti in fondo — il budget lo scegli tu. Indizio mostra una coppia valida in arancione, che resta arancione finché non tocchi entrambe le caselle. Annulla riprende ogni mossa, fin dove vuoi.",
   "ruleScoreTitle": "Punti",
-  "scorePair": "Coppia cancellata",
+  "scorePair": "Numero della tavola iniziale cancellato",
   "scoreRow": "Riga svuotata (ognuna)",
   "scoreClear": "Tavola svuotata",
   "scoreUnusedAdd": "Ogni aggiunta non usata (solo a tavola vuota)",

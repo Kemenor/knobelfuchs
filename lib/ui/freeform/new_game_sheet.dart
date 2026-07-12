@@ -8,7 +8,6 @@ import '../../domain/seed.dart';
 import '../../l10n/app_localizations.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
-import '../settings/settings.dart';
 import 'scan_challenge_screen.dart';
 
 /// Free Form parameter sheet (§6.1): one tap for players who don't care —
@@ -77,7 +76,6 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
       adds: _adds,
       hints: _hints,
       target: target,
-      scoring: ref.read(settingsProvider).scoring, // playtest switch
     );
     ref.read(gameControllerProvider.notifier).start(config);
     Navigator.of(context).pop();

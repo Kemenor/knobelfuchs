@@ -19,8 +19,7 @@ class GameScreen extends ConsumerStatefulWidget {
   ConsumerState<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends ConsumerState<GameScreen>
-    with WidgetsBindingObserver {
+class _GameScreenState extends ConsumerState<GameScreen> {
   final _scroll = ScrollController();
   double _rowExtent = 56; // updated by BoardView's layout callback
   bool _endShown = false;
@@ -28,34 +27,24 @@ class _GameScreenState extends ConsumerState<GameScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Music only during a foregrounded game (§10.1).
+    // The game picks its own background track (§10.1); lifecycle stops are
+    // handled centrally by the AudioService.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final view = ref.read(gameControllerProvider);
       if (view != null) {
         ref
             .read(audioServiceProvider)
-            .startMusicFor(slot: view.slot, seed: view.config.seed);
+            .playGameMusic(slot: view.slot, seed: view.config.seed);
       }
     });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    ref.read(audioServiceProvider).stopMusic();
+    // Back to the menus — the jukebox takes over.
+    ref.read(audioServiceProvider).playMenuMusic();
     _scroll.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final audio = ref.read(audioServiceProvider);
-    if (state == AppLifecycleState.resumed) {
-      audio.resumeMusic();
-    } else {
-      audio.pauseMusic(); // never from the background, never a lure
-    }
   }
 
   /// Sounds answer the player's action (§10) — priority: the loud moment,
@@ -88,7 +77,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
       // New game started in place ("Nochmal" / new-game sheet) — fresh track.
       ref
           .read(audioServiceProvider)
-          .startMusicFor(slot: next.slot, seed: next.config.seed);
+          .playGameMusic(slot: next.slot, seed: next.config.seed);
     }
     _playFor(prev, next);
     if (next.addsUsed > prev.addsUsed) {

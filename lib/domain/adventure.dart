@@ -42,7 +42,7 @@ double adventureFactor(int level) =>
 /// same on every device, no authoring burden; the bot plays under the same
 /// scoring variant).
 GameConfig adventureConfig(int level,
-    {ScoringVariant scoring = ScoringVariant.classic}) {
+    {ScoringVariant scoring = ScoringVariant.originalsOnly}) {
   assert(level >= 1 && level <= kAdventureLevels);
   final base = GameConfig(
     seed: adventureSeedKey(level),

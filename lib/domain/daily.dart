@@ -19,7 +19,7 @@ String dailySeedKey(DateTime date) {
 /// The full config for a date, target included (computed, deterministic —
 /// the bot plays under the same scoring variant).
 GameConfig dailyConfig(DateTime date,
-    {ScoringVariant scoring = ScoringVariant.classic}) {
+    {ScoringVariant scoring = ScoringVariant.originalsOnly}) {
   final base = GameConfig(
     seed: dailySeedKey(date),
     adds: kDefaultAdds,

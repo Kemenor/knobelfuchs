@@ -181,8 +181,9 @@ void main() {
       );
       expect(s.match(0, 8), isTrue);
       expect(s.status, GameStatus.cleared);
-      // pair 10 + row 50 + clear 250 + 5 unused adds × 50
-      expect(s.score, 10 + 50 + 250 + 250);
+      // originalsOnly default: 2 opening cells × 10 (rows pay nothing)
+      // + clear 250 + 5 unused adds × 50
+      expect(s.score, 20 + 250 + 250);
       expect(s.targetBeaten, isTrue);
     });
 
@@ -192,7 +193,7 @@ void main() {
         b('5 5c 5c 5c 5c 5c 5c 5c 5'),
       );
       s.match(0, 8);
-      expect(s.score, 10 + 50 + 250);
+      expect(s.score, 20 + 250);
     });
   });
 }

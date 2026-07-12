@@ -58,7 +58,7 @@
   "ruleActionsTitle": "Deine drei Knöpfe",
   "ruleActionsBody": "Nachlegen kopiert alle übrigen Zahlen ans Ende — das Budget wählst du selbst. Tipp zeigt ein gültiges Paar in Orange, und es bleibt orange, bis du beide Felder angetippt hast. Zurück nimmt jeden Zug zurück, so weit du willst.",
   "ruleScoreTitle": "Punkte",
-  "scorePair": "Paar weggestrichen",
+  "scorePair": "Zahl vom Anfangsbrett weggeräumt",
   "scoreRow": "Reihe geräumt (je)",
   "scoreClear": "Brett leergeräumt",
   "scoreUnusedAdd": "Je ungenutztes Nachlegen (nur bei leerem Brett)",

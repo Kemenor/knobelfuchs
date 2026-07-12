@@ -1,11 +1,19 @@
 import 'package:drift/native.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:knobelfuchs/data/database.dart';
 import 'package:knobelfuchs/ui/app.dart';
+import 'package:knobelfuchs/ui/audio/audio_service.dart';
 import 'package:knobelfuchs/ui/game/game_controller.dart';
 import 'package:knobelfuchs/ui/settings/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// No platform audio channels in widget tests.
+class _FakeAudio with WidgetsBindingObserver implements AudioService {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => Future<void>.value();
+}
 
 void main() {
   testWidgets('home shows the three modes', (tester) async {
@@ -17,6 +25,7 @@ void main() {
       overrides: [
         databaseProvider.overrideWithValue(db),
         sharedPrefsProvider.overrideWithValue(prefs),
+        audioServiceProvider.overrideWithValue(_FakeAudio()),
       ],
       child: const KnobelfuchsApp(),
     ));
@@ -36,6 +45,7 @@ void main() {
       overrides: [
         databaseProvider.overrideWithValue(db),
         sharedPrefsProvider.overrideWithValue(prefs),
+        audioServiceProvider.overrideWithValue(_FakeAudio()),
       ],
       child: const KnobelfuchsApp(),
     ));

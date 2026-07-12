@@ -87,8 +87,9 @@ class AnleitungScreen extends StatelessWidget {
                 body: null,
                 child: Column(
                   children: [
+                    // Originals-only formula (family decision 2026-07-12):
+                    // copies are helpers, not loot; rows chime but pay 0.
                     _ScoreRow(l.scorePair, '+$kPointsPerPair'),
-                    _ScoreRow(l.scoreRow, '+$kPointsPerRow'),
                     _ScoreRow(l.scoreClear, '+$kPointsBoardCleared'),
                     _ScoreRow(l.scoreUnusedAdd, '+$kPointsPerUnusedAdd'),
                   ],

@@ -62,7 +62,7 @@
   "ruleActionsTitle": "Your three buttons",
   "ruleActionsBody": "Add rows copies all remaining numbers to the end — you choose the budget. Hint shows a valid pair in orange, and it stays orange until you tap both cells. Undo takes back any move, as far as you like.",
   "ruleScoreTitle": "Scoring",
-  "scorePair": "Pair crossed out",
+  "scorePair": "Number from the opening board cleared",
   "scoreRow": "Row cleared (each)",
   "scoreClear": "Board cleared",
   "scoreUnusedAdd": "Each unused add (only when cleared)",

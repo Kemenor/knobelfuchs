@@ -8,6 +8,7 @@ import '../../domain/challenge.dart';
 import '../../l10n/app_localizations.dart';
 import '../adventure/adventure_screen.dart';
 import '../anleitung/anleitung_screen.dart';
+import '../audio/audio_service.dart';
 import '../daily/daily_calendar_screen.dart';
 import '../freeform/new_game_sheet.dart';
 import '../game/game_controller.dart';
@@ -38,6 +39,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (config != null && mounted) {
         showNewGameSheet(context, prefill: config);
       }
+    });
+    // The main menu plays from the jukebox (tablet feedback, 2026-07-12).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(audioServiceProvider).playMenuMusic();
     });
     // One-time, skippable Anleitung offer on very first launch (§11).
     WidgetsBinding.instance.addPostFrameCallback((_) {

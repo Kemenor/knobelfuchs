@@ -136,23 +136,26 @@ Undo is a **true rewind**, one action per step, unlimited depth back to the open
 Scores make seeds shareable ("beat 1 840 on this board") and give runs a shape. The
 formula is **simple, transparent, and shown in-app** — no hidden multipliers:
 
+**"Nur die Zahlen vom Anfangsbrett zählen — nachgelegte Zahlen sind Helfer, keine
+Beute."** (originals-only, fixed 2026-07-12 after playtesting exposed that the
+original formula rewarded add-spam: every add doubles the material, so volume points
+swamp every fixed bonus and bot targets become trivially beatable.)
+
 | Event | Points |
 |---|---|
-| Pair matched | **+10** — flat, regardless of digits (score stays legible: pairs × 10, roughly) |
-| Row cleared | **+50** — **stacks**: one match emptying two rows scores +100 |
+| Cell **from the opening board** cleared | **+10** — copies from Nachlegen score nothing (max 350) |
+| Row cleared | **0** — the glass chime is the celebration; points would be farmable |
 | Board fully cleared | **+250** |
-| Each unused add | **+50** — **paid only on a cleared board** (a "cleared efficiently" bonus, never a reward for giving up early) |
+| Each unused add | **+50** — **paid only on a cleared board**; parity caps this at 4×50 (see below) |
 
+- **Fixed ceiling ≈ 800 per board** — every score is comparable; targets are honest.
 - **Hints never cost points.** Assist use is not punished — the budget is the only
   limit (information, never punishment).
-- ⚠️ **Un-frozen 2026-07-12:** playtesting exposed that this formula rewards
-  add-spam — every add doubles the material and pairs pay flat +10, so volume
-  swamps every fixed bonus and bot targets become trivially beatable. Four candidate
-  formulas ship behind a settings switch (classic · opening-cells-only · adds cost
-  their pair-value · adds cheapen pairs); the family picks one, then this section
-  gets rewritten and re-frozen. Related parity fact: a 35-digit opening is odd, so
-  **clearing is impossible without at least one Nachlegen** (matches preserve
-  parity; an add doubles survivors to even).
+- **Parity fact:** a 35-digit opening is odd and matches remove two, so **clearing
+  is impossible without at least one Nachlegen** — the add button is load-bearing.
+- Three alternative formulas (classic volume-scoring, adds-cost-points,
+  adds-cheapen-pairs) remain implemented behind `ScoringVariant` for future
+  playtests; the UI is fixed to originals-only.
 
 ### 4.1 Score to beat
 A game can carry a **target score**. Beating it is the win condition in Daily and

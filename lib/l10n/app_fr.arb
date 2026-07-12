@@ -58,7 +58,7 @@
   "ruleActionsTitle": "Tes trois boutons",
   "ruleActionsBody": "Rajouter copie tous les chiffres restants à la fin — tu choisis le budget. Indice montre une paire valable en orange, qui reste orange jusqu'à ce que tu touches les deux cases. Annuler reprend chaque coup, aussi loin que tu veux.",
   "ruleScoreTitle": "Points",
-  "scorePair": "Paire barrée",
+  "scorePair": "Chiffre du plateau initial barré",
   "scoreRow": "Ligne vidée (chacune)",
   "scoreClear": "Plateau vidé",
   "scoreUnusedAdd": "Chaque rajout non utilisé (plateau vidé seulement)",

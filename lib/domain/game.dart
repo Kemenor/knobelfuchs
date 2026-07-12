@@ -41,7 +41,9 @@ class GameConfig {
   /// Score to beat; null = off.
   final int? target;
 
-  /// Locked in at game start; replay/undo depend on it (playtest switch).
+  /// Locked in at game start; replay/undo depend on it. **originalsOnly is
+  /// the fixed formula** (family decision 2026-07-12) — the other variants
+  /// remain implemented for future playtests.
   final ScoringVariant scoring;
 
   const GameConfig({
@@ -49,7 +51,7 @@ class GameConfig {
     this.adds = kDefaultAdds,
     this.hints = kDefaultHints,
     this.target,
-    this.scoring = ScoringVariant.classic,
+    this.scoring = ScoringVariant.originalsOnly,
   });
 
   int get engineSeed => seedHash(seed);
