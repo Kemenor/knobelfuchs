@@ -40,6 +40,43 @@ class SeedDifficulty {
       'survivors=${avgSurvivors.toStringAsFixed(1)} pairs=$openingPairs';
 }
 
+/// All playout final scores for a seed (deterministic ensemble) — quantile
+/// material for alternative target bases ("beat 75 % of random plays").
+/// Uses the config's own scoring variant and budgets.
+List<int> playoutScores(
+  GameConfig config, {
+  int playouts = 40,
+}) {
+  final scores = <int>[];
+  for (var k = 0; k < playouts; k++) {
+    final state = GameState.fresh(config);
+    final rng =
+        SplitMix64(mixSeedAttempt(config.engineSeed, _kPlayoutSalt + k));
+    while (true) {
+      if (state.board.isEmpty) break;
+      final pairs = state.board.availablePairs();
+      if (pairs.isNotEmpty) {
+        final pick = pairs[(rng.next() >>> 32) % pairs.length];
+        state.match(
+            state.board.cells[pick.$1].id, state.board.cells[pick.$2].id);
+      } else if ((state.addsRemaining ?? 0) > 0) {
+        state.addRows();
+      } else {
+        break;
+      }
+    }
+    scores.add(state.score);
+  }
+  return scores..sort();
+}
+
+/// The score that beats [q] of random playouts, rounded to the score grid.
+int quantileTarget(GameConfig config, {double q = .75, int playouts = 40}) {
+  final scores = playoutScores(config, playouts: playouts);
+  final idx = (q * (scores.length - 1)).round();
+  return (scores[idx] / 10).round() * 10;
+}
+
 /// Measure a seed with random-policy playouts under the given add budget.
 SeedDifficulty measureSeed(
   String seed, {

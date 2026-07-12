@@ -49,6 +49,18 @@ const List<int> kAdventureTargets = [
   790, 690, 590, 350, 330, 350, 340, 330, 350, 340, // chapter 5
 ];
 
+/// Playtest instrument (2026-07-12, phone build): the alternative target
+/// basis — the score that beats 75 % of random playouts under the level's
+/// own budgets. Shown next to the bot target to compare curves; noticeably
+/// smoother than the bimodal bot table.
+const List<int> kAdventureP75 = [
+  750, 750, 750, 700, 700, 700, 650, 650, 650, 600, // chapter 1
+  750, 750, 700, 700, 600, 650, 650, 600, 600, 650, // chapter 2
+  750, 700, 750, 700, 650, 700, 600, 600, 600, 600, // chapter 3
+  800, 800, 650, 650, 650, 600, 650, 600, 330, 330, // chapter 4
+  700, 750, 600, 650, 650, 650, 350, 600, 350, 310, // chapter 5
+];
+
 /// Within-chapter budget curves (position 0–9): generous start, tight end,
 /// reset every chapter.
 const List<int> _addsCurve = [5, 5, 4, 4, 3, 3, 3, 2, 2, 2];

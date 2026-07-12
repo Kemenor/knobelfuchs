@@ -10,10 +10,12 @@ library;
 
 import 'package:knobelfuchs/domain/adventure.dart';
 import 'package:knobelfuchs/domain/bot.dart';
+import 'package:knobelfuchs/domain/difficulty.dart';
 import 'package:knobelfuchs/domain/game.dart';
 
 void main() {
   final targets = <int>[];
+  final p75 = <int>[];
   for (var level = 1; level <= kAdventureLevels; level++) {
     final base = GameConfig(
       seed: adventureSeedKey(level),
@@ -21,13 +23,21 @@ void main() {
       hints: adventureHints(level),
     );
     targets.add(targetScore(base, adventureFactor(level)));
+    p75.add(quantileTarget(base));
   }
-  print('const List<int> kAdventureTargets = [');
-  for (var c = 0; c < kAdventureLevels ~/ kChapterLength; c++) {
-    final row = targets
-        .sublist(c * kChapterLength, (c + 1) * kChapterLength)
-        .join(', ');
-    print('  $row, // chapter ${c + 1}');
+
+  void table(String name, List<int> values) {
+    print('const List<int> $name = [');
+    for (var c = 0; c < kAdventureLevels ~/ kChapterLength; c++) {
+      final row = values
+          .sublist(c * kChapterLength, (c + 1) * kChapterLength)
+          .join(', ');
+      print('  $row, // chapter ${c + 1}');
+    }
+    print('];');
   }
-  print('];');
+
+  table('kAdventureTargets', targets);
+  print('');
+  table('kAdventureP75', p75);
 }

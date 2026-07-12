@@ -154,7 +154,7 @@ class _LevelRow extends ConsumerWidget {
                       ),
                       if (!locked)
                         Text(
-                          '${l.target} ${info.target} · ${l.actionAdd} ${info.adds} · ${l.actionHint} ${info.hints}'
+                          '${l.target} ${info.target} · P75 ${kAdventureP75[info.level - 1]} · ${l.actionAdd} ${info.adds} · ${l.actionHint} ${info.hints}'
                           '${info.hasSavedRun ? ' · …' : ''}',
                           style: TextStyle(
                             fontSize: 12,
