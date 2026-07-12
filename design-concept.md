@@ -189,16 +189,16 @@ player's action*, never a lure. No sound ever calls into the room, nothing blink
 its own, no comeback fanfares, no daily-login jingle. What we avoid is not rewarding
 the player — it's *manipulating* them.
 
-| Event | Motion (≤ 250 ms, response-only) | Sound (candidates) |
+| Event | Motion (≤ 250 ms, response-only) | Sound — **frozen** (family playtest, 2026-07; Kenney CC0) |
 |---|---|---|
-| Select cell | spring-scale + indigo | soft select/click |
-| Pair matched | emerald pop, fade to ghost | pluck / confirm |
-| Row collapse | row lifts and dissolves | glass chime |
-| Add rows | new digits step in from below | drop / shuffle |
-| Hint | pair turns orange, **stays until both are tapped** | soft question ping |
-| Quietly unavailable | dim to gray (no shake) | low muted tone |
-| Board cleared | emerald wave across cells | short jingle (the one loud moment; exempt from 250 ms) |
-| Level unlocked | brief pop on the next level | short upbeat |
+| Select cell | spring-scale + indigo | `select_002` |
+| Pair matched | emerald pop, fade to ghost | `confirmation_001` |
+| Row collapse | row lifts and dissolves | `glass_002` |
+| Add rows | new digits step in from below | `scroll_002` |
+| Hint | pair turns orange, **stays until both are tapped** | `question_001` |
+| Quietly unavailable | dim to gray (no shake) | `minimize_001` |
+| Board cleared | emerald wave across cells | `jingles_PIZZI10` (the one loud moment; exempt from 250 ms) |
+| Level unlocked | brief pop on the next level | `jingles_PIZZI01` |
 
 ### 10.1 Background music
 Calm instrumental loops, quietly under the game — the one *ambient* element, and it's
@@ -240,6 +240,6 @@ Mockup: [`examples/ui/08-einstellungen.html`](./examples/ui/08-einstellungen.htm
 3. Opening size (3 rows?) and Story difficulty curve.
 4. ~~Daily calendar view — v2 candidate.~~ **Promoted to v1** (family requirement):
    the calendar *is* the daily date picker (§6.2).
-5. Final sound picks per event and the music pool (§10) — audition via
-   `07-klang.html`, then freeze. Also: does music default to on or off at first
-   launch?
+5. ~~Final sound picks per event and the music pool (§10).~~ **Frozen** after the
+   family audition (2026-07) — see the §10 table; music pool = all three candidates.
+   Still open: does music default to on or off at first launch?

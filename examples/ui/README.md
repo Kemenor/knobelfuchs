@@ -14,11 +14,12 @@ Pad 5) reviews these directly. Final app is l10n'd en/de/fr/it as always.
 | `04-parameter-und-ende.html` | Free-Form parameter sheet + run-end screen with QR challenge |
 | `05-abenteuer.html` | Story mode ("Abenteuer") level list — sequential unlock, no timers |
 | `06-tages-knobel.html` | Daily Knobel calendar = date picker — past days playable/resumable per date, future locked by device date |
-| `07-klang.html` | Sound & motion audition board — every game event plays its animation + sound candidates (A/B), plus the background-music candidates |
+| `07-klang.html` | Sound & motion canon — every game event plays its animation + its **chosen** sound (frozen after the family audition, July 2026), plus the background-music pool |
 | `08-einstellungen.html` | Settings — effect/music volumes, music toggle, motion Voll/Reduziert/Aus, appearance, font picker, language, About |
 
-`sounds/` holds the sound candidates: Kenney.nl "Interface Sounds" + "Music Jingles",
-**CC0 / public domain** (no attribution required; credited anyway).
+`sounds/` holds the **frozen** sound set (family audition, July 2026): Kenney.nl
+"Interface Sounds" + "Music Jingles", **CC0 / public domain** (no attribution
+required; credited anyway). Event → file mapping lives in `design-concept.md` §10.
 
 `music/` holds background-music candidates by **Kevin MacLeod (incompetech.com), CC BY
 4.0** — the mp3s are **gitignored** (≈ 29 MB). Re-fetch into `music/` with:

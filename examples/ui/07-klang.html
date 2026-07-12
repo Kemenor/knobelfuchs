@@ -53,15 +53,14 @@
 <body><div class="wrap">
   <header><h1>🦊 Knobelfuchs — Klang &amp; Bewegung</h1>
   <button class="toggle" onclick="document.body.classList.toggle('dark')">◐ Hell / Dunkel</button></header>
-  <p class="lead">Jedes Spielereignis bekommt <b>eine kurze Bewegung + einen Klang</b> — Belohnung für die Handlung, nie ein Lockruf. Knopf drücken = anhören <i>und</i> Animation sehen. Zwei Kandidaten pro Ereignis — Favoriten melden! Alle Klänge: <a href="https://kenney.nl" style="color:var(--indigo)">Kenney.nl</a>, CC0 (gemeinfrei).</p>
+  <p class="lead">Jedes Spielereignis bekommt <b>eine kurze Bewegung + einen Klang</b> — Belohnung für die Handlung, nie ein Lockruf. Knopf drücken = anhören <i>und</i> Animation sehen. <b>Die Klänge sind gewählt</b> (Familien-Audition, Juli 2026) — das hier ist jetzt der Kanon. Alle Klänge: <a href="https://kenney.nl" style="color:var(--indigo)">Kenney.nl</a>, CC0 (gemeinfrei).</p>
 
   <div class="event">
     <h3>Zahl antippen</h3>
     <p>Die Zelle federt kurz und wird indigo — leise, wie ein Bleistift-Tipp.</p>
     <div class="demo" id="d-sel"><div class="cell">7</div><div class="cell">3</div><div class="cell">5</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/select_002.ogg', animSel)"><span class="ms">play_arrow</span>A <small>· select</small></button>
-      <button class="snd" onclick="fx('sounds/toggle_001.ogg', animSel)"><span class="ms">play_arrow</span>B <small>· toggle</small></button>
+      <button class="snd" onclick="fx('sounds/select_002.ogg', animSel)"><span class="ms">play_arrow</span>select <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
@@ -70,8 +69,7 @@
     <p>Beide Zellen ploppen smaragd auf und verblassen zu Geistern.</p>
     <div class="demo" id="d-match"><div class="cell">3</div><div class="cell">4</div><div class="cell">7</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/pluck_001.ogg', animMatch)"><span class="ms">play_arrow</span>A <small>· pluck</small></button>
-      <button class="snd" onclick="fx('sounds/confirmation_001.ogg', animMatch)"><span class="ms">play_arrow</span>B <small>· confirm</small></button>
+      <button class="snd" onclick="fx('sounds/confirmation_001.ogg', animMatch)"><span class="ms">play_arrow</span>confirm <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
@@ -80,8 +78,7 @@
     <p>Die leere Reihe hebt sich sanft und löst sich auf.</p>
     <div class="demo" id="d-row"><div class="cell a-ghost">2</div><div class="cell a-ghost">8</div><div class="cell a-ghost">5</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/glass_002.ogg', animRow)"><span class="ms">play_arrow</span>A <small>· glass</small></button>
-      <button class="snd" onclick="fx('sounds/glass_005.ogg', animRow)"><span class="ms">play_arrow</span>B <small>· glass 2</small></button>
+      <button class="snd" onclick="fx('sounds/glass_002.ogg', animRow)"><span class="ms">play_arrow</span>glass <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
@@ -90,8 +87,7 @@
     <p>Die neuen Zahlen treten leise von unten ein.</p>
     <div class="demo" id="d-add"><div class="cell">1</div><div class="cell">9</div><div class="cell">6</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/drop_002.ogg', animAdd)"><span class="ms">play_arrow</span>A <small>· drop</small></button>
-      <button class="snd" onclick="fx('sounds/scroll_002.ogg', animAdd)"><span class="ms">play_arrow</span>B <small>· scroll</small></button>
+      <button class="snd" onclick="fx('sounds/scroll_002.ogg', animAdd)"><span class="ms">play_arrow</span>scroll <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
@@ -101,8 +97,7 @@
     sind — nicht zu übersehen. (Hier im Demo: die orangen Zellen antippen.)</p>
     <div class="demo" id="d-hint"><div class="cell">9</div><div class="cell">4</div><div class="cell">1</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/question_001.ogg', animHint)"><span class="ms">play_arrow</span>A <small>· question</small></button>
-      <button class="snd" onclick="fx('sounds/tick_002.ogg', animHint)"><span class="ms">play_arrow</span>B <small>· tick</small></button>
+      <button class="snd" onclick="fx('sounds/question_001.ogg', animHint)"><span class="ms">play_arrow</span>question <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
@@ -111,8 +106,7 @@
     <p>Knopf/Budget aufgebraucht: wird still grau — kein Alarm, kein Rot, kein Zittern.</p>
     <div class="demo" id="d-gray"><div class="cell">＋</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/minimize_001.ogg', animGray)"><span class="ms">play_arrow</span>A <small>· minimize</small></button>
-      <button class="snd" onclick="fx('sounds/bong_001.ogg', animGray)"><span class="ms">play_arrow</span>B <small>· bong</small></button>
+      <button class="snd" onclick="fx('sounds/minimize_001.ogg', animGray)"><span class="ms">play_arrow</span>minimize <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
@@ -121,8 +115,7 @@
     <p>Der eine laute Moment: Welle über die Zellen, kleiner Jubel — dann wieder Ruhe.</p>
     <div class="demo" id="d-win"><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/jingles_PIZZI10.ogg', animWin)"><span class="ms">play_arrow</span>A <small>· pizzicato</small></button>
-      <button class="snd" onclick="fx('sounds/jingles_STEEL04.ogg', animWin)"><span class="ms">play_arrow</span>B <small>· steeldrum</small></button>
+      <button class="snd" onclick="fx('sounds/jingles_PIZZI10.ogg', animWin)"><span class="ms">play_arrow</span>pizzicato <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
@@ -131,8 +124,7 @@
     <p>Abenteuer: das nächste Level öffnet sich mit einem kurzen Auftakt.</p>
     <div class="demo" id="d-lvl"><div class="cell">🔓</div></div>
     <div class="snds">
-      <button class="snd" onclick="fx('sounds/jingles_PIZZI00.ogg', animLvl)"><span class="ms">play_arrow</span>A <small>· auftakt</small></button>
-      <button class="snd" onclick="fx('sounds/jingles_PIZZI01.ogg', animLvl)"><span class="ms">play_arrow</span>B <small>· auftakt 2</small></button>
+      <button class="snd" onclick="fx('sounds/jingles_PIZZI01.ogg', animLvl)"><span class="ms">play_arrow</span>auftakt <small>· ✓ gewählt</small></button>
     </div>
   </div>
 
