@@ -335,6 +335,12 @@ opt-out-able in two taps:
   default to on (the disliked set is what's stored). All tracks off = silence,
   honestly. Pool: seven Kevin MacLeod tracks (CC BY 4.0). Track titles are
   proper names, never localized.
+- **Audition & now playing:** each jukebox row has a play button (works on
+  switched-off tracks too — hear before you judge); the previewed track keeps
+  playing as menu music. The row of the track currently on shows an indigo
+  equalizer and the jukebox summary names it (♪). Leaving a game **keeps its
+  track playing in the menus** instead of re-rolling — so the one that annoyed
+  you mid-game is still the one marked when you open settings.
 
 ### 10.2 Motion setting
 Animations come in three levels — **Voll / Reduziert / Aus** (full / reduced / off) —

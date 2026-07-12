@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuchsbau/fuchsbau.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../audio/audio_service.dart';
 import '../audio/music_tracks.dart';
 import 'settings.dart';
 
@@ -58,22 +59,10 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   // The jukebox (§10.1): switch single tracks off to shrink
                   // the rotation pool — the game still picks per level/board,
-                  // just from the tracks you like.
-                  ExpansionTile(
-                    leading: const Icon(Icons.queue_music_outlined),
-                    title: Text(l.jukeboxLabel),
-                    subtitle: Text(l.jukeboxOnOf(
-                        kMusicTracks.length - s.disabledTracks.length,
-                        kMusicTracks.length)),
-                    children: [
-                      for (final t in kMusicTracks)
-                        SwitchListTile(
-                          title: Text(t.title),
-                          value: !s.disabledTracks.contains(t.asset),
-                          onChanged: (v) => n.setTrackEnabled(t.asset, v),
-                        ),
-                    ],
-                  ),
+                  // just from the tracks you like. The play button auditions
+                  // a track (it keeps playing as menu music), and the
+                  // equalizer marks whichever track is on right now.
+                  const _JukeboxTile(),
                 ],
               ]),
               FuchsbauSectionHeader(l.sectionAppearance),
@@ -146,6 +135,52 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _JukeboxTile extends ConsumerWidget {
+  const _JukeboxTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final s = ref.watch(settingsProvider);
+    final n = ref.read(settingsProvider.notifier);
+    final playing = ref.watch(nowPlayingProvider);
+    final playingTitle = [
+      for (final t in kMusicTracks)
+        if (t.asset == playing) t.title,
+    ].firstOrNull;
+
+    final count = l.jukeboxOnOf(
+        kMusicTracks.length - s.disabledTracks.length, kMusicTracks.length);
+    return ExpansionTile(
+      leading: const Icon(Icons.queue_music_outlined),
+      title: Text(l.jukeboxLabel),
+      subtitle: Text(
+          playingTitle == null ? count : '$count · ♪ $playingTitle'),
+      children: [
+        for (final t in kMusicTracks)
+          SwitchListTile(
+            secondary: t.asset == playing
+                // Indigo = the active one; tapping restarts it, harmless.
+                ? IconButton(
+                    icon: Icon(Icons.graphic_eq, color: scheme.secondary),
+                    onPressed: () =>
+                        ref.read(audioServiceProvider).playPreview(t.asset),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    onPressed: () =>
+                        ref.read(audioServiceProvider).playPreview(t.asset),
+                  ),
+            title: Text(t.title),
+            value: !s.disabledTracks.contains(t.asset),
+            onChanged: (v) => n.setTrackEnabled(t.asset, v),
+          ),
+      ],
     );
   }
 }

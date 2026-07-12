@@ -59,6 +59,18 @@ final audioServiceProvider = Provider<AudioService>((ref) {
   return service;
 });
 
+/// The asset of the track audibly playing right now, null when silent —
+/// the jukebox marks it so a disliked track can be identified and
+/// switched off (§10.1).
+final nowPlayingProvider =
+    NotifierProvider<NowPlayingNotifier, String?>(NowPlayingNotifier.new);
+
+class NowPlayingNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void set(String? asset) => state = asset;
+}
+
 enum _MusicContext { none, menu, game }
 
 /// Two tracks (tablet feedback, 2026-07-12):
@@ -135,11 +147,28 @@ class AudioService with WidgetsBindingObserver {
     ];
   }
 
-  /// Menu = a random pool track, kept while browsing menus.
+  /// Menu music never interrupts: whatever already plays (game handoff,
+  /// settings preview) simply carries on — so the settings jukebox can
+  /// still name the track that annoyed you in-game. Only silence gets a
+  /// fresh random pool pick.
   Future<void> playMenuMusic() => _guard(() async {
         if (_context == _MusicContext.menu) return;
+        final keep = _track != null && _pool.contains(_track);
         _context = _MusicContext.menu;
+        _slot = null;
+        _seed = null;
+        if (keep) return; // already playing — leave it alone
         _track = _pick();
+        await _restart();
+      });
+
+  /// Jukebox audition (§10.1): play [asset] right now as the menu track —
+  /// even one that's switched off. Leaving settings keeps it playing.
+  Future<void> playPreview(String asset) => _guard(() async {
+        _context = _MusicContext.menu;
+        _slot = null;
+        _seed = null;
+        _track = asset;
         await _restart();
       });
 
@@ -177,9 +206,11 @@ class AudioService with WidgetsBindingObserver {
     final settings = ref.read(settingsProvider);
     final track = _track;
     if (!settings.musicOn || track == null || _context == _MusicContext.none) {
+      ref.read(nowPlayingProvider.notifier).set(null);
       return;
     }
     await _music.play(AssetSource(track), volume: settings.musicVolume);
+    ref.read(nowPlayingProvider.notifier).set(track);
   }
 
   Future<void> stopMusic() => _guard(() async {
@@ -188,6 +219,7 @@ class AudioService with WidgetsBindingObserver {
         _slot = null;
         _seed = null;
         await _music.stop();
+        ref.read(nowPlayingProvider.notifier).set(null);
       });
 
   @override
@@ -197,7 +229,10 @@ class AudioService with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
-      _guard(_music.stop);
+      _guard(() async {
+        await _music.stop();
+        ref.read(nowPlayingProvider.notifier).set(null);
+      });
     } else if (state == AppLifecycleState.resumed) {
       _guard(_restart);
     }
