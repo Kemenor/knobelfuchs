@@ -13,6 +13,7 @@ class KnobelfuchsApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: fuchsbauTheme(Brightness.light, font: settings.font),
       darkTheme: fuchsbauTheme(Brightness.dark, font: settings.font),

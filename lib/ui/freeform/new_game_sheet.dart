@@ -89,9 +89,11 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final insets = MediaQuery.of(context).viewInsets.bottom;
+    final insets = MediaQuery.viewInsetsOf(context).bottom; // keyboard
+    // System navigation bar (3-button nav swallowed the scan button).
+    final safe = MediaQuery.viewPaddingOf(context).bottom;
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + insets),
+      padding: EdgeInsets.fromLTRB(24, 12, 24, 16 + insets + safe),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
