@@ -35,6 +35,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ref
             .read(audioServiceProvider)
             .playGameMusic(slot: view.slot, seed: view.config.seed);
+        // A resumed run that already ended greets with its result again —
+        // otherwise it's just a dead board with no way to "Nochmal".
+        if (view.status != GameStatus.playing && !_endShown) {
+          _endShown = true;
+          showRunEndDialog(context, ref).then((_) => _endShown = false);
+        }
       }
     });
   }
