@@ -1,0 +1,11 @@
+# App icon: the sudoku fox (assets/FoxWithSudoku.png, green chroma-keyed out)
+# on the fuchsbau triad emerald. Variants live in assets/icon/ — to switch,
+# change image_path + adaptive_icon_background and re-run:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/icon_full_emerald.png
+  adaptive_icon_background: "#1FA85D"
+  adaptive_icon_foreground: assets/icon/icon_foreground.png
+  remove_alpha_ios: true
