@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knobelfuchs — Zahlen knobeln, in Ruhe</title>
+  <meta name="description" content="Ein ruhiges Zahlen-Puzzle ohne Werbung, ohne Zeitdruck, ohne Verlieren. Tages-Knobel, 50 Abenteuer-Level und QR-Herausforderungen — alles offline.">
+  <meta property="og:title" content="Knobelfuchs">
+  <meta property="og:description" content="Zahlen knobeln, in Ruhe. Ohne Werbung, ohne Zeitdruck — alles offline.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://knobelfuchs.fuchsnest.ch">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦊</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#faf7f4; --card:#fff; --ink:#221d1a; --muted:#7a6f68; --line:#ece4dd;
+      --orange:#ea7a24; --orange-soft:#f0883e; --indigo:#8559d0; --emerald:#1fa85d;
+      --ghost:#c9beb5;
+      --sh:0 24px 60px -34px rgba(0,0,0,.45); --fab:0 8px 18px -8px rgba(234,122,36,.55);
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#161311; --card:#211c19; --ink:#f3ede9; --muted:#a99e96; --line:#322a25;
+        --orange:#f39c4e; --orange-soft:#f3a55f; --indigo:#a98cee; --emerald:#37ce78;
+        --ghost:#54493f;
+        --sh:0 24px 60px -30px rgba(0,0,0,.8); --fab:0 8px 20px -8px rgba(243,156,78,.5);
+      }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:var(--ink);line-height:1.6;
+      background:radial-gradient(1100px 520px at 78% -8%, rgba(234,122,36,.13), transparent 60%) var(--bg);}
+    .ms{font-family:'Material Symbols Rounded';line-height:1;font-variation-settings:'opsz' 24,'wght' 400,'GRAD' 0,'FILL' 0;flex:none}
+    .ms.fill{font-variation-settings:'FILL' 1}
+    .wrap{max-width:1060px;margin:0 auto;padding:28px 22px}
+
+    nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;letter-spacing:-.02em}
+    .brand .fox{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:19px;
+      background:linear-gradient(150deg,var(--orange-soft),var(--orange));box-shadow:var(--fab)}
+    .ghbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-weight:700;font-size:.9rem;
+      color:var(--ink);border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:11px}
+
+    .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;padding:30px 0 50px}
+    @media(max-width:820px){.hero{grid-template-columns:1fr;gap:30px;text-align:center}}
+    .badge{display:inline-block;font-size:.78rem;font-weight:700;color:var(--orange);
+      background:color-mix(in srgb,var(--orange) 13%,transparent);border:1px solid color-mix(in srgb,var(--orange) 26%,transparent);
+      padding:4px 12px;border-radius:999px;margin-bottom:18px}
+    h1{font-size:2.7rem;line-height:1.08;letter-spacing:-.03em;margin:0 0 14px}
+    h1 .accent{color:var(--orange)}
+    .lead{font-size:1.12rem;color:var(--muted);margin:0 0 24px;max-width:36ch}
+    @media(max-width:820px){.lead{margin-inline:auto}}
+    .cta{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;
+      color:#fff;background:var(--orange);padding:13px 22px;border-radius:13px;box-shadow:var(--fab)}
+    @media (prefers-color-scheme: dark){.cta{color:#1a1411}}
+
+    /* board vignette */
+    .boardwrap{display:flex;justify-content:center}
+    .board{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--sh)}
+    .bhead{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 12px;font-size:.82rem;color:var(--muted);font-weight:700}
+    .bhead b{color:var(--ink);font-size:1.05rem}
+    .grid{display:grid;grid-template-columns:repeat(9,34px);gap:5px}
+    .cell{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+      font-weight:800;font-size:1rem;background:var(--bg);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+    .cell.ghost{color:var(--ghost);background:transparent;text-decoration:line-through;border-style:dashed}
+    .cell.sel{background:var(--indigo);border-color:var(--indigo);color:#fff}
+    .cell.hint{background:color-mix(in srgb,var(--orange) 18%,transparent);border-color:var(--orange);color:var(--orange)}
+    .cell.won{background:color-mix(in srgb,var(--emerald) 16%,transparent);border-color:var(--emerald);color:var(--emerald)}
+    @media (prefers-color-scheme: dark){.cell.sel{color:#1a1411}}
+    .bfoot{display:flex;gap:8px;margin-top:14px;justify-content:center}
+    .abtn{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700;color:var(--muted);
+      border:1px solid var(--line);border-radius:999px;padding:6px 13px}
+    .abtn .ms{font-size:16px}
+
+    .section-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700;text-align:center;margin:20px 0 6px}
+    .section-sub{text-align:center;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:0 0 28px}
+    .ideas{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding-bottom:20px}
+    @media(max-width:680px){.ideas{grid-template-columns:1fr}}
+    .idea{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+    .idea .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin-bottom:12px;color:#fff}
+    @media (prefers-color-scheme: dark){.idea .ic{color:#1a1411}}
+    .idea h3{margin:0 0 6px;font-size:1.05rem}
+    .idea p{margin:0;color:var(--muted);font-size:.95rem}
+
+    footer{border-top:1px solid var(--line);margin-top:24px;padding:26px 0 10px;text-align:center;color:var(--muted);font-size:.9rem}
+    footer a{color:inherit}
+    .priv{max-width:56ch;margin:0 auto 16px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="brand"><span class="fox">🦊</span> Knobelfuchs</div>
+    <a class="ghbtn" href="https://github.com/Kemenor/knobelfuchs"><span class="ms" style="font-size:18px">code</span> GitHub</a>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <span class="badge">🚧 In Entwicklung</span>
+      <h1>Zahlen knobeln, <span class="accent">in Ruhe</span>.</h1>
+      <p class="lead">Streiche Zahlenpaare weg, bis das Brett leer ist — gleiche Zahlen oder Summe zehn. Kein Zeitdruck, keine Werbung, kein Verlieren. Alles offline.</p>
+      <a class="cta" href="https://github.com/Kemenor/knobelfuchs">Auf GitHub mitverfolgen <span class="ms" style="font-size:19px">arrow_forward</span></a>
+    </div>
+    <div class="boardwrap">
+      <div class="board">
+        <div class="bhead"><span><b>Tages-Knobel</b></span><span>Punkte 240 · Ziel 610</span></div>
+        <div class="grid">
+          <div class="cell">7</div><div class="cell ghost">3</div><div class="cell">1</div><div class="cell won">9</div><div class="cell won">1</div><div class="cell">4</div><div class="cell ghost">5</div><div class="cell">2</div><div class="cell">8</div>
+          <div class="cell ghost">6</div><div class="cell">3</div><div class="cell sel">5</div><div class="cell">2</div><div class="cell ghost">8</div><div class="cell">9</div><div class="cell">6</div><div class="cell ghost">1</div><div class="cell">4</div>
+          <div class="cell">2</div><div class="cell hint">7</div><div class="cell">4</div><div class="cell ghost">9</div><div class="cell">6</div><div class="cell hint">3</div><div class="cell">8</div><div class="cell">5</div><div class="cell ghost">2</div>
+          <div class="cell">9</div><div class="cell">1</div><div class="cell">8</div><div class="cell">6</div><div class="cell">7</div><div class="cell">3</div><div class="cell">5</div><div class="cell">4</div><div class="cell">2</div>
+        </div>
+        <div class="bfoot">
+          <span class="abtn"><span class="ms">add</span> Nachlegen 3</span>
+          <span class="abtn"><span class="ms">lightbulb</span> Tipp 2</span>
+          <span class="abtn"><span class="ms">undo</span> Zurück</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="section-title">Die Idee</p>
+  <h2 class="section-sub">Das Puzzle, das du kennst — ohne alles, was nervt.</h2>
+  <div class="ideas">
+    <div class="idea"><div class="ic" style="background:var(--orange)"><span class="ms fill">calendar_month</span></div>
+      <h3>Drei Modi</h3>
+      <p>Freies Spiel mit eigenen Regeln, der Tages-Knobel (jeden Tag ein Brett — dasselbe für alle, verpasste Tage warten geduldig) und ein Abenteuer mit 50 Leveln.</p></div>
+    <div class="idea"><div class="ic" style="background:var(--emerald)"><span class="ms">spa</span></div>
+      <h3>Ohne Druck</h3>
+      <p>Kein Timer, kein Verlieren, keine Werbung zwischen den Zügen. Tipps kosten keine Punkte, und Zurück nimmt jeden Zug zurück — so weit du willst.</p></div>
+    <div class="idea"><div class="ic" style="background:var(--indigo)"><span class="ms fill">qr_code_2</span></div>
+      <h3>Herausfordern</h3>
+      <p>Gleiches Brett, gleiche Regeln, dein Punktestand als Ziel — als QR-Code oder Link geteilt. Ganz ohne Konto und ohne Server.</p></div>
+    <div class="idea"><div class="ic" style="background:var(--orange)"><span class="ms fill">visibility</span></div>
+      <h3>Für alle Augen</h3>
+      <p>Dunkel und hell, Textgrösse bis 200 %, Schriften für Legasthenie und schwache Augen — und die Zahlen sind sowieso gross.</p></div>
+  </div>
+
+  <footer>
+    <p class="priv">Alles offline — keine Konten, keine Analyse, kein Server, keine Werbung, keine Käufe. Teil der <a href="https://fuchsnest.ch">Fuchsnest-Familie</a>.</p>
+    <p><a href="https://knobelfuchs.fuchsnest.ch">knobelfuchs.fuchsnest.ch</a> · <a href="https://github.com/Kemenor/knobelfuchs">Quellcode</a> · <a href="https://github.com/Kemenor/knobelfuchs/tree/main/examples/ui">Mockups</a></p>
+  </footer>
+</div>
+</body>
+</html>
