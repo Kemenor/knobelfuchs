@@ -56,17 +56,23 @@ class SettingsScreen extends ConsumerWidget {
                     value: s.musicVolume,
                     onChanged: n.setMusicVolume,
                   ),
-                  // The jukebox (§10.1): pin one track everywhere, or let
-                  // the game keep choosing per level/board.
-                  FuchsbauChoicePicker<String?>(
-                    icon: Icons.queue_music_outlined,
-                    title: l.jukeboxLabel,
-                    value: s.musicTrack,
-                    options: {
-                      null: l.jukeboxAuto,
-                      for (final t in kMusicTracks) t.asset: t.title,
-                    },
-                    onChanged: n.setMusicTrack,
+                  // The jukebox (§10.1): switch single tracks off to shrink
+                  // the rotation pool — the game still picks per level/board,
+                  // just from the tracks you like.
+                  ExpansionTile(
+                    leading: const Icon(Icons.queue_music_outlined),
+                    title: Text(l.jukeboxLabel),
+                    subtitle: Text(l.jukeboxOnOf(
+                        kMusicTracks.length - s.disabledTracks.length,
+                        kMusicTracks.length)),
+                    children: [
+                      for (final t in kMusicTracks)
+                        SwitchListTile(
+                          title: Text(t.title),
+                          value: !s.disabledTracks.contains(t.asset),
+                          onChanged: (v) => n.setTrackEnabled(t.asset, v),
+                        ),
+                    ],
                   ),
                 ],
               ]),

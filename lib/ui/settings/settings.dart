@@ -13,7 +13,10 @@ class Settings {
   final double effectsVolume; // 0..1, default 80 %
   final bool musicOn; // default on (grilling Q13)
   final double musicVolume; // 0..1, default 45 %
-  final String? musicTrack; // jukebox: pinned track asset, null = auto
+
+  /// Jukebox (§10.1): tracks the player has switched OFF (asset paths).
+  /// Stored as the disliked set so newly added tracks default to on.
+  final Set<String> disabledTracks;
   final MotionMode? motion; // null = follow OS
   final ThemeMode themeMode;
   final FuchsbauFont font;
@@ -24,7 +27,7 @@ class Settings {
     this.effectsVolume = .8,
     this.musicOn = true,
     this.musicVolume = .45,
-    this.musicTrack,
+    this.disabledTracks = const {},
     this.motion,
     this.themeMode = ThemeMode.system,
     this.font = FuchsbauFont.figtree,
@@ -36,7 +39,7 @@ class Settings {
     double? effectsVolume,
     bool? musicOn,
     double? musicVolume,
-    String? Function()? musicTrack,
+    Set<String>? disabledTracks,
     MotionMode? Function()? motion,
     ThemeMode? themeMode,
     FuchsbauFont? font,
@@ -47,7 +50,7 @@ class Settings {
         effectsVolume: effectsVolume ?? this.effectsVolume,
         musicOn: musicOn ?? this.musicOn,
         musicVolume: musicVolume ?? this.musicVolume,
-        musicTrack: musicTrack != null ? musicTrack() : this.musicTrack,
+        disabledTracks: disabledTracks ?? this.disabledTracks,
         motion: motion != null ? motion() : this.motion,
         themeMode: themeMode ?? this.themeMode,
         font: font ?? this.font,
@@ -82,14 +85,16 @@ class SettingsNotifier extends Notifier<Settings> {
     if (m != null) {
       motion = MotionMode.values.asNameMap()[m];
     }
-    // A pinned track that left the pool falls back to auto silently.
-    final track = p.getString('music_track');
+    // A disliked track that left the pool is silently forgotten.
+    final known = {for (final t in kMusicTracks) t.asset};
+    final off = (p.getStringList('music_off') ?? const [])
+        .where(known.contains)
+        .toSet();
     return Settings(
       effectsVolume: p.getDouble('fx_vol') ?? .8,
       musicOn: p.getBool('music_on') ?? true,
       musicVolume: p.getDouble('music_vol') ?? .45,
-      musicTrack:
-          kMusicTracks.any((t) => t.asset == track) ? track : null,
+      disabledTracks: off,
       motion: motion,
       themeMode:
           ThemeMode.values.asNameMap()[p.getString('theme') ?? ''] ??
@@ -116,13 +121,15 @@ class SettingsNotifier extends Notifier<Settings> {
     _prefs.setDouble('music_vol', v);
   }
 
-  void setMusicTrack(String? asset) {
-    state = state.copyWith(musicTrack: () => asset);
-    if (asset == null) {
-      _prefs.remove('music_track');
+  void setTrackEnabled(String asset, bool enabled) {
+    final off = {...state.disabledTracks};
+    if (enabled) {
+      off.remove(asset);
     } else {
-      _prefs.setString('music_track', asset);
+      off.add(asset);
     }
+    state = state.copyWith(disabledTracks: off);
+    _prefs.setStringList('music_off', off.toList());
   }
 
   void setMotion(MotionMode? v) {

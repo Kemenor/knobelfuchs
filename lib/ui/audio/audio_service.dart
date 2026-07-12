@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,9 +33,6 @@ const Map<SoundEvent, String> _soundFiles = {
   SoundEvent.levelUnlocked: 'sounds/jingles_PIZZI01.ogg',
 };
 
-/// Background music pool (§10.1) — see music_tracks.dart (shared with the
-/// settings jukebox picker).
-final List<String> _musicTracks = [for (final t in kMusicTracks) t.asset];
 
 /// Neither track ever fights the other (or other apps) for audio focus —
 /// that was the bug where a match SFX silenced the music. iOS `ambient`
@@ -74,6 +72,9 @@ class AudioService with WidgetsBindingObserver {
   final AudioPlayer _music = AudioPlayer();
   _MusicContext _context = _MusicContext.none;
   String? _track;
+  // The current game's identity — kept so the track can be re-derived when
+  // the jukebox pool changes mid-game.
+  String? _slot, _seed;
 
   AudioService(this.ref) {
     // Sound is decoration: NOTHING here may ever throw into gameplay.
@@ -90,8 +91,14 @@ class AudioService with WidgetsBindingObserver {
         await _music.setVolume(next.musicVolume);
         if (prev?.musicOn == true && !next.musicOn) await _music.stop();
         if (prev?.musicOn == false && next.musicOn) await _restart();
-        // Jukebox: a new pin (or unpinning) takes effect immediately.
-        if (prev != null && prev.musicTrack != next.musicTrack) {
+        // Jukebox: if the playing track was switched off (or the pool was
+        // empty and a track came back), re-pick. A pool change that leaves
+        // the current track alone never interrupts it.
+        if (prev != null &&
+            !setEquals(prev.disabledTracks, next.disabledTracks) &&
+            _context != _MusicContext.none &&
+            (_track == null || !_pool.contains(_track))) {
+          _track = _pick();
           await _restart();
         }
       });
@@ -118,37 +125,57 @@ class AudioService with WidgetsBindingObserver {
             volume: settings.effectsVolume);
       });
 
-  /// Menu = the jukebox: a random pool track, kept while browsing menus.
+  /// The jukebox pool (§10.1): every track the player hasn't switched off,
+  /// in canonical order. May be empty — then no music plays.
+  List<String> get _pool {
+    final off = ref.read(settingsProvider).disabledTracks;
+    return [
+      for (final t in kMusicTracks)
+        if (!off.contains(t.asset)) t.asset,
+    ];
+  }
+
+  /// Menu = a random pool track, kept while browsing menus.
   Future<void> playMenuMusic() => _guard(() async {
         if (_context == _MusicContext.menu) return;
         _context = _MusicContext.menu;
-        _track = _musicTracks[Random().nextInt(_musicTracks.length)];
+        _track = _pick();
         await _restart();
       });
 
   /// A game picks its own track: fixed per adventure level, seed-rotated
-  /// for free/daily (§10.1).
+  /// for free/daily (§10.1) — always within the jukebox pool.
   Future<void> playGameMusic({required String slot, required String seed}) =>
       _guard(() async {
         _context = _MusicContext.game;
-        _track = _trackFor(slot, seed);
+        _slot = slot;
+        _seed = seed;
+        _track = _pick();
         await _restart();
       });
 
-  String _trackFor(String slot, String seed) {
-    if (slot.startsWith('level:')) {
-      final level = int.tryParse(slot.substring('level:'.length)) ?? 1;
-      return _musicTracks[(level - 1) % _musicTracks.length];
+  String? _pick() {
+    final pool = _pool;
+    if (pool.isEmpty) return null;
+    switch (_context) {
+      case _MusicContext.menu:
+        return pool[Random().nextInt(pool.length)];
+      case _MusicContext.game:
+        final slot = _slot, seed = _seed;
+        if (slot != null && slot.startsWith('level:')) {
+          final level = int.tryParse(slot.substring('level:'.length)) ?? 1;
+          return pool[(level - 1) % pool.length];
+        }
+        return pool[seedHash(seed ?? '').abs() % pool.length];
+      case _MusicContext.none:
+        return null;
     }
-    return _musicTracks[seedHash(seed).abs() % _musicTracks.length];
   }
 
   Future<void> _restart() async {
     await _music.stop();
     final settings = ref.read(settingsProvider);
-    // The jukebox pin wins everywhere — menu, game, resume, toggle-on.
-    // `_track` keeps the auto pick, so unpinning falls back gracefully.
-    final track = settings.musicTrack ?? _track;
+    final track = _track;
     if (!settings.musicOn || track == null || _context == _MusicContext.none) {
       return;
     }
@@ -158,6 +185,8 @@ class AudioService with WidgetsBindingObserver {
   Future<void> stopMusic() => _guard(() async {
         _context = _MusicContext.none;
         _track = null;
+        _slot = null;
+        _seed = null;
         await _music.stop();
       });
 

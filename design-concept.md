@@ -329,10 +329,12 @@ opt-out-able in two taps:
 - **Free Form & Daily:** the whole pool rotates.
 - Music plays **only during a game in the foreground** — never from the background,
   never as a lure. Volume separate from effects; on/off in settings.
-- **Jukebox** (shipped 2026-07-12): settings offer a track picker — **Auto**
-  keeps the per-level/per-board choice above; pinning a track plays it
-  everywhere (menu and game) until unpinned. Pool: seven Kevin MacLeod
-  tracks (CC BY 4.0). Track titles are proper names, never localized.
+- **Jukebox** (shipped 2026-07-12): settings list every track with an on/off
+  switch — dislike a track and the rotation simply skips it. The per-level /
+  per-board selection above always draws from the *enabled* pool; new tracks
+  default to on (the disliked set is what's stored). All tracks off = silence,
+  honestly. Pool: seven Kevin MacLeod tracks (CC BY 4.0). Track titles are
+  proper names, never localized.
 
 ### 10.2 Motion setting
 Animations come in three levels — **Voll / Reduziert / Aus** (full / reduced / off) —

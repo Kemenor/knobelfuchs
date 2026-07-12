@@ -21,7 +21,7 @@
   "musicLabel": "Hintergrundmusik",
   "musicVolumeLabel": "Musik-Lautstärke",
   "jukeboxLabel": "Musiktitel",
-  "jukeboxAuto": "Auto — wechselt je Level und Brett",
+  "jukeboxOnOf": "{on} von {total} an",
   "motionLabel": "Animationen",
   "motionSub": "«Auto» folgt der System-Einstellung",
   "motionAuto": "Auto",

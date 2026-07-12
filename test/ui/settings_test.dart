@@ -18,31 +18,42 @@ void main() {
   }
 
   group('jukebox (§10.1)', () {
-    test('defaults to auto', () async {
+    test('every track starts enabled', () async {
       final c = await containerWith({});
-      expect(c.read(settingsProvider).musicTrack, isNull);
+      expect(c.read(settingsProvider).disabledTracks, isEmpty);
     });
 
-    test('a pinned track is stored and read back', () async {
+    test('switched-off tracks are stored and read back', () async {
       final c = await containerWith({});
-      final pin = kMusicTracks[3].asset;
-      c.read(settingsProvider.notifier).setMusicTrack(pin);
-      expect(c.read(settingsProvider).musicTrack, pin);
+      final n = c.read(settingsProvider.notifier);
+      n.setTrackEnabled(kMusicTracks[1].asset, false);
+      n.setTrackEnabled(kMusicTracks[4].asset, false);
+      expect(c.read(settingsProvider).disabledTracks,
+          {kMusicTracks[1].asset, kMusicTracks[4].asset});
 
-      // Fresh container over the same prefs = app restart.
-      final c2 = await containerWith({'music_track': pin});
-      expect(c2.read(settingsProvider).musicTrack, pin);
+      // Fresh container over the same stored list = app restart.
+      final c2 = await containerWith({
+        'music_off': [kMusicTracks[1].asset, kMusicTracks[4].asset],
+      });
+      expect(c2.read(settingsProvider).disabledTracks,
+          {kMusicTracks[1].asset, kMusicTracks[4].asset});
     });
 
-    test('unpinning removes the stored key', () async {
-      final c = await containerWith({'music_track': kMusicTracks[0].asset});
-      c.read(settingsProvider.notifier).setMusicTrack(null);
-      expect(c.read(settingsProvider).musicTrack, isNull);
+    test('switching a track back on removes it from the set', () async {
+      final c = await containerWith({
+        'music_off': [kMusicTracks[0].asset],
+      });
+      c.read(settingsProvider.notifier)
+          .setTrackEnabled(kMusicTracks[0].asset, true);
+      expect(c.read(settingsProvider).disabledTracks, isEmpty);
     });
 
-    test('a pinned track that left the pool falls back to auto', () async {
-      final c = await containerWith({'music_track': 'music/removed.mp3'});
-      expect(c.read(settingsProvider).musicTrack, isNull);
+    test('a disliked track that left the pool is forgotten', () async {
+      final c = await containerWith({
+        'music_off': ['music/removed.mp3', kMusicTracks[2].asset],
+      });
+      expect(c.read(settingsProvider).disabledTracks,
+          {kMusicTracks[2].asset});
     });
   });
 }
