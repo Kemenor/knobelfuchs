@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/seed.dart';
 import '../settings/settings.dart';
+import 'music_tracks.dart';
 
 /// Concept §10: every sound answers the player's action, never lures.
 /// The file mapping is the frozen family canon (2026-07).
@@ -31,12 +32,9 @@ const Map<SoundEvent, String> _soundFiles = {
   SoundEvent.levelUnlocked: 'sounds/jingles_PIZZI01.ogg',
 };
 
-/// Background music pool (§10.1) — Kevin MacLeod, CC BY 4.0.
-const List<String> _musicTracks = [
-  'music/wholesome.mp3',
-  'music/deliberate-thought.mp3',
-  'music/porch-swing-days.mp3',
-];
+/// Background music pool (§10.1) — see music_tracks.dart (shared with the
+/// settings jukebox picker).
+final List<String> _musicTracks = [for (final t in kMusicTracks) t.asset];
 
 /// Neither track ever fights the other (or other apps) for audio focus —
 /// that was the bug where a match SFX silenced the music. iOS `ambient`
@@ -92,6 +90,10 @@ class AudioService with WidgetsBindingObserver {
         await _music.setVolume(next.musicVolume);
         if (prev?.musicOn == true && !next.musicOn) await _music.stop();
         if (prev?.musicOn == false && next.musicOn) await _restart();
+        // Jukebox: a new pin (or unpinning) takes effect immediately.
+        if (prev != null && prev.musicTrack != next.musicTrack) {
+          await _restart();
+        }
       });
     });
   }
@@ -144,7 +146,9 @@ class AudioService with WidgetsBindingObserver {
   Future<void> _restart() async {
     await _music.stop();
     final settings = ref.read(settingsProvider);
-    final track = _track;
+    // The jukebox pin wins everywhere — menu, game, resume, toggle-on.
+    // `_track` keeps the auto pick, so unpinning falls back gracefully.
+    final track = settings.musicTrack ?? _track;
     if (!settings.musicOn || track == null || _context == _MusicContext.none) {
       return;
     }

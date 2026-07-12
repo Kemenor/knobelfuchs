@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuchsbau/fuchsbau.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../audio/music_tracks.dart';
 import 'settings.dart';
 
 const String kAppVersion = '0.1';
@@ -48,23 +49,26 @@ class SettingsScreen extends ConsumerWidget {
                   value: s.musicOn,
                   onChanged: n.setMusicOn,
                 ),
-                if (s.musicOn)
+                if (s.musicOn) ...[
                   _SliderRow(
                     icon: Icons.graphic_eq,
                     label: l.musicVolumeLabel,
                     value: s.musicVolume,
                     onChanged: n.setMusicVolume,
                   ),
-                ListTile(
-                  contentPadding: fuchsbauCardRowPadding,
-                  leading: const Icon(Icons.queue_music_outlined),
-                  title: Text(
-                    l.jukeboxLater,
-                    style: TextStyle(
-                        fontSize: 13, color: scheme.onSurfaceVariant),
+                  // The jukebox (§10.1): pin one track everywhere, or let
+                  // the game keep choosing per level/board.
+                  FuchsbauChoicePicker<String?>(
+                    icon: Icons.queue_music_outlined,
+                    title: l.jukeboxLabel,
+                    value: s.musicTrack,
+                    options: {
+                      null: l.jukeboxAuto,
+                      for (final t in kMusicTracks) t.asset: t.title,
+                    },
+                    onChanged: n.setMusicTrack,
                   ),
-                  dense: true,
-                ),
+                ],
               ]),
               FuchsbauSectionHeader(l.sectionAppearance),
               FuchsbauSettingsCard(children: [

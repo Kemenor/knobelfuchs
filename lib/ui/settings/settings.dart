@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuchsbau/fuchsbau.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../audio/music_tracks.dart';
+
 /// Motion levels (concept §10.2). `null` in [Settings.motion] = follow the
 /// OS reduce-motion preference.
 enum MotionMode { full, reduced, off }
@@ -11,6 +13,7 @@ class Settings {
   final double effectsVolume; // 0..1, default 80 %
   final bool musicOn; // default on (grilling Q13)
   final double musicVolume; // 0..1, default 45 %
+  final String? musicTrack; // jukebox: pinned track asset, null = auto
   final MotionMode? motion; // null = follow OS
   final ThemeMode themeMode;
   final FuchsbauFont font;
@@ -21,6 +24,7 @@ class Settings {
     this.effectsVolume = .8,
     this.musicOn = true,
     this.musicVolume = .45,
+    this.musicTrack,
     this.motion,
     this.themeMode = ThemeMode.system,
     this.font = FuchsbauFont.figtree,
@@ -32,6 +36,7 @@ class Settings {
     double? effectsVolume,
     bool? musicOn,
     double? musicVolume,
+    String? Function()? musicTrack,
     MotionMode? Function()? motion,
     ThemeMode? themeMode,
     FuchsbauFont? font,
@@ -42,6 +47,7 @@ class Settings {
         effectsVolume: effectsVolume ?? this.effectsVolume,
         musicOn: musicOn ?? this.musicOn,
         musicVolume: musicVolume ?? this.musicVolume,
+        musicTrack: musicTrack != null ? musicTrack() : this.musicTrack,
         motion: motion != null ? motion() : this.motion,
         themeMode: themeMode ?? this.themeMode,
         font: font ?? this.font,
@@ -76,10 +82,14 @@ class SettingsNotifier extends Notifier<Settings> {
     if (m != null) {
       motion = MotionMode.values.asNameMap()[m];
     }
+    // A pinned track that left the pool falls back to auto silently.
+    final track = p.getString('music_track');
     return Settings(
       effectsVolume: p.getDouble('fx_vol') ?? .8,
       musicOn: p.getBool('music_on') ?? true,
       musicVolume: p.getDouble('music_vol') ?? .45,
+      musicTrack:
+          kMusicTracks.any((t) => t.asset == track) ? track : null,
       motion: motion,
       themeMode:
           ThemeMode.values.asNameMap()[p.getString('theme') ?? ''] ??
@@ -104,6 +114,15 @@ class SettingsNotifier extends Notifier<Settings> {
   void setMusicVolume(double v) {
     state = state.copyWith(musicVolume: v);
     _prefs.setDouble('music_vol', v);
+  }
+
+  void setMusicTrack(String? asset) {
+    state = state.copyWith(musicTrack: () => asset);
+    if (asset == null) {
+      _prefs.remove('music_track');
+    } else {
+      _prefs.setString('music_track', asset);
+    }
   }
 
   void setMotion(MotionMode? v) {

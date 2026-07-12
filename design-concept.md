@@ -329,7 +329,10 @@ opt-out-able in two taps:
 - **Free Form & Daily:** the whole pool rotates.
 - Music plays **only during a game in the foreground** — never from the background,
   never as a lure. Volume separate from effects; on/off in settings.
-- **Jukebox (picking specific tracks) is post-v1** — v1 chooses for you.
+- **Jukebox** (shipped 2026-07-12): settings offer a track picker — **Auto**
+  keeps the per-level/per-board choice above; pinning a track plays it
+  everywhere (menu and game) until unpinned. Pool: seven Kevin MacLeod
+  tracks (CC BY 4.0). Track titles are proper names, never localized.
 
 ### 10.2 Motion setting
 Animations come in three levels — **Voll / Reduziert / Aus** (full / reduced / off) —
@@ -396,5 +399,6 @@ with normalization + FNV-1a · daily epoch 2026-07-01 · Swiss German · home-ca
 semantics · scroll policy · hint/selection layering.
 
 **Deferred (v2 candidates):** difficulty setting (target-factor shift) · Free Form
-multi-slot · lifetime statistics page · jukebox track picker · https App/Universal
+multi-slot · lifetime statistics page · https App/Universal
 Links under fuchsnest.ch · seed-word wordlist for prettier random seeds.
+(The jukebox track picker shipped 2026-07-12 — §10.1.)

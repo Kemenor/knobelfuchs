@@ -29,6 +29,10 @@ $u = 'https://incompetech.com/music/royalty-free/mp3-royaltyfree'
 Invoke-WebRequest "$u/Wholesome.mp3" -OutFile music/wholesome.mp3
 Invoke-WebRequest "$u/Deliberate%20Thought.mp3" -OutFile music/deliberate-thought.mp3
 Invoke-WebRequest "$u/Porch%20Swing%20Days%20-%20slower.mp3" -OutFile music/porch-swing-days.mp3
+Invoke-WebRequest "$u/Carefree.mp3" -OutFile music/carefree.mp3
+Invoke-WebRequest "$u/Bossa%20Antigua.mp3" -OutFile music/bossa-antigua.mp3
+Invoke-WebRequest "$u/George%20Street%20Shuffle.mp3" -OutFile music/george-street-shuffle.mp3
+Invoke-WebRequest "$u/Wallpaper.mp3" -OutFile music/wallpaper.mp3
 ```
 
 Terminology in the mockups (l10n keys later): *Nachlegen* = add rows · *Tipp* = hint ·
