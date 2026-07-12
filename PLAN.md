@@ -25,7 +25,7 @@ semantics; this plan wins for implementation.
 | Persistence | **drift / SQLite** — saved runs (board + undo log; Free Form/Story one each, Daily **one per date** so half-finished days survive), daily-knobel history, story progress, lifetime stats; with migrations |
 | Seeds & RNG | **Seeded PRNG in the domain core** (injected, deterministic) — same seed ⇒ identical board on every device. Daily seed = local date; targets from the deterministic baseline bot (concept §4.1) |
 | QR sharing | `qr_flutter` (render) + `mobile_scanner` (scan — knabberfuchs precedent). Free-Form challenge payload only; later phase |
-| Audio | **`audioplayers`** (low-latency mode) for action-response sounds (concept §10). Assets: Kenney **CC0** packs, bundled; settings toggle + silent-mode respected; no background music |
+| Audio | **`audioplayers`** — low-latency mode for action-response sounds, a looping player for background music (concept §10). Sounds: Kenney **CC0**, bundled. Music: Kevin MacLeod **CC BY 4.0** (credited in About); mp3s are **not in git** (too heavy — `examples/ui/README.md` has the re-fetch commands); bundled into the app at build time. Jukebox track picker = post-v1 |
 | Design | **Material 3**, Fuchsbau triad & fonts via the [fuchsbau package](https://github.com/Kemenor/fuchsbau); deviations in [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
 | Layout | **Tablet-first, responsive** — Xiaomi Pad 5 (11″, 2560×1600) is the reference device, portrait *and* landscape; phones supported by the same adaptive layout |
 | Networking | **None.** Fully on-device, no runtime keys |

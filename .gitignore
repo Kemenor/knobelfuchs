@@ -27,6 +27,9 @@ lib/l10n/app_localizations*.dart
 play-store-key.json
 *.env
 
+# Music audition files — too heavy for git; see examples/ui/README.md to re-fetch
+examples/ui/music/*.mp3
+
 # OS
 .DS_Store
 

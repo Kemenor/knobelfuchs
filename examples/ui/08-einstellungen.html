@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knobelfuchs — Einstellungen</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+  :root{--bg:#faf7f4;--card:#fff;--ink:#221d1a;--muted:#7a6f68;--line:#ece4dd;
+    --orange:#ea7a24;--emerald:#1fa85d;--indigo:#8559d0;--faded:#a8988c;--amber:#e0a33b;
+    --sh:0 12px 30px -24px rgba(0,0,0,.4);}
+  body.dark{--bg:#161311;--card:#211c19;--ink:#f3ede9;--muted:#a99e96;--line:#322a25;
+    --orange:#f39c4e;--emerald:#37ce78;--indigo:#a98cee;--faded:#b6a79b;--amber:#edb45a;
+    --sh:0 12px 30px -22px rgba(0,0,0,.7);}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Figtree',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:640px;margin:0 auto;padding:24px 18px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  h1{font-size:1.3rem;margin:0;letter-spacing:-.02em}
+  .toggle{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit}
+  .ms{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-variation-settings:'opsz' 24,'wght' 400,'GRAD' 0,'FILL' 0;flex:none}
+  .cap{font-weight:700;margin:0 0 8px;font-size:.92rem}.cap small{color:var(--muted);font-weight:500}
+
+  .tablet{background:var(--bg);border:16px solid #26211e;outline:2px solid #4a423c;border-radius:46px;box-shadow:var(--sh);overflow:hidden;padding:24px 26px 28px}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .back{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .topbar h2{margin:0;font-size:1.4rem}
+
+  .sec{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:4px 20px;margin-bottom:14px}
+  .shead{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:14px 0 4px}
+  .row{display:flex;align-items:center;gap:14px;min-height:58px;border-top:1px solid var(--line)}
+  .sec .row:first-of-type{border-top:none}
+  .row .ms{color:var(--muted)}
+  .row .name{flex:1;font-weight:600}
+  .row .name small{display:block;color:var(--muted);font-weight:500;font-size:.8rem}
+  .row.subtle .name{color:var(--muted);font-weight:500}
+
+  .slider{width:190px;display:flex;align-items:center;gap:10px}
+  .track{flex:1;height:8px;border-radius:99px;background:var(--line);position:relative}
+  .track i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--indigo)}
+  .track b{position:absolute;top:50%;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:99px;background:var(--indigo);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .pct{font-size:.85rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);width:44px;text-align:right}
+
+  .switch{width:56px;height:32px;border-radius:99px;background:var(--indigo);position:relative;flex:none}
+  .switch::after{content:"";position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:99px;background:#fff}
+  .switch.off{background:var(--line)}
+  .switch.off::after{right:auto;left:4px;background:var(--muted)}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:9px 16px;border-radius:999px;border:1px solid var(--line);font-size:.9rem;font-weight:600;color:var(--muted)}
+  .chip.on{background:color-mix(in srgb,var(--indigo) 14%,transparent);border-color:var(--indigo);color:var(--indigo);font-weight:700}
+
+  .fontrow .sample{font-size:1.05rem;font-weight:600;color:var(--muted)}
+  .radio{width:24px;height:24px;border-radius:99px;border:2px solid var(--line);flex:none}
+  .radio.on{border-color:var(--indigo);position:relative}
+  .radio.on::after{content:"";position:absolute;inset:4px;border-radius:99px;background:var(--indigo)}
+
+  .about{color:var(--muted);font-size:.85rem;padding:12px 0 14px;line-height:1.6}
+</style></head>
+<body><div class="wrap">
+  <header><h1>🦊 Knobelfuchs — Einstellungen</h1>
+  <button class="toggle" onclick="document.body.classList.toggle('dark')">◐ Hell / Dunkel</button></header>
+
+  <p class="cap">Einstellungen <small>· Lautstärken, Musik an/aus, Bewegung, Darstellung — alles ruhig, nichts versteckt</small></p>
+  <div class="tablet">
+    <div class="topbar">
+      <div class="back"><span class="ms">arrow_back</span></div>
+      <h2>Einstellungen</h2>
+    </div>
+
+    <div class="sec">
+      <div class="shead">Klang &amp; Musik</div>
+      <div class="row">
+        <span class="ms">volume_up</span>
+        <span class="name">Effekte<small>Tippen, Paare, Reihen, Jubel</small></span>
+        <span class="slider"><span class="track"><i style="width:80%"></i><b style="left:80%"></b></span><span class="pct">80 %</span></span>
+      </div>
+      <div class="row">
+        <span class="ms">music_note</span>
+        <span class="name">Hintergrundmusik<small>ruhige Instrumentalschleifen</small></span>
+        <span class="switch"></span>
+      </div>
+      <div class="row">
+        <span class="ms">graphic_eq</span>
+        <span class="name">Musik-Lautstärke</span>
+        <span class="slider"><span class="track"><i style="width:45%"></i><b style="left:45%"></b></span><span class="pct">45 %</span></span>
+      </div>
+      <div class="row subtle">
+        <span class="ms">queue_music</span>
+        <span class="name">Titelauswahl (Jukebox)<small>kommt in einer späteren Version — v1 wählt selbst</small></span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="shead">Bewegung</div>
+      <div class="row">
+        <span class="ms">animation</span>
+        <span class="name">Animationen<small>«Reduziert» folgt automatisch der System-Einstellung</small></span>
+        <span class="chips"><span class="chip on">Voll</span><span class="chip">Reduziert</span><span class="chip">Aus</span></span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="shead">Darstellung</div>
+      <div class="row">
+        <span class="ms">routine</span>
+        <span class="name">Erscheinungsbild</span>
+        <span class="chips"><span class="chip on">System</span><span class="chip">Hell</span><span class="chip">Dunkel</span></span>
+      </div>
+      <div class="row fontrow">
+        <span class="radio on"></span>
+        <span class="name">Figtree <small>Standard — die Fuchs-Schrift</small></span>
+        <span class="sample">1 2 3 … 9</span>
+      </div>
+      <div class="row fontrow">
+        <span class="radio"></span>
+        <span class="name">System</span>
+        <span class="sample" style="font-family:system-ui">1 2 3 … 9</span>
+      </div>
+      <div class="row fontrow">
+        <span class="radio"></span>
+        <span class="name">Atkinson Hyperlegible <small>besonders gut lesbar</small></span>
+        <span class="sample">1 2 3 … 9</span>
+      </div>
+      <div class="row fontrow">
+        <span class="radio"></span>
+        <span class="name">OpenDyslexic <small>bei Leseschwäche</small></span>
+        <span class="sample">1 2 3 … 9</span>
+      </div>
+      <div class="row subtle">
+        <span class="ms">format_size</span>
+        <span class="name">Textgrösse<small>folgt der System-Einstellung — Layout bis 200 % getestet</small></span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="shead">Sprache</div>
+      <div class="row">
+        <span class="ms">language</span>
+        <span class="name">Sprache</span>
+        <span class="chips"><span class="chip on">Deutsch</span><span class="chip">Français</span><span class="chip">Italiano</span><span class="chip">English</span></span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="shead">Über</div>
+      <div class="about">
+        Knobelfuchs 0.1 · ein fuchs-Spiel 🦊 · alles offline, keine Werbung, keine Käufe,
+        keine Datensammlung.<br>
+        Klänge: Kenney.nl (CC0) · Musik: Kevin MacLeod, incompetech.com (CC&nbsp;BY&nbsp;4.0) ·
+        Quellcode: github.com/Kemenor/knobelfuchs (Apache-2.0)
+      </div>
+    </div>
+  </div>
+
+  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Die Einstellungsseite ist absichtlich kurz: Lautstärken, Musik an/aus, Bewegungsumfang (Voll / Reduziert / Aus — je nachdem, wie die Animationen ankommen), Erscheinungsbild, Schrift, Sprache. Kein «Premium», kein «Konto», keine Benachrichtigungs-Sektion — es gibt schlicht keine.</p>
+
+<style>.pagenav{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem}.pagenav a{color:var(--muted);text-decoration:none;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}.pagenav a.on{color:var(--orange);border-color:var(--orange);font-weight:800}</style>
+<nav class="pagenav">
+  <a href="01-home.html">01 Home</a>
+  <a href="02-spielbrett.html">02 Brett</a>
+  <a href="03-spielbrett-quer.html">03 Brett quer</a>
+  <a href="04-parameter-und-ende.html">04 Neues Spiel &amp; Ende</a>
+  <a href="05-abenteuer.html">05 Abenteuer</a>
+  <a href="06-tages-knobel.html">06 Tages-Knobel</a>
+  <a href="07-klang.html">07 Klang</a>
+  <a class="on" href="08-einstellungen.html">08 Einstellungen</a>
+</nav>
+</div></body></html>

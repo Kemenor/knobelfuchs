@@ -136,13 +136,26 @@
     </div>
   </div>
 
+  <div class="event">
+    <h3>Hintergrundmusik 🎵</h3>
+    <p>Ruhige Instrumentalschleifen — im Abenteuer hat jedes Level seinen Titel, im freien
+    Spiel rotieren alle. In den Einstellungen: an/aus + Lautstärke (Titelwahl „Jukebox"
+    kommt später). Antippen = an/aus.</p>
+    <div class="demo" id="d-mus"><div class="cell">♪</div></div>
+    <div class="snds">
+      <button class="snd" onclick="music('music/wholesome.mp3', this)"><span class="ms">play_arrow</span>A <small>· Wholesome</small></button>
+      <button class="snd" onclick="music('music/deliberate-thought.mp3', this)"><span class="ms">play_arrow</span>B <small>· Deliberate Thought</small></button>
+      <button class="snd" onclick="music('music/porch-swing-days.mp3', this)"><span class="ms">play_arrow</span>C <small>· Porch Swing Days</small></button>
+    </div>
+  </div>
+
   <div class="note">
     <b>Die Grenze zum Dark Pattern, klar gezogen:</b> Klang &amp; Bewegung antworten immer auf eine
     <i>Handlung der Spielerin</i> — nie umgekehrt. Kein Klang lockt zurück in die App, nichts
     blinkt von selbst, keine „Comeback"-Fanfare, kein Daily-Login-Tusch. Alles ≤ 250 ms
     (Jingles beim Sieg ausgenommen), Ton abschaltbar in den Einstellungen, Lautlos-Modus des
-    Geräts wird respektiert. Quelle aller Kandidaten: Kenney.nl „Interface Sounds" &amp;
-    „Music Jingles", beide CC0.
+    Geräts wird respektiert. Quellen: Kenney.nl „Interface Sounds" &amp; „Music Jingles" (CC0) ·
+    Musik: Kevin MacLeod, incompetech.com (CC-BY 4.0, wird im „Über"-Bildschirm genannt).
   </div>
 
 <nav class="pagenav">
@@ -153,10 +166,20 @@
   <a href="05-abenteuer.html">05 Abenteuer</a>
   <a href="06-tages-knobel.html">06 Tages-Knobel</a>
   <a class="on" href="07-klang.html">07 Klang</a>
+  <a href="08-einstellungen.html">08 Einstellungen</a>
 </nav>
 
 <script>
 function fx(src, anim){ const a = new Audio(src); a.volume = .8; a.play(); if(anim) anim(); }
+let bgm = null, bgmBtn = null;
+function music(src, btn){
+  const same = bgmBtn === btn;
+  if (bgm) { bgm.pause(); bgm = null; }
+  if (bgmBtn) { bgmBtn.querySelector('.ms').textContent = 'play_arrow'; bgmBtn = null; }
+  if (same) return;
+  bgm = new Audio(src); bgm.volume = .5; bgm.loop = true; bgm.play();
+  bgmBtn = btn; btn.querySelector('.ms').textContent = 'stop';
+}
 function retrig(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
   setTimeout(() => el.classList.remove(cls), 600); }
 function animSel(){ retrig(document.querySelector('#d-sel .cell'), 'a-sel'); }

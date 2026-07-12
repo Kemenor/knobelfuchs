@@ -199,13 +199,37 @@ the player — it's *manipulating* them.
 | Board cleared | emerald wave across cells | short jingle (the one loud moment; exempt from 250 ms) |
 | Level unlocked | brief pop on the next level | short upbeat |
 
-- **All sounds optional:** a settings toggle, and the device's silent mode is always
-  respected. No background music in v1.
-- **Assets:** Kenney.nl "Interface Sounds" + "Music Jingles", both **CC0** — bundled,
-  no attribution required (we credit anyway). Candidates are auditioned with their
-  animations in [`examples/ui/07-klang.html`](./examples/ui/07-klang.html).
+### 10.1 Background music
+Calm instrumental loops, quietly under the game — the one *ambient* element, and it's
+opt-out-able in two taps:
+
+- **Adventure:** each level has **its own fixed track** — part of the level's identity,
+  like its seed and budgets.
+- **Free Form & Daily:** the whole pool rotates.
+- Music plays **only during a game in the foreground** — never from the background,
+  never as a lure. Volume separate from effects; on/off in settings.
+- **Jukebox (picking specific tracks) is post-v1** — v1 chooses for you.
+
+### 10.2 Motion setting
+Animations come in three levels — **Voll / Reduziert / Aus** (full / reduced / off) —
+because good motion for one player is noise for another. *Reduziert* keeps only
+essential state changes; *Aus* swaps states instantly. The OS "reduce motion"
+preference is respected as the default.
+
+### 10.3 Settings surface (v1)
+Effects volume · music on/off + volume · motion (Voll/Reduziert/Aus) · appearance
+(system/light/dark) · font (the Fuchsbau picker) · language · about. **No account, no
+premium, no notifications section — none exist.** Text size follows the OS (§5).
+Mockup: [`examples/ui/08-einstellungen.html`](./examples/ui/08-einstellungen.html).
+
+- **All audio optional:** settings toggles, and the device's silent mode is always
+  respected.
+- **Assets:** sounds from Kenney.nl "Interface Sounds" + "Music Jingles" (**CC0**);
+  music candidates by **Kevin MacLeod / incompetech.com (CC BY 4.0**, credited in the
+  About screen**)**. Everything auditioned in
+  [`examples/ui/07-klang.html`](./examples/ui/07-klang.html).
 - The stillness rule (§9) is untouched: between responses, the board is perfectly
-  still.
+  still — music is sound, not motion.
 
 ## 11. Open questions (for family playtesting)
 
@@ -215,4 +239,6 @@ the player — it's *manipulating* them.
 3. Opening size (3 rows?) and Story difficulty curve.
 4. ~~Daily calendar view — v2 candidate.~~ **Promoted to v1** (family requirement):
    the calendar *is* the daily date picker (§6.2).
-5. Final sound picks per event (§10) — audition via `07-klang.html`, then freeze.
+5. Final sound picks per event and the music pool (§10) — audition via
+   `07-klang.html`, then freeze. Also: does music default to on or off at first
+   launch?
