@@ -35,6 +35,12 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   unorm_dart: ^0.3.2
+  flutter_riverpod: ^3.3.2
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  fuchsbau:
+    git: https://github.com/Kemenor/fuchsbau.git
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +58,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

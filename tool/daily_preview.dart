@@ -2,6 +2,8 @@
 /// Usage: dart run tool/daily_preview.dart [yyyy-mm-dd]
 library;
 
+// ignore_for_file: avoid_print
+
 import 'package:knobelfuchs/domain/bot.dart';
 import 'package:knobelfuchs/domain/daily.dart';
 import 'package:knobelfuchs/domain/game.dart';
