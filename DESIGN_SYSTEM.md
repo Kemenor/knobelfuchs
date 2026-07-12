@@ -28,13 +28,14 @@ The board itself is mode-neutral (digits stay `onSurface`); only the surrounding
 chrome (app bar tint, progress accents) carries the mode hue.
 
 **Semantic colours cut across the mode hue** (they win where they overlap):
-- **Indigo = the action.** Selection and the current/actionable thing everywhere —
-  selected cell, current story level, any Play/Resume button (Fuchsbau's
-  selection/focus law).
-- **Emerald = achieved.** Checks, best scores, progress fills — success only, so in
-  Story mode the level *path* is emerald but its Play buttons are indigo.
-- Beaten story levels stay tappable: pick one (indigo selection frame) and play to
-  beat your own best.
+- **Indigo = the action forward.** Selection and the current/next thing everywhere —
+  selected cell, the in-game action bar (add/hint/undo, **same indigo in every
+  mode**), the current story level's Play, Resume buttons. The mode hue lives only in
+  passive chrome (mode chip, progress accents) — behaviour that is identical across
+  modes looks identical.
+- **Emerald = achieved — and returning to the achieved.** Checks, best scores,
+  progress fills; a *beaten* story level's Play button is emerald (= replay, beat
+  your own best), visually distinct from the indigo "next level" Play.
 
 ## 1. Game state → colour
 
@@ -73,8 +74,9 @@ law applies — nothing in normal play is ever red.
 
 ## 4. Action bar
 
-Three quiet `IconButton.filledTonal` actions, ≥ 56 dp touch targets, each carrying its
-**remaining budget** as a neutral count (tabular figures):
+Three quiet `IconButton.filledTonal` actions in **indigo — identical in all modes**
+(indigo = action; the mode hue never recolours behaviour), ≥ 56 dp touch targets, each
+carrying its **remaining budget** as a neutral count (tabular figures):
 
 | Action | Icon (Material Symbols Rounded) | Budget states |
 |---|---|---|

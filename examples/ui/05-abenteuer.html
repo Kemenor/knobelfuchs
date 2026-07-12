@@ -43,6 +43,8 @@
   .best{font-size:.9rem;font-weight:700;color:var(--emerald)}
   .play{height:46px;padding:0 20px;border:none;border-radius:14px;background:var(--indigo);color:#fff;font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer}
   body.dark .play{color:#1c1330}
+  .play.replay{background:var(--emerald)}
+  body.dark .play.replay{color:#12251a}
   .lock{opacity:.62}
   .lock .name{color:var(--muted)}
 </style></head>
@@ -68,7 +70,7 @@
     <div class="lvl done picked">
       <div class="num"><span class="ms fill" style="font-size:26px">check</span></div>
       <div class="info"><div class="name">5 · Die Lichtung</div><div class="sub">Ziel 1 050 · Nachlegen 4 · Tipps 5</div></div>
-      <div class="right"><span class="best">Best: 1 080</span><button class="play">Spielen</button></div>
+      <div class="right"><span class="best">Best: 1 080</span><button class="play replay">Spielen</button></div>
     </div>
 
     <div class="lvl now">
@@ -88,7 +90,7 @@
     </div>
   </div>
 
-  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Jedes Level = fester Seed + Budgets + Punkteziel; das Ziel schlagen schaltet das nächste frei. <b>Alte Level antippen</b> wählt sie an (indigo Rahmen, hier Level 5) — „Spielen" versucht den eigenen Rekord zu schlagen. Grün bleibt dem Erfolg vorbehalten (Häkchen, Bestwerte, Fortschritt); <b>indigo ist die Handlung</b>. Schwieriger wird's über <b>knappere Budgets und höhere Ziele — nie über Zeitdruck</b>. Levelnamen erzählen nebenbei die kleine Fuchsgeschichte.</p>
+  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Jedes Level = fester Seed + Budgets + Punkteziel; das Ziel schlagen schaltet das nächste frei. <b>Alte Level antippen</b> wählt sie an (indigo Rahmen, hier Level 5) — ihr „Spielen" ist <b>grün = Wiederholen</b> (den eigenen Rekord schlagen), während das <b>nächste Level indigo</b> spielt. So unterscheidet die Farbe „weiter" von „nochmal". Schwieriger wird's über <b>knappere Budgets und höhere Ziele — nie über Zeitdruck</b>. Levelnamen erzählen nebenbei die kleine Fuchsgeschichte.</p>
 <style>.pagenav{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem}.pagenav a{color:var(--muted);text-decoration:none;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}.pagenav a.on{color:var(--orange);border-color:var(--orange);font-weight:800}</style>
 <nav class="pagenav">
   <a href="01-home.html">01 Home</a>
