@@ -429,8 +429,10 @@ class _ActionBar extends ConsumerWidget {
         count: budget(view.hintsRemaining),
         enabled: view.hintsRemaining == null || view.hintsRemaining! > 0,
         onPressed: () {
-          final audio = ref.read(audioServiceProvider);
+          // Game logic first — audio must never stand between the tap and
+          // the hint (2026-07-12 regression).
           final outcome = controller.requestHint();
+          final audio = ref.read(audioServiceProvider);
           switch (outcome) {
             case HintOutcome.shown || HintOutcome.repulsed:
               audio.play(SoundEvent.hint);
@@ -476,15 +478,20 @@ class _ActionBar extends ConsumerWidget {
                   Padding(padding: const EdgeInsets.only(top: 10), child: b),
               ],
             )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (final b in buttons)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: b,
-                  ),
-              ],
+          : FittedBox(
+              // Phones are narrower than the three buttons want to be —
+              // scale down instead of overflowing (phone test, 2026-07-12).
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (final b in buttons)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: b,
+                    ),
+                ],
+              ),
             ),
     );
   }
