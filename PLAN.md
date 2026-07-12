@@ -31,7 +31,7 @@ semantics; this plan wins for implementation.
 | Navigation | Router-less (Fuchsbau): single stack, `push` for settings/stats sheets |
 | Keys / SDK | `INTEGER` autoincrement PKs; min Android API **26**; arm64 release builds |
 | Backup | ZIP (SQLite snapshot + JSON) — same pattern as siblings; low priority for v1 (stats are the only real data) |
-| App id | `ch.knobelfuchs.app` *(domain TBD — decide before release)* |
+| App id | `ch.fuchsnest.knobelfuchs` — the family convention: one collection domain (**fuchsnest.ch**), app ids `ch.fuchsnest.<appname>` |
 | Repo | `Kemenor/knobelfuchs`, public, Apache-2.0 |
 
 ## Architecture
@@ -77,7 +77,7 @@ lib/
 
 ## Still open
 
-- Domain name (knobelfuchs.ch?) → app id confirmation.
+- Landing page location under fuchsnest.ch (subdomain vs. path) — decide before release.
 - Whether the fuchsbau package is consumed as a git dependency or path dependency
   during development.
 - Later modes (daily knobel, seeded openings) — explicitly out of v1.
