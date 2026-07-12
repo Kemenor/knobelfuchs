@@ -1,21 +1,24 @@
-# Knobelfuchs — Game Concept
+# Knobelfuchs — Game Design
 
 The first fuchs **game**. A calm number-match puzzle (the classic pen-and-paper
 "Zahlenknobeln" / *Take Ten* mechanic, known from Number Match / Number Clash /
-Numberzilla) — built the fuchs way: **no ads, no lives, no timers, no paywalled hints, no
-manipulation**. The predatory clones gate the fun behind ad-views; Knobelfuchs simply
-*is* the fun.
+Numberzilla) — built the fuchs way: **no ads, no paywalled assists, no dark patterns**.
+Challenge comes from *player-chosen* limits and targets, never from a shop.
 
-This doc owns the **what**: rules, states, and semantics. [`PLAN.md`](./PLAN.md) owns the
+This doc owns the **what**: rules, modes, and semantics. [`PLAN.md`](./PLAN.md) owns the
 **how**.
 
 ## 1. Why it exists
 
 Watching a family member play an ad-riddled Number Match clone: the game itself is
 lovely — gentle, absorbing, endlessly replayable. Everything around it is hostile
-(interstitials, "watch ad for hint", fake urgency). The mechanic is a decades-old
+(interstitials, "watch ad for a hint", fake urgency). The mechanic is a decades-old
 public-domain paper game; nobody owns it. So we build the respectful version, tuned for
-the person it's for: **tablet-first** (Xiaomi Pad 5), big digits, generous assists.
+the person it's for: **tablet-first** (Xiaomi Pad 5), big digits, honest challenge.
+
+Hints and row-adds *are* limited here too — but as **game parameters the player set
+themselves** (or a level defines), like the number of mines in Minesweeper. Running out
+is part of the puzzle, never a checkout moment.
 
 ## 2. The board
 
@@ -24,10 +27,10 @@ the person it's for: **tablet-first** (Xiaomi Pad 5), big digits, generous assis
 - The board reads like text: **row-major reading order**, left→right, top→bottom.
 
 ### 2.1 Opening deal
-The traditional opening: the digits of the numbers **1 to 19** written out in reading
-order (`1 2 3 … 9 1 0 1 1 1 2 …` = **29 digits**, filling 3 rows + 2 cells). Every game
-starts from this same deal — the variety comes from play order, exactly like the paper
-original. (A seeded-random opening is a possible later mode, not v1.)
+Every game is generated from a **seed**: the opening rows are drawn from a seeded PRNG,
+so the same seed always produces the identical game. This is the backbone of all three
+modes (§6) and of challenge-sharing (§7). The opening size is ~3 rows (tunable
+constant, same for all modes).
 
 ## 3. The rules
 
@@ -52,52 +55,126 @@ sound, never a penalty. Tapping the selected cell deselects.
 When every cell of a row is cleared, the row **disappears** and the board closes up.
 A quiet moment of satisfaction — small animation, no fanfare screen.
 
-### 3.4 Dealing more ("Nachlegen")
-When the player wants more material (stuck or just strategic): the **deal button**
-appends *all surviving digits* in reading order to the end of the board.
-**Unlimited and free.** The deal count is shown as neutral information — lower is a
-brag, higher is not a failure.
+### 3.4 Adding rows ("Nachlegen")
+The **add button** appends *all surviving digits* in reading order to the end of the
+board. Each game has an **add budget** — default **5**, up to **limitless** where the
+mode allows (§6). The remaining count sits on the button as neutral information; at 0
+the button turns **gray** (quietly unavailable, not alarmed — nothing red).
 
-### 3.5 Win & end states
-- **Win:** the board is completely empty. Celebration, stats, "play again".
-- **There is no lose state.** No lives, no timer, no fail. A game can always continue
-  or be abandoned; an abandoned game just waits (autosaved) until resumed or replaced.
+### 3.5 Hints
+The **hint button** highlights one currently-valid pair (amber — *information, not
+command*). Each game has a **hint budget** — default **5**, up to **limitless** where
+the mode allows. Pressing hint when **no valid pair exists** shows the button gray and
+points at the add button instead — this **does not consume** a hint (telling you
+"nothing is there" is honesty, not help). At budget 0 the button turns gray.
 
-## 4. Assists — generous by design
+### 3.6 End of a run
+- **Board cleared** — the crowning finish (bonus, celebration).
+- **No moves left** (no valid pair, add budget exhausted) — the run **completes** with
+  its score. This is a natural end, *not a fail state*: no "GAME OVER", no red, the
+  score simply stands. One quiet screen: score, target comparison, "again?".
+- A game in progress is **autosaved** every move and waits indefinitely.
 
-| Assist | Behaviour | Cost |
-|---|---|---|
-| **Hint** | Highlights one currently-valid pair (amber — *information, not command*). | Free, unlimited |
-| **Undo** | Steps back one match (or one deal). Unlimited depth, back to the opening. | Free, unlimited |
-| **Autosave** | Every move persists instantly; the app can be killed at any time. | Automatic |
+## 4. Scoring
 
-The clones sell these back to the player through ads. Here they are simply part of the
-game. If no valid pair exists on the board, the hint gently points at the deal button.
+Scores make seeds shareable ("beat 1 840 on this board") and give runs a shape. The
+formula is **simple, transparent, and shown in-app** — no hidden multipliers:
 
-## 5. Stats — information, never punishment
+| Event | Points |
+|---|---|
+| Pair matched | **+10** |
+| Row cleared | **+50** |
+| Board fully cleared | **+250** |
+| Each unused add at the end | **+50** |
 
-Per game: matches made, rows cleared, deals used, duration (recorded, **not displayed
-during play** — no clock on the game screen). Lifetime: games completed, total matches.
-No streaks-with-guilt, no daily-login rewards, no notification nagging — **a game must
-never call you back**; it waits.
+- **Hints never cost points.** Assist use is not punished — the budget is the only
+  limit (information, never punishment).
+- The formula is a v1 proposal — **frozen only after family playtesting**.
 
-## 6. Modes
+### 4.1 Score to beat
+A game can carry a **target score**. Beating it is the win condition in Daily and
+Story modes and an optional spice in Free Form. Targets are **computed, not designed**:
+a deterministic **baseline bot** (greedy: always the first valid pair in reading order,
+adds when stuck) plays the seed at generation time; its final score is the target. Same
+seed ⇒ same target on every device — no server, no authoring burden.
 
-- **v1: Classic.** One ongoing game, endless until cleared. "New game" restarts (with
-  confirmation if a game is in progress).
-- **Later (maybe):** a daily knobel (same seed for everyone), seeded-random openings,
-  a harder ruleset (no diagonals). Only if they stay calm.
+## 5. Accessibility — hard requirements
 
-## 7. Audience & ergonomics
+The primary player is an older adult on an 11″ tablet. Two items are **must-have**
+(elevated above Fuchsbau's usual should-have):
 
-Built first for a retired parent on an **11″ tablet** (Xiaomi Pad 5, 2560×1600,
-landscape or portrait):
+1. **Font scaling.** Every UI text respects the OS text scale **up to 200 % without
+   clipping or truncation**; board digits are sized by cell geometry (≈ 64–72 dp cells
+   on the Pad 5) and are already huge. Layouts reflow, never ellipsize a number.
+2. **Legible typefaces.** The Fuchsbau font picker (Figtree default · System ·
+   **Atkinson Hyperlegible** · **OpenDyslexic**) applies to *everything, including the
+   board digits*. Tabular figures throughout.
 
-- **Big digits** — cells scale with the screen; on the Pad ≈ 64 dp+, never below 48 dp.
-- **Tap-tap interaction only** — no drag, no swipe, no long-press required anywhere in
-  the game itself.
-- **High contrast** digits in both themes; the accessibility font picker (Fuchsbau)
-  applies to digits too — tabular figures throughout.
-- **No moving parts** while thinking: the board is perfectly still until the player
-  acts. Animations are short responses to input, never ambient.
-- Phones remain supported — same layout, smaller cells, scrolling board.
+Plus the Fuchsbau baseline: touch targets ≥ 48 dp (board cells well above), full
+contrast in both themes, tap-tap interaction only — no drag, no long-press, no gesture
+anywhere in the game.
+
+## 6. The three modes
+
+One engine, three framings. Each mode owns one colour of the Fuchsbau triad:
+
+| Mode | Colour | Seed | Adds | Hints | Target |
+|---|---|---|---|---|---|
+| **Free Form** | fox orange | player-set or randomized | **5** default → limitless | **5** default → limitless | optional |
+| **Daily Knobel** | indigo | derived from the date | fixed (5) | fixed (5) | computed (§4.1), always on |
+| **Story** | emerald | fixed per level | per level | per level | per level, always on |
+
+### 6.1 Free Form
+The everyday mode. "New game" opens a small parameter sheet:
+
+- **Seed** — empty = randomized (shown after generation so it can be shared);
+  enterable to replay or take on a challenge.
+- **Adds** — stepper, 0 … 20, then ∞. Default 5.
+- **Hints** — stepper, 0 … 20, then ∞. Default 5.
+- **Score to beat** — optional number, default off.
+
+Sensible defaults mean the sheet is one tap ("Los!") for players who don't care —
+parameters are power, summoned not imposed.
+
+### 6.2 Daily Knobel
+One board per calendar day: **seed = the date** (local), so every player worldwide
+knobles the *same* board — no server, no account, pure math. Adds and hints fixed at 5;
+the target score is computed from the seed (§4.1). Result (score, beaten y/n) is stored
+per date. A missed day is simply an empty slot — **no streak guilt, no red, no
+notification**. The daily waits; it never calls.
+
+### 6.3 Story
+A curated, numbered level collection (v1: ~20 levels). Each level = seed + add budget +
+hint budget + target score; **beating the target unlocks the next level**. Difficulty
+climbs by tightening budgets and raising targets — never by timers. Progress is stored
+locally; replaying a beaten level is always allowed (best score kept).
+
+## 7. Challenge sharing (QR)
+
+Free Form settings (seed, add budget, hint budget, score to beat) encode into a QR code
+on the run-end screen — "beat me on this board." Scanning one inside knobelfuchs
+pre-fills the parameter sheet. Fully offline, peer-to-peer, no server; the QR *is* the
+challenge. (Scan via in-app camera view; family precedent: knabberfuchs's scanner.)
+
+## 8. Stats — information, never punishment
+
+Per run: score, matches, rows cleared, adds/hints used, duration (recorded, **not
+displayed during play** — no clock on the game screen). Lifetime: runs, boards cleared,
+daily history, story progress. No streaks-with-guilt, no daily-login rewards, no
+notifications — **a game must never call you back**; it waits.
+
+## 9. Ergonomics (Pad 5 reference)
+
+- **Big digits** — cells scale with the screen; on the Pad ≈ 64–72 dp, floor 48 dp.
+- **Stillness rule:** the board is perfectly still until the player acts; animations
+  are short (≤ 250 ms) responses to input, never ambient.
+- Portrait and landscape both first-class (§ DESIGN_SYSTEM); phones supported by the
+  same adaptive layout.
+
+## 10. Open questions (for family playtesting)
+
+1. Should the hint button *passively* show gray whenever no pair exists (constant free
+   information — kinder, but removes the scanning challenge)? v1: only on press.
+2. Scoring weights (§4) — tune after real runs.
+3. Opening size (3 rows?) and Story difficulty curve.
+4. Daily calendar view (month grid of played days) — v2 candidate.

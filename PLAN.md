@@ -22,7 +22,9 @@ semantics; this plan wins for implementation.
 | Framework | **Flutter**, Android-first (iOS possible) — same toolchain as siblings |
 | Game engine | **None — plain Flutter.** A static grid puzzle needs no Flame/game loop; widgets + implicit animations suffice. The Fuchsbau stack needs **no expansion** |
 | State | **Riverpod** |
-| Persistence | **drift / SQLite** — current game (board + undo stack) and stats, with migrations |
+| Persistence | **drift / SQLite** — saved runs (board + undo log, one per mode), daily-knobel history, story progress, lifetime stats; with migrations |
+| Seeds & RNG | **Seeded PRNG in the domain core** (injected, deterministic) — same seed ⇒ identical board on every device. Daily seed = local date; targets from the deterministic baseline bot (concept §4.1) |
+| QR sharing | `qr_flutter` (render) + `mobile_scanner` (scan — knabberfuchs precedent). Free-Form challenge payload only; later phase |
 | Design | **Material 3**, Fuchsbau triad & fonts via the [fuchsbau package](https://github.com/Kemenor/fuchsbau); deviations in [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
 | Layout | **Tablet-first, responsive** — Xiaomi Pad 5 (11″, 2560×1600) is the reference device, portrait *and* landscape; phones supported by the same adaptive layout |
 | Networking | **None.** Fully on-device, no runtime keys |
@@ -55,29 +57,50 @@ lib/
 ### Engine sketch
 
 - `Board` = immutable list of cells (digit or cleared) + column count (9).
+- `generate(seed)` → opening board (seeded PRNG, deterministic across devices).
 - `canMatch(board, a, b)` — value rule && line-of-sight (row / column / diagonal /
   reading-order, skipping cleared cells).
 - `match(board, a, b)` → new board, with collapsed rows removed.
-- `deal(board)` → new board with surviving digits appended.
-- `findHint(board)` → first valid pair or *none* (⇒ point at deal).
-- `GameState` = board + move log; undo = replay log minus one (or store board
-  snapshots — decide by measuring; boards are tiny).
+- `addRows(board)` → new board with surviving digits appended (budget enforced by
+  `GameState`, not the board).
+- `findHint(board)` → first valid pair or *none* (⇒ point at add; free).
+- `score(events)` — the transparent formula (concept §4): pair +10, row +50, clear
+  +250, unused add +50.
+- `baselineBot(seed, ruleset)` → target score: greedy first-pair-in-reading-order,
+  adds when stuck; deterministic, runs at generation time.
+- `GameState` = board + budgets (adds/hints remaining) + move log + score; undo =
+  replay log minus one (or board snapshots — decide by measuring; boards are tiny).
+- `GameConfig` = seed + add budget + hint budget + optional target — one struct for
+  all three modes *and* the QR payload.
 
 ## Build order
 
+0. **Mockups first** — `examples/ui/` HTML canon for family feedback *before* any
+   Flutter code; the primary player reviews the board, home, and end screens.
 1. **Engine + tests.** The full ruleset as pure Dart, unit-tested against known
    positions (line-of-sight edge cases: wrap-around, diagonals through cleared gaps,
-   5-5 pairs, collapse cascades).
-2. **Board UI.** Adaptive grid, tap-tap selection, match/collapse animations, deal —
-   playable end-to-end on the Pad 5, both orientations.
-3. **Persistence.** Autosave every move; resume on launch; stats.
-4. **Assists & polish.** Hint, undo, win celebration, settings (theme/font/language),
-   l10n pass.
-5. **Release.** Icon, store listing, fastlane, landing page (`docs/` + CNAME).
+   5-5 pairs, collapse cascades), seeded generation determinism, scoring, the
+   baseline bot.
+2. **Board UI + Free Form.** Adaptive grid, tap-tap selection, match/collapse
+   animations, add/hint/undo with budgets, the parameter sheet — playable end-to-end
+   on the Pad 5, both orientations.
+3. **Persistence.** Autosave every move; resume on launch; run history + stats.
+4. **Daily & Story.** Date seed + computed target; the level list + unlock chain
+   (curate ~20 levels via the bot).
+5. **Polish.** Win/run-end screens, settings (theme/font/language, 200 % scale pass),
+   l10n, QR share/scan.
+6. **Release.** Icon, store listing, fastlane, landing page (under fuchsnest.ch).
+
+## Toolchain note
+
+Development happens on two machines: the Linux box (Flutter via the `flutter`
+distrobox, per fuchsbau) and the Windows box (Flutter native at `C:\flutter`, on
+PATH — plain `flutter` works).
 
 ## Still open
 
 - Landing page location under fuchsnest.ch (subdomain vs. path) — decide before release.
 - Whether the fuchsbau package is consumed as a git dependency or path dependency
   during development.
-- Later modes (daily knobel, seeded openings) — explicitly out of v1.
+- Scoring weights + story difficulty curve — freeze after family playtesting
+  (concept §10).

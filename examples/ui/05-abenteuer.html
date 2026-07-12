@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knobelfuchs — Abenteuer (Story-Modus)</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+  :root{--bg:#faf7f4;--card:#fff;--ink:#221d1a;--muted:#7a6f68;--line:#ece4dd;
+    --orange:#ea7a24;--emerald:#1fa85d;--indigo:#8559d0;--faded:#a8988c;--amber:#e0a33b;
+    --sh:0 12px 30px -24px rgba(0,0,0,.4);}
+  body.dark{--bg:#161311;--card:#211c19;--ink:#f3ede9;--muted:#a99e96;--line:#322a25;
+    --orange:#f39c4e;--emerald:#37ce78;--indigo:#a98cee;--faded:#b6a79b;--amber:#edb45a;
+    --sh:0 12px 30px -22px rgba(0,0,0,.7);}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Figtree',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:640px;margin:0 auto;padding:24px 18px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  h1{font-size:1.3rem;margin:0;letter-spacing:-.02em}
+  .toggle{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit}
+  .ms{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-variation-settings:'opsz' 24,'wght' 400,'GRAD' 0,'FILL' 0;flex:none}
+  .ms.fill{font-variation-settings:'opsz' 24,'wght' 500,'GRAD' 0,'FILL' 1}
+  .cap{font-weight:700;margin:0 0 8px;font-size:.92rem}.cap small{color:var(--muted);font-weight:500}
+
+  .tablet{background:var(--bg);border:1px solid var(--line);border-radius:28px;box-shadow:var(--sh);overflow:hidden;padding:24px 26px 30px}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .back{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .topbar h2{margin:0;font-size:1.4rem}
+  .progress{margin-left:auto;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .bar{height:8px;border-radius:99px;background:var(--line);margin:10px 0 22px;overflow:hidden}
+  .bar i{display:block;height:100%;width:27%;border-radius:99px;background:var(--emerald)}
+
+  .lvl{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 18px;margin-bottom:12px}
+  .num{width:54px;height:54px;flex:none;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.25rem;font-variant-numeric:tabular-nums}
+  .done .num{background:color-mix(in srgb,var(--emerald) 15%,transparent);color:var(--emerald)}
+  .now .num{background:var(--emerald);color:#fff}
+  body.dark .now .num{color:#12251a}
+  .lock .num{background:color-mix(in srgb,var(--muted) 10%,transparent);color:var(--muted)}
+  .lvl .info{flex:1}
+  .lvl .name{font-weight:700}
+  .lvl .sub{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .lvl .right{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+  .best{font-size:.9rem;font-weight:700;color:var(--emerald)}
+  .play{height:46px;padding:0 20px;border:none;border-radius:14px;background:var(--emerald);color:#fff;font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer}
+  body.dark .play{color:#12251a}
+  .lock{opacity:.62}
+  .lock .name{color:var(--muted)}
+</style></head>
+<body><div class="wrap">
+  <header><h1>🦊 Knobelfuchs — Abenteuer</h1>
+  <button class="toggle" onclick="document.body.classList.toggle('dark')">◐ Hell / Dunkel</button></header>
+
+  <p class="cap">Levelliste <small>· Geschafftes smaragd · Gesperrtes ruhig grau (nie rot) · Wiederholen immer erlaubt</small></p>
+  <div class="tablet">
+    <div class="topbar">
+      <div class="back"><span class="ms">arrow_back</span></div>
+      <h2>Abenteuer</h2>
+      <span class="progress">5 von 20 geschafft</span>
+    </div>
+    <div class="bar"><i></i></div>
+
+    <div class="lvl done">
+      <div class="num"><span class="ms fill" style="font-size:26px">check</span></div>
+      <div class="info"><div class="name">4 · Der Waldrand</div><div class="sub">Ziel 900 · Nachlegen 5 · Tipps 5</div></div>
+      <div class="right"><span class="best">Best: 1 210</span></div>
+    </div>
+
+    <div class="lvl done">
+      <div class="num"><span class="ms fill" style="font-size:26px">check</span></div>
+      <div class="info"><div class="name">5 · Die Lichtung</div><div class="sub">Ziel 1 050 · Nachlegen 4 · Tipps 5</div></div>
+      <div class="right"><span class="best">Best: 1 080</span></div>
+    </div>
+
+    <div class="lvl now">
+      <div class="num">6</div>
+      <div class="info"><div class="name">6 · Der Bau</div><div class="sub">Ziel 1 150 · Nachlegen 4 · Tipps 4</div></div>
+      <div class="right"><button class="play">Spielen</button></div>
+    </div>
+
+    <div class="lvl lock">
+      <div class="num"><span class="ms" style="font-size:24px">lock</span></div>
+      <div class="info"><div class="name">7 · Der Bach</div><div class="sub">wird mit Level 6 freigeschaltet</div></div>
+    </div>
+
+    <div class="lvl lock">
+      <div class="num"><span class="ms" style="font-size:24px">lock</span></div>
+      <div class="info"><div class="name">8 · Die alte Eiche</div><div class="sub">&nbsp;</div></div>
+    </div>
+  </div>
+
+  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Jedes Level = fester Seed + Budgets + Punkteziel; das Ziel schlagen schaltet das nächste frei. Schwieriger wird's über <b>knappere Budgets und höhere Ziele — nie über Zeitdruck</b>. Levelnamen erzählen nebenbei die kleine Fuchsgeschichte.</p>
+</div></body></html>

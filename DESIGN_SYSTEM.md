@@ -8,8 +8,24 @@ This doc records only what's **knobelfuchs-specific**.
 > **Deviations from Fuchsbau:**
 > 1. **Tablet-first.** The family is phone-first; knobelfuchs's reference device is an
 >    11″ tablet (Xiaomi Pad 5), with phones as the secondary target.
-> 2. **No FAB.** The game screen's actions (deal · hint · undo) live in a fixed action
+> 2. **No FAB.** The game screen's actions (add · hint · undo) live in a fixed action
 >    bar; a floating button over a number grid would cover cells.
+> 3. **Font scaling is a hard requirement** (concept §5) — Fuchsbau treats
+>    accessibility as a strong should; here OS text scale to 200 % without clipping is
+>    a must, and the font picker applies to the board digits themselves.
+
+## 0. Mode → colour
+
+The three modes own the three triad hues — the home screen is the palette:
+
+| Mode | Colour | Accent use |
+|---|---|---|
+| **Free Form** | fox orange `#EA7A24` / `#F39C4E` | mode card, in-game chrome |
+| **Daily Knobel** | indigo `#8559D0` / `#A98CEE` | mode card, in-game chrome |
+| **Story** | emerald `#1FA85D` / `#37CE78` | mode card, level path, in-game chrome |
+
+The board itself is mode-neutral (digits stay `onSurface`); only the surrounding
+chrome (app bar tint, progress accents) carries the mode hue.
 
 ## 1. Game state → colour
 
@@ -48,13 +64,17 @@ law applies — nothing in normal play is ever red.
 
 ## 4. Action bar
 
-Three quiet `IconButton.filledTonal` actions, ≥ 56 dp touch targets:
+Three quiet `IconButton.filledTonal` actions, ≥ 56 dp touch targets, each carrying its
+**remaining budget** as a neutral count (tabular figures):
 
-| Action | Icon (Material Symbols Rounded) | Note |
+| Action | Icon (Material Symbols Rounded) | Budget states |
 |---|---|---|
-| Deal | `add_circle` | badge shows deal count — neutral grey, informational |
-| Hint | `lightbulb` | amber highlight on the board |
-| Undo | `undo` | disabled-look only at the opening position |
+| Add rows | `add_circle` | count `5…0` or `∞`; at **0 → gray** (calm unavailable — never red) |
+| Hint | `lightbulb` | count `5…0` or `∞`; at **0 → gray**; pressed with *no pair on the board* → brief gray flash + nudge toward Add, **budget untouched** |
+| Undo | `undo` | gray only at the opening position |
+
+**Gray = quietly unavailable.** `onSurface` at ~38 % opacity, no error colour, no
+shake. Exhausted budgets are game state, not warnings.
 
 No action ever opens an ad, a shop, or a "watch to continue" — obviously; they just
 *work*.
