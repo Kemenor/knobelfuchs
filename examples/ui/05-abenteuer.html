@@ -32,16 +32,17 @@
   .lvl{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 18px;margin-bottom:12px}
   .num{width:54px;height:54px;flex:none;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.25rem;font-variant-numeric:tabular-nums}
   .done .num{background:color-mix(in srgb,var(--emerald) 15%,transparent);color:var(--emerald)}
-  .now .num{background:var(--emerald);color:#fff}
-  body.dark .now .num{color:#12251a}
+  .now .num{background:var(--indigo);color:#fff}
+  body.dark .now .num{color:#1c1330}
   .lock .num{background:color-mix(in srgb,var(--muted) 10%,transparent);color:var(--muted)}
+  .lvl.picked{border:2px solid var(--indigo);background:color-mix(in srgb,var(--indigo) 7%,transparent)}
   .lvl .info{flex:1}
   .lvl .name{font-weight:700}
   .lvl .sub{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
-  .lvl .right{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+  .lvl .right{display:flex;align-items:center;gap:12px;font-variant-numeric:tabular-nums}
   .best{font-size:.9rem;font-weight:700;color:var(--emerald)}
-  .play{height:46px;padding:0 20px;border:none;border-radius:14px;background:var(--emerald);color:#fff;font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer}
-  body.dark .play{color:#12251a}
+  .play{height:46px;padding:0 20px;border:none;border-radius:14px;background:var(--indigo);color:#fff;font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer}
+  body.dark .play{color:#1c1330}
   .lock{opacity:.62}
   .lock .name{color:var(--muted)}
 </style></head>
@@ -49,7 +50,7 @@
   <header><h1>🦊 Knobelfuchs — Abenteuer</h1>
   <button class="toggle" onclick="document.body.classList.toggle('dark')">◐ Hell / Dunkel</button></header>
 
-  <p class="cap">Levelliste <small>· Geschafftes smaragd · Gesperrtes ruhig grau (nie rot) · Wiederholen immer erlaubt</small></p>
+  <p class="cap">Levelliste <small>· smaragd = geschafft · indigo = aktuell / angewählt / Spielen · grau = gesperrt (nie rot)</small></p>
   <div class="tablet">
     <div class="topbar">
       <div class="back"><span class="ms">arrow_back</span></div>
@@ -64,10 +65,10 @@
       <div class="right"><span class="best">Best: 1 210</span></div>
     </div>
 
-    <div class="lvl done">
+    <div class="lvl done picked">
       <div class="num"><span class="ms fill" style="font-size:26px">check</span></div>
       <div class="info"><div class="name">5 · Die Lichtung</div><div class="sub">Ziel 1 050 · Nachlegen 4 · Tipps 5</div></div>
-      <div class="right"><span class="best">Best: 1 080</span></div>
+      <div class="right"><span class="best">Best: 1 080</span><button class="play">Spielen</button></div>
     </div>
 
     <div class="lvl now">
@@ -87,5 +88,14 @@
     </div>
   </div>
 
-  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Jedes Level = fester Seed + Budgets + Punkteziel; das Ziel schlagen schaltet das nächste frei. Schwieriger wird's über <b>knappere Budgets und höhere Ziele — nie über Zeitdruck</b>. Levelnamen erzählen nebenbei die kleine Fuchsgeschichte.</p>
+  <p style="color:var(--muted);font-size:.82rem;margin-top:14px">Jedes Level = fester Seed + Budgets + Punkteziel; das Ziel schlagen schaltet das nächste frei. <b>Alte Level antippen</b> wählt sie an (indigo Rahmen, hier Level 5) — „Spielen" versucht den eigenen Rekord zu schlagen. Grün bleibt dem Erfolg vorbehalten (Häkchen, Bestwerte, Fortschritt); <b>indigo ist die Handlung</b>. Schwieriger wird's über <b>knappere Budgets und höhere Ziele — nie über Zeitdruck</b>. Levelnamen erzählen nebenbei die kleine Fuchsgeschichte.</p>
+<style>.pagenav{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem}.pagenav a{color:var(--muted);text-decoration:none;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}.pagenav a.on{color:var(--orange);border-color:var(--orange);font-weight:800}</style>
+<nav class="pagenav">
+  <a href="01-home.html">01 Home</a>
+  <a href="02-spielbrett.html">02 Brett</a>
+  <a href="03-spielbrett-quer.html">03 Brett quer</a>
+  <a href="04-parameter-und-ende.html">04 Neues Spiel &amp; Ende</a>
+  <a class="on" href="05-abenteuer.html">05 Abenteuer</a>
+  <a href="06-tages-knobel.html">06 Tages-Knobel</a>
+</nav>
 </div></body></html>

@@ -27,6 +27,15 @@ The three modes own the three triad hues — the home screen is the palette:
 The board itself is mode-neutral (digits stay `onSurface`); only the surrounding
 chrome (app bar tint, progress accents) carries the mode hue.
 
+**Semantic colours cut across the mode hue** (they win where they overlap):
+- **Indigo = the action.** Selection and the current/actionable thing everywhere —
+  selected cell, current story level, any Play/Resume button (Fuchsbau's
+  selection/focus law).
+- **Emerald = achieved.** Checks, best scores, progress fills — success only, so in
+  Story mode the level *path* is emerald but its Play buttons are indigo.
+- Beaten story levels stay tappable: pick one (indigo selection frame) and play to
+  beat your own best.
+
 ## 1. Game state → colour
 
 The board maps onto the shared palette; the Fuchsbau **"red is for destruction only"**
