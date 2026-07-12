@@ -51,6 +51,7 @@ class BoardView extends StatelessWidget {
               animation: cellAnimation,
               selectedId: view.selectedId,
               hintCellIds: view.hintCellIds,
+              justMatchedIds: view.justMatchedIds,
               onTap: onTap,
             ),
           ),
@@ -67,6 +68,7 @@ class _RowView extends StatelessWidget {
   final Duration animation;
   final int? selectedId;
   final Set<int> hintCellIds;
+  final Set<int> justMatchedIds;
   final ValueChanged<int> onTap;
 
   const _RowView({
@@ -76,6 +78,7 @@ class _RowView extends StatelessWidget {
     required this.animation,
     required this.selectedId,
     required this.hintCellIds,
+    required this.justMatchedIds,
     required this.onTap,
   });
 
@@ -93,6 +96,7 @@ class _RowView extends StatelessWidget {
             animation: animation,
             selected: board.cells[i].id == selectedId,
             hinted: hintCellIds.contains(board.cells[i].id),
+            justMatched: justMatchedIds.contains(board.cells[i].id),
             onTap: onTap,
           ),
         ],
@@ -107,6 +111,7 @@ class _CellView extends StatelessWidget {
   final Duration animation;
   final bool selected;
   final bool hinted;
+  final bool justMatched;
   final ValueChanged<int> onTap;
 
   const _CellView({
@@ -115,6 +120,7 @@ class _CellView extends StatelessWidget {
     required this.animation,
     required this.selected,
     required this.hinted,
+    required this.justMatched,
     required this.onTap,
   });
 
@@ -123,7 +129,12 @@ class _CellView extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     late final Color bg, border, ink;
-    if (cell.cleared) {
+    if (cell.cleared && justMatched) {
+      // Mockup 07: the pair pops emerald, then fades to ghosts.
+      bg = scheme.tertiaryContainer;
+      border = scheme.tertiary;
+      ink = scheme.tertiary;
+    } else if (cell.cleared) {
       bg = Colors.transparent;
       border = scheme.outlineVariant;
       ink = scheme.outline.withValues(alpha: .55);
@@ -162,7 +173,9 @@ class _CellView extends StatelessWidget {
             fontSize: size * .5,
             fontWeight: FontWeight.w700,
             color: ink,
-            decoration: cell.cleared ? TextDecoration.lineThrough : null,
+            decoration: (cell.cleared && !justMatched)
+                ? TextDecoration.lineThrough
+                : null,
             decorationColor: ink,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),

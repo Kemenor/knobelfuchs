@@ -38,7 +38,30 @@ class _ScanChallengeScreenState extends State<ScanChallengeScreen> {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l.scanChallenge)),
-      body: MobileScanner(onDetect: _onDetect),
+      body: MobileScanner(
+        onDetect: _onDetect,
+        // Never a dead black box: say what's wrong, calmly.
+        errorBuilder: (context, error) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.no_photography_outlined,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.outline),
+                const SizedBox(height: 12),
+                Text(
+                  error.errorCode == MobileScannerErrorCode.permissionDenied
+                      ? l.cameraDenied
+                      : '${error.errorCode.name}: ${error.errorDetails?.message ?? ''}',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

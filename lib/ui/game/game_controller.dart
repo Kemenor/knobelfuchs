@@ -23,6 +23,7 @@ class GameView {
   final int rowsCleared;
   final int? selectedId;
   final Set<int> hintCellIds; // unreleased hinted cells (sticky orange)
+  final Set<int> justMatchedIds; // emerald flash before ghosting (mockup 07)
   final bool targetBeaten;
 
   const GameView({
@@ -39,6 +40,7 @@ class GameView {
     required this.rowsCleared,
     required this.selectedId,
     required this.hintCellIds,
+    required this.justMatchedIds,
     required this.targetBeaten,
   });
 
@@ -55,6 +57,7 @@ class GameController extends Notifier<GameView?> {
   GameState? _game;
   String _slot = kFreeSlot;
   int? _selectedId;
+  Set<int> _justMatched = const {};
   DateTime _startedAt = DateTime.now();
 
   @override
@@ -118,6 +121,7 @@ class GameController extends Notifier<GameView?> {
       if (selectedIdx != null && game.board.canMatch(selectedIdx, idx)) {
         game.match(selected, id);
         _selectedId = null;
+        _flashMatched({selected, id});
       } else {
         // Never an error — the selection simply moves (§3.2).
         _selectedId = id;
@@ -154,10 +158,22 @@ class GameController extends Notifier<GameView?> {
     final ok = game.undo();
     if (ok) {
       _selectedId = null;
+      _justMatched = const {};
       _publish();
       _persist(before);
     }
     return ok;
+  }
+
+  /// Mockup 07: matched cells pop emerald, then fade to ghosts.
+  void _flashMatched(Set<int> ids) {
+    _justMatched = ids;
+    Future.delayed(const Duration(milliseconds: 320), () {
+      if (_justMatched == ids) {
+        _justMatched = const {};
+        _publish();
+      }
+    });
   }
 
   /// Autosave + commit results on the playing→ended transition (§3.7).
@@ -226,6 +242,7 @@ class GameController extends Notifier<GameView?> {
         if (hint != null && !hint.aReleased) hint.aId,
         if (hint != null && !hint.bReleased) hint.bId,
       },
+      justMatchedIds: _justMatched,
       targetBeaten: game.targetBeaten,
     );
   }
