@@ -16,6 +16,8 @@ class HomeScreen extends ConsumerWidget {
     final l = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final game = ref.watch(gameControllerProvider);
+    final saved = ref.watch(savedFreeRunProvider).value;
+    final resumeScore = game?.score ?? saved?.score;
 
     void comingSoon() {
       ScaffoldMessenger.of(context)
@@ -71,16 +73,28 @@ class HomeScreen extends ConsumerWidget {
                     icon: Icons.edit_outlined,
                     title: l.modeFree,
                     subtitle: l.modeFreeDesc,
-                    trailing: game != null
-                        ? '${l.resume}\n${game.score} ${l.score}'
+                    trailing: resumeScore != null
+                        ? '${l.resume}\n$resumeScore ${l.score}'
                         : null,
-                    onTap: () {
+                    onTap: () async {
+                      final nav = Navigator.of(context);
                       if (game != null) {
-                        Navigator.of(context).push(MaterialPageRoute(
+                        nav.push(MaterialPageRoute(
                             builder: (_) => const GameScreen()));
-                      } else {
-                        showNewGameSheet(context);
+                        return;
                       }
+                      if (saved != null) {
+                        // One tap back into the autosaved run (§12).
+                        final ok = await ref
+                            .read(gameControllerProvider.notifier)
+                            .resumeSaved();
+                        if (ok) {
+                          nav.push(MaterialPageRoute(
+                              builder: (_) => const GameScreen()));
+                          return;
+                        }
+                      }
+                      if (context.mounted) showNewGameSheet(context);
                     },
                   ),
                   const SizedBox(height: 14),

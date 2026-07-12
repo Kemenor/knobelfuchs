@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/constants.dart';
 import '../../domain/game.dart';
 import '../../l10n/app_localizations.dart';
+import '../freeform/new_game_sheet.dart';
 import 'board_view.dart';
 import 'game_controller.dart';
 import 'run_end_dialog.dart';
@@ -140,8 +141,47 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           _Score(view: view),
+          const SizedBox(width: 4),
+          _NewGameButton(view: view),
         ],
       ),
+    );
+  }
+}
+
+/// §12: "new game despite live run" lives here, behind a calm confirmation.
+class _NewGameButton extends ConsumerWidget {
+  final GameView view;
+  const _NewGameButton({required this.view});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    return IconButton(
+      tooltip: l.newGameTitle,
+      icon: const Icon(Icons.restart_alt),
+      onPressed: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(l.discardTitle),
+            content: Text(l.discardBody(view.score)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(l.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(l.discard),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true && context.mounted) {
+          showNewGameSheet(context, pushGameScreen: false);
+        }
+      },
     );
   }
 }
@@ -239,7 +279,12 @@ class _Rail extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(children: [const BackButton(), _ModeChip(view: view)]),
+          Row(children: [
+            const BackButton(),
+            _ModeChip(view: view),
+            const Spacer(),
+            _NewGameButton(view: view),
+          ]),
           const SizedBox(height: 12),
           _Score(view: view),
           const Spacer(),

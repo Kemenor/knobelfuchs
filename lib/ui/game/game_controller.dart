@@ -1,7 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/database.dart';
+import '../../data/game_repository.dart';
 import '../../domain/board.dart';
 import '../../domain/game.dart';
+
+/// Free Form's single run slot (§6.1); daily/adventure get their own keys.
+const String kFreeSlot = 'free';
+
+final databaseProvider = Provider<AppDatabase>((ref) {
+  final db = AppDatabase();
+  ref.onDispose(db.close);
+  return db;
+});
+
+final gameRepositoryProvider =
+    Provider<GameRepository>((ref) => GameRepository(ref.watch(databaseProvider)));
+
+/// The autosaved Free Form run, for the home card. Bumped after every
+/// controller persist.
+final savedFreeRunProvider = FutureProvider<SavedRunSummary?>(
+  (ref) => ref.watch(gameRepositoryProvider).loadSummary(kFreeSlot),
+);
 
 /// Immutable snapshot of the running game for the UI. The mutable [GameState]
 /// lives inside the controller; every mutation publishes a fresh view.
@@ -43,22 +63,45 @@ final gameControllerProvider =
 class GameController extends Notifier<GameView?> {
   GameState? _game;
   int? _selectedId;
+  DateTime _startedAt = DateTime.now();
 
   @override
   GameView? build() => null;
 
-  bool get hasGame => _game != null;
+  GameRepository get _repo => ref.read(gameRepositoryProvider);
 
   void start(GameConfig config) {
     _game = GameState.fresh(config);
     _selectedId = null;
+    _startedAt = DateTime.now();
     _publish();
+    _persist(GameStatus.playing);
   }
 
-  void quit() {
+  /// Rebuild the autosaved run from its move log (§3.7: every move durable).
+  Future<bool> resumeSaved() async {
+    final saved = await _repo.loadRun(kFreeSlot);
+    if (saved == null) return false;
+    _game = GameState.replay(
+      saved.config,
+      saved.actions,
+      hintsUsed: saved.hintsUsed,
+      activeHint: saved.activeHint,
+    );
+    _selectedId = null;
+    _startedAt = saved.startedAt;
+    _publish();
+    return true;
+  }
+
+  /// Leave the game for good (run-end "Zum Menü") — the slot is cleared;
+  /// the result was already recorded at run end.
+  Future<void> quit() async {
     _game = null;
     _selectedId = null;
     _publish();
+    await _repo.clearRun(kFreeSlot);
+    ref.invalidate(savedFreeRunProvider);
   }
 
   /// Tap-tap interaction (§3.2): select → match-or-move-selection → deselect.
@@ -68,6 +111,7 @@ class GameController extends Notifier<GameView?> {
     if (game == null) return;
     final idx = game.board.indexOfId(id);
     if (idx == null || game.board.cells[idx].cleared) return;
+    final before = game.status;
 
     game.releaseHintCell(id);
 
@@ -87,25 +131,65 @@ class GameController extends Notifier<GameView?> {
       }
     }
     _publish();
+    _persist(before);
   }
 
   bool addRows() {
-    final ok = _game?.addRows() ?? false;
+    final game = _game;
+    if (game == null) return false;
+    final before = game.status;
+    final ok = game.addRows();
     _publish();
+    if (ok) _persist(before);
     return ok;
   }
 
   HintOutcome requestHint() {
-    final outcome = _game?.requestHint() ?? HintOutcome.nonePossible;
+    final game = _game;
+    if (game == null) return HintOutcome.nonePossible;
+    final before = game.status;
+    final outcome = game.requestHint();
     _publish();
+    if (outcome == HintOutcome.shown) _persist(before);
     return outcome;
   }
 
   bool undo() {
-    final ok = _game?.undo() ?? false;
-    if (ok) _selectedId = null;
-    _publish();
+    final game = _game;
+    if (game == null) return false;
+    final before = game.status;
+    final ok = game.undo();
+    if (ok) {
+      _selectedId = null;
+      _publish();
+      _persist(before);
+    }
     return ok;
+  }
+
+  /// Autosave + commit results on the playing→ended transition (§3.7).
+  /// Fire-and-forget, but internally ordered.
+  void _persist(GameStatus before) {
+    final game = _game;
+    if (game == null) return;
+    final now = DateTime.now();
+    final after = game.status;
+    final startedAt = _startedAt;
+
+    Future<void> run() async {
+      await _repo.saveRun(kFreeSlot, game, startedAt: startedAt, now: now);
+      if (before == GameStatus.playing && after != GameStatus.playing) {
+        await _repo.recordResult(kFreeSlot, game,
+            startedAt: startedAt, endedAt: now);
+        if (after == GameStatus.cleared) {
+          // No way back into a cleared board — the slot is done (§3.7).
+          await _repo.clearRun(kFreeSlot);
+        }
+      }
+      ref.invalidate(savedFreeRunProvider);
+    }
+
+    run();
   }
 
   void _publish() {

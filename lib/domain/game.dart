@@ -109,6 +109,23 @@ class GameState {
     }
   }
 
+  /// Restore a saved run: the move log deterministically rebuilds the exact
+  /// board from the seeded opening (same maths on every device). Invalid
+  /// actions in a corrupt log are skipped silently — the game stays playable.
+  factory GameState.replay(
+    GameConfig config,
+    List<GameAction> actions, {
+    int hintsUsed = 0,
+    ActiveHint? activeHint,
+  }) {
+    final state = GameState.fresh(config);
+    state._rebuild(actions);
+    state.hintsUsed = hintsUsed;
+    state.activeHint = activeHint;
+    state._revalidateHint();
+    return state;
+  }
+
   List<GameAction> get log => List.unmodifiable(_log);
   int get addsUsed => _log.whereType<AddAction>().length;
   int? get addsRemaining => config.adds == null ? null : config.adds! - addsUsed;
@@ -144,25 +161,27 @@ class GameState {
   /// True rewind of the last match or add (§3.6); hints are untouched.
   bool undo() {
     if (_log.isEmpty) return false;
-    final replay = _log.sublist(0, _log.length - 1);
+    _rebuild(_log.sublist(0, _log.length - 1));
+    _revalidateHint();
+    return true;
+  }
+
+  /// Reset to the seeded opening and re-apply [actions] in order.
+  void _rebuild(List<GameAction> actions) {
     board = generateOpening(config.engineSeed);
     _nextId = board.cells.length;
     score = 0;
     pairsMatched = 0;
     rowsCleared = 0;
     _log.clear();
-    for (final action in replay) {
+    for (final action in actions) {
       switch (action) {
         case MatchAction(:final aId, :final bId):
-          _applyMatch(aId, bId);
-          _log.add(action);
+          if (_applyMatch(aId, bId)) _log.add(action);
         case AddAction():
-          _applyAdd();
-          _log.add(action);
+          if (_applyAdd()) _log.add(action);
       }
     }
-    _revalidateHint();
-    return true;
   }
 
   /// §3.5 — deterministic, consumption only on new information.

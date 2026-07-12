@@ -10,17 +10,21 @@ import '../game/game_controller.dart';
 import '../game/game_screen.dart';
 
 /// Free Form parameter sheet (§6.1): one tap for players who don't care —
-/// parameters are power, summoned not imposed.
-Future<void> showNewGameSheet(BuildContext context) {
+/// parameters are power, summoned not imposed. Pass [pushGameScreen] false
+/// when the sheet is opened from *within* the game screen (§12's "new game
+/// anyway" path) — the controller swap re-renders the screen in place.
+Future<void> showNewGameSheet(BuildContext context,
+    {bool pushGameScreen = true}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (_) => const _NewGameSheet(),
+    builder: (_) => _NewGameSheet(pushGameScreen: pushGameScreen),
   );
 }
 
 class _NewGameSheet extends ConsumerStatefulWidget {
-  const _NewGameSheet();
+  final bool pushGameScreen;
+  const _NewGameSheet({required this.pushGameScreen});
 
   @override
   ConsumerState<_NewGameSheet> createState() => _NewGameSheetState();
@@ -55,9 +59,11 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
     );
     ref.read(gameControllerProvider.notifier).start(config);
     Navigator.of(context).pop();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const GameScreen()),
-    );
+    if (widget.pushGameScreen) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const GameScreen()),
+      );
+    }
   }
 
   @override
