@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:knobelfuchs/data/database.dart';
 import 'package:knobelfuchs/domain/adventure.dart';
+import 'package:knobelfuchs/domain/bot.dart';
+import 'package:knobelfuchs/domain/game.dart';
 import 'package:knobelfuchs/ui/adventure/adventure_providers.dart';
 import 'package:knobelfuchs/ui/providers.dart';
 
@@ -54,6 +56,23 @@ void main() {
       final b = adventureConfig(6);
       expect(a.target, isNotNull);
       expect(a.target, b.target);
+    });
+
+    test('DRIFT GUARD: baked targets match a live bot recomputation', () {
+      // If this fails, an engine change shifted the targets — re-run
+      // tool/bake_targets.dart and consciously re-bake (concept §4.1).
+      for (var level = 1; level <= kAdventureLevels; level++) {
+        final base = GameConfig(
+          seed: adventureSeedKey(level),
+          adds: adventureAdds(level),
+          hints: adventureHints(level),
+        );
+        expect(
+          kAdventureTargets[level - 1],
+          targetScore(base, adventureFactor(level)),
+          reason: 'level $level target drifted',
+        );
+      }
     });
   });
 

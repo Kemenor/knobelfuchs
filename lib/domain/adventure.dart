@@ -10,7 +10,6 @@
 /// raw uniform deal on purpose — distribution skew is part of the texture.
 library;
 
-import 'bot.dart';
 import 'game.dart';
 
 const int kAdventureLevels = 50;
@@ -36,6 +35,20 @@ const List<String> kAdventureSeeds = [
   'level:s80', 'level:s229', 'level:s59', 'level:s297', 'level:s138',
 ];
 
+/// Baked target scores (tool/bake_targets.dart, 2026-07-12): seed, budgets,
+/// factor and scoring are all fixed, so the bot runs once offline instead of
+/// 50× per level-list build on-device. The drift-guard test recomputes these
+/// — an engine change that shifts a target fails CI and forces a re-bake.
+/// Bimodal by design: ~300s = the greedy bot got stuck (beating it is
+/// generous), ~600s+ = the bot cleared (you must nearly match a clear).
+const List<int> kAdventureTargets = [
+  680, 590, 320, 320, 320, 640, 320, 320, 310, 300, // chapter 1
+  740, 650, 550, 560, 320, 320, 650, 330, 330, 310, // chapter 2
+  330, 710, 660, 620, 310, 620, 300, 320, 570, 580, // chapter 3
+  770, 670, 630, 730, 340, 320, 580, 290, 640, 590, // chapter 4
+  790, 690, 590, 350, 330, 350, 340, 330, 350, 340, // chapter 5
+];
+
 /// Within-chapter budget curves (position 0–9): generous start, tight end,
 /// reset every chapter.
 const List<int> _addsCurve = [5, 5, 4, 4, 3, 3, 3, 2, 2, 2];
@@ -56,17 +69,16 @@ int adventureHints(int level) => _hintsCurve[_position(level)];
 double adventureFactor(int level) =>
     0.9 + (level - 1) * (0.1 / (kAdventureLevels - 1));
 
-/// The full config for a level, target included (computed, deterministic —
-/// same on every device, no authoring burden; the bot plays under the same
-/// scoring variant).
+/// The full config for a level — target from the baked table (no on-device
+/// bot runs; see kAdventureTargets).
 GameConfig adventureConfig(int level,
     {ScoringVariant scoring = ScoringVariant.originalsOnly}) {
   assert(level >= 1 && level <= kAdventureLevels);
-  final base = GameConfig(
+  return GameConfig(
     seed: adventureSeedKey(level),
     adds: adventureAdds(level),
     hints: adventureHints(level),
+    target: kAdventureTargets[level - 1],
     scoring: scoring,
   );
-  return base.withTarget(targetScore(base, adventureFactor(level)));
 }
