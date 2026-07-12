@@ -162,6 +162,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             : Column(
                 children: [
                   _TopBar(view: view),
+                  _DigitLegend(view: view),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -395,8 +396,52 @@ class _Rail extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _Score(view: view),
+          const SizedBox(height: 10),
+          _DigitLegend(view: view),
           const Spacer(),
           _ActionBar(view: view, vertical: true),
+        ],
+      ),
+    );
+  }
+}
+
+/// Which of 1–9 still survive on the board — extinct digits fade and strike,
+/// same visual language as the ghost cells. Information, never punishment.
+class _DigitLegend extends StatelessWidget {
+  final GameView view;
+  const _DigitLegend({required this.view});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (var d = 1; d <= 9; d++)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 7),
+              child: Text(
+                '$d',
+                style: view.digitsPresent.contains(d)
+                    ? TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurfaceVariant,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      )
+                    : TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.outline.withValues(alpha: .45),
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: scheme.outline.withValues(alpha: .45),
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+              ),
+            ),
         ],
       ),
     );

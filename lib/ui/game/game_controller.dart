@@ -24,6 +24,7 @@ class GameView {
   final int? selectedId;
   final Set<int> hintCellIds; // unreleased hinted cells (sticky orange)
   final Set<int> justMatchedIds; // emerald flash before ghosting (mockup 07)
+  final Set<int> digitsPresent; // legend: which of 1–9 still survive
   final bool targetBeaten;
 
   const GameView({
@@ -41,6 +42,7 @@ class GameView {
     required this.selectedId,
     required this.hintCellIds,
     required this.justMatchedIds,
+    required this.digitsPresent,
     required this.targetBeaten,
   });
 
@@ -243,6 +245,10 @@ class GameController extends Notifier<GameView?> {
         if (hint != null && !hint.bReleased) hint.bId,
       },
       justMatchedIds: _justMatched,
+      digitsPresent: {
+        for (final c in game.board.cells)
+          if (!c.cleared) c.digit,
+      },
       targetBeaten: game.targetBeaten,
     );
   }
