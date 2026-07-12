@@ -25,6 +25,7 @@ semantics; this plan wins for implementation.
 | Persistence | **drift / SQLite** — saved runs (board + undo log; Free Form/Story one each, Daily **one per date** so half-finished days survive), daily-knobel history, story progress, lifetime stats; with migrations |
 | Seeds & RNG | **Seeded PRNG in the domain core** (injected, deterministic) — same seed ⇒ identical board on every device. Daily seed = local date; targets from the deterministic baseline bot (concept §4.1) |
 | QR sharing | `qr_flutter` (render) + `mobile_scanner` (scan — knabberfuchs precedent). Free-Form challenge payload only; later phase |
+| Audio | **`audioplayers`** (low-latency mode) for action-response sounds (concept §10). Assets: Kenney **CC0** packs, bundled; settings toggle + silent-mode respected; no background music |
 | Design | **Material 3**, Fuchsbau triad & fonts via the [fuchsbau package](https://github.com/Kemenor/fuchsbau); deviations in [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
 | Layout | **Tablet-first, responsive** — Xiaomi Pad 5 (11″, 2560×1600) is the reference device, portrait *and* landscape; phones supported by the same adaptive layout |
 | Networking | **None.** Fully on-device, no runtime keys |
@@ -88,8 +89,9 @@ lib/
 4. **Daily & Story.** Date seed + computed target; the **month-calendar picker**
    (past days playable/resumable per-date, future locked by device date); the level
    list + unlock chain (curate ~20 levels via the bot).
-5. **Polish.** Win/run-end screens, settings (theme/font/language, 200 % scale pass),
-   l10n, QR share/scan.
+5. **Polish.** Win/run-end screens, sound & motion pass (the family's picks from
+   `07-klang.html`), settings (theme/font/language/sound, 200 % scale pass), l10n,
+   QR share/scan.
 6. **Release.** Icon, store listing, fastlane, landing page (under fuchsnest.ch).
 
 ## Toolchain note

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knobelfuchs — Klang &amp; Bewegung</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+  :root{--bg:#faf7f4;--card:#fff;--ink:#221d1a;--muted:#7a6f68;--line:#ece4dd;
+    --orange:#ea7a24;--emerald:#1fa85d;--indigo:#8559d0;--faded:#a8988c;--amber:#e0a33b;
+    --sh:0 12px 30px -24px rgba(0,0,0,.4);}
+  body.dark{--bg:#161311;--card:#211c19;--ink:#f3ede9;--muted:#a99e96;--line:#322a25;
+    --orange:#f39c4e;--emerald:#37ce78;--indigo:#a98cee;--faded:#b6a79b;--amber:#edb45a;
+    --sh:0 12px 30px -22px rgba(0,0,0,.7);}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Figtree',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  h1{font-size:1.3rem;margin:0;letter-spacing:-.02em}
+  .toggle{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit}
+  .ms{font-family:'Material Symbols Rounded';font-size:22px;line-height:1;font-variation-settings:'opsz' 24,'wght' 400,'GRAD' 0,'FILL' 0;flex:none}
+  .lead{color:var(--muted);font-size:.9rem;margin:0 0 20px}
+
+  .event{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 20px;margin-bottom:14px;display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:center}
+  .event h3{margin:0;font-size:1.05rem}
+  .event p{margin:0;color:var(--muted);font-size:.85rem;grid-column:1}
+  .demo{grid-column:1;display:flex;gap:6px;margin-top:10px}
+  .cell{width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.25rem;font-variant-numeric:tabular-nums;background:var(--bg);border:1px solid var(--line);border-radius:9px}
+  .snds{grid-column:2;grid-row:1 / span 3;display:flex;flex-direction:column;gap:8px;justify-content:center}
+  .snd{display:flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:12px;border:none;background:color-mix(in srgb,var(--indigo) 13%,transparent);color:var(--indigo);font-family:inherit;font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap}
+  .snd small{font-weight:500;opacity:.75}
+
+  /* animations — all ≤ 250ms, response-only */
+  @keyframes selPop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .a-sel{animation:selPop .18s ease-out;color:var(--indigo);background:color-mix(in srgb,var(--indigo) 16%,transparent);border:2px solid var(--indigo)}
+  @keyframes matchPop{0%{transform:scale(1)}35%{transform:scale(1.18)}100%{transform:scale(.96)}}
+  .a-match{animation:matchPop .22s ease-out forwards;color:var(--emerald);background:color-mix(in srgb,var(--emerald) 16%,transparent);border-color:var(--emerald)}
+  .a-ghost{color:var(--faded);text-decoration:line-through;opacity:.5;background:transparent;border-style:dashed;transition:all .25s ease-out}
+  @keyframes rowOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-10px)}}
+  .a-row{animation:rowOut .25s ease-in forwards}
+  @keyframes rowIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
+  .a-add{animation:rowIn .25s ease-out}
+  @keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--amber) 30%,transparent)}}
+  .a-hint{animation:hintPulse .5s ease-in-out;color:var(--amber);background:color-mix(in srgb,var(--amber) 18%,transparent);border:2px solid var(--amber)}
+  .a-gray{transition:all .25s;opacity:.4;filter:grayscale(1)}
+  @keyframes winWave{0%{transform:translateY(0)}30%{transform:translateY(-8px)}60%{transform:translateY(0)}}
+  .a-win{animation:winWave .45s ease-in-out;color:var(--emerald);background:color-mix(in srgb,var(--emerald) 16%,transparent);border-color:var(--emerald)}
+
+  .note{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 18px;color:var(--muted);font-size:.85rem;margin-top:18px}
+  .pagenav{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem}
+  .pagenav a{color:var(--muted);text-decoration:none;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}
+  .pagenav a.on{color:var(--orange);border-color:var(--orange);font-weight:800}
+</style></head>
+<body><div class="wrap">
+  <header><h1>🦊 Knobelfuchs — Klang &amp; Bewegung</h1>
+  <button class="toggle" onclick="document.body.classList.toggle('dark')">◐ Hell / Dunkel</button></header>
+  <p class="lead">Jedes Spielereignis bekommt <b>eine kurze Bewegung + einen Klang</b> — Belohnung für die Handlung, nie ein Lockruf. Knopf drücken = anhören <i>und</i> Animation sehen. Zwei Kandidaten pro Ereignis — Favoriten melden! Alle Klänge: <a href="https://kenney.nl" style="color:var(--indigo)">Kenney.nl</a>, CC0 (gemeinfrei).</p>
+
+  <div class="event">
+    <h3>Zahl antippen</h3>
+    <p>Die Zelle federt kurz und wird indigo — leise, wie ein Bleistift-Tipp.</p>
+    <div class="demo" id="d-sel"><div class="cell">7</div><div class="cell">3</div><div class="cell">5</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/select_002.ogg', animSel)"><span class="ms">play_arrow</span>A <small>· select</small></button>
+      <button class="snd" onclick="fx('sounds/click_002.ogg', animSel)"><span class="ms">play_arrow</span>B <small>· click</small></button>
+    </div>
+  </div>
+
+  <div class="event">
+    <h3>Paar gefunden</h3>
+    <p>Beide Zellen ploppen smaragd auf und verblassen zu Geistern.</p>
+    <div class="demo" id="d-match"><div class="cell">3</div><div class="cell">4</div><div class="cell">7</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/pluck_001.ogg', animMatch)"><span class="ms">play_arrow</span>A <small>· pluck</small></button>
+      <button class="snd" onclick="fx('sounds/confirmation_001.ogg', animMatch)"><span class="ms">play_arrow</span>B <small>· confirm</small></button>
+    </div>
+  </div>
+
+  <div class="event">
+    <h3>Reihe verschwindet</h3>
+    <p>Die leere Reihe hebt sich sanft und löst sich auf.</p>
+    <div class="demo" id="d-row"><div class="cell a-ghost">2</div><div class="cell a-ghost">8</div><div class="cell a-ghost">5</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/glass_002.ogg', animRow)"><span class="ms">play_arrow</span>A <small>· glass</small></button>
+      <button class="snd" onclick="fx('sounds/glass_005.ogg', animRow)"><span class="ms">play_arrow</span>B <small>· glass 2</small></button>
+    </div>
+  </div>
+
+  <div class="event">
+    <h3>Nachlegen</h3>
+    <p>Die neuen Zahlen treten leise von unten ein.</p>
+    <div class="demo" id="d-add"><div class="cell">1</div><div class="cell">9</div><div class="cell">6</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/drop_002.ogg', animAdd)"><span class="ms">play_arrow</span>A <small>· drop</small></button>
+      <button class="snd" onclick="fx('sounds/scroll_002.ogg', animAdd)"><span class="ms">play_arrow</span>B <small>· scroll</small></button>
+    </div>
+  </div>
+
+  <div class="event">
+    <h3>Tipp</h3>
+    <p>Das gefundene Paar pulsiert einmal bernstein — Information, kein Befehl.</p>
+    <div class="demo" id="d-hint"><div class="cell">9</div><div class="cell">4</div><div class="cell">1</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/question_001.ogg', animHint)"><span class="ms">play_arrow</span>A <small>· question</small></button>
+      <button class="snd" onclick="fx('sounds/tick_002.ogg', animHint)"><span class="ms">play_arrow</span>B <small>· tick</small></button>
+    </div>
+  </div>
+
+  <div class="event">
+    <h3>Grad nicht möglich</h3>
+    <p>Knopf/Budget aufgebraucht: wird still grau — kein Alarm, kein Rot, kein Zittern.</p>
+    <div class="demo" id="d-gray"><div class="cell">＋</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/minimize_001.ogg', animGray)"><span class="ms">play_arrow</span>A <small>· minimize</small></button>
+      <button class="snd" onclick="fx('sounds/bong_001.ogg', animGray)"><span class="ms">play_arrow</span>B <small>· bong</small></button>
+    </div>
+  </div>
+
+  <div class="event">
+    <h3>Brett leergeräumt 🎉</h3>
+    <p>Der eine laute Moment: Welle über die Zellen, kleiner Jubel — dann wieder Ruhe.</p>
+    <div class="demo" id="d-win"><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div><div class="cell">✓</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/jingles_PIZZI07.ogg', animWin)"><span class="ms">play_arrow</span>A <small>· pizzicato</small></button>
+      <button class="snd" onclick="fx('sounds/jingles_PIZZI10.ogg', animWin)"><span class="ms">play_arrow</span>B <small>· pizzicato 2</small></button>
+      <button class="snd" onclick="fx('sounds/jingles_STEEL04.ogg', animWin)"><span class="ms">play_arrow</span>C <small>· steeldrum</small></button>
+    </div>
+  </div>
+
+  <div class="event">
+    <h3>Level freigeschaltet</h3>
+    <p>Abenteuer: das nächste Level öffnet sich mit einem kurzen Auftakt.</p>
+    <div class="demo" id="d-lvl"><div class="cell">🔓</div></div>
+    <div class="snds">
+      <button class="snd" onclick="fx('sounds/jingles_PIZZI00.ogg', animLvl)"><span class="ms">play_arrow</span>A <small>· auftakt</small></button>
+      <button class="snd" onclick="fx('sounds/jingles_PIZZI01.ogg', animLvl)"><span class="ms">play_arrow</span>B <small>· auftakt 2</small></button>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Die Grenze zum Dark Pattern, klar gezogen:</b> Klang &amp; Bewegung antworten immer auf eine
+    <i>Handlung der Spielerin</i> — nie umgekehrt. Kein Klang lockt zurück in die App, nichts
+    blinkt von selbst, keine „Comeback"-Fanfare, kein Daily-Login-Tusch. Alles ≤ 250 ms
+    (Jingles beim Sieg ausgenommen), Ton abschaltbar in den Einstellungen, Lautlos-Modus des
+    Geräts wird respektiert. Quelle aller Kandidaten: Kenney.nl „Interface Sounds" &amp;
+    „Music Jingles", beide CC0.
+  </div>
+
+<nav class="pagenav">
+  <a href="01-home.html">01 Home</a>
+  <a href="02-spielbrett.html">02 Brett</a>
+  <a href="03-spielbrett-quer.html">03 Brett quer</a>
+  <a href="04-parameter-und-ende.html">04 Neues Spiel &amp; Ende</a>
+  <a href="05-abenteuer.html">05 Abenteuer</a>
+  <a href="06-tages-knobel.html">06 Tages-Knobel</a>
+  <a class="on" href="07-klang.html">07 Klang</a>
+</nav>
+
+<script>
+function fx(src, anim){ const a = new Audio(src); a.volume = .8; a.play(); if(anim) anim(); }
+function retrig(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), 600); }
+function animSel(){ retrig(document.querySelector('#d-sel .cell'), 'a-sel'); }
+function animMatch(){ const c = document.querySelectorAll('#d-match .cell');
+  retrig(c[0],'a-match'); retrig(c[2],'a-match');
+  setTimeout(() => { c[0].classList.add('a-ghost'); c[2].classList.add('a-ghost');
+    setTimeout(() => { c[0].classList.remove('a-ghost'); c[2].classList.remove('a-ghost'); }, 900); }, 260); }
+function animRow(){ document.querySelectorAll('#d-row .cell').forEach((c,i) =>
+  setTimeout(() => retrig(c,'a-row'), i*40)); }
+function animAdd(){ document.querySelectorAll('#d-add .cell').forEach((c,i) =>
+  setTimeout(() => retrig(c,'a-add'), i*40)); }
+function animHint(){ const c = document.querySelectorAll('#d-hint .cell');
+  retrig(c[0],'a-hint'); retrig(c[2],'a-hint'); }
+function animGray(){ const c = document.querySelector('#d-gray .cell');
+  c.classList.add('a-gray'); setTimeout(() => c.classList.remove('a-gray'), 900); }
+function animWin(){ document.querySelectorAll('#d-win .cell').forEach((c,i) =>
+  setTimeout(() => retrig(c,'a-win'), i*70)); }
+function animLvl(){ retrig(document.querySelector('#d-lvl .cell'), 'a-sel'); }
+</script>
+</div></body></html>

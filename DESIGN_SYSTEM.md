@@ -62,6 +62,10 @@ law applies — nothing in normal play is ever red.
   strip stay fixed.
 - **Stillness rule:** nothing on the board moves without player input (concept §7).
   Match/collapse animations ≤ 250 ms, then perfect stillness again.
+- **Sound & motion pair up per event** (concept §10, auditioned in
+  `examples/ui/07-klang.html`): feedback answers the player's action, never lures —
+  no autonomous blinking, no comeback fanfares. Sounds toggleable, silent mode
+  respected.
 
 ## 3. Layout — orientations (Pad 5)
 

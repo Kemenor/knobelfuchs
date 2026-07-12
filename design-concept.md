@@ -180,7 +180,34 @@ notifications — **a game must never call you back**; it waits.
 - Portrait and landscape both first-class (§ DESIGN_SYSTEM); phones supported by the
   same adaptive layout.
 
-## 10. Open questions (for family playtesting)
+## 10. Sound & motion — reward the action, never bait the return
+
+Good game feel is not a dark pattern. A found pair *should* feel satisfying — the line
+we hold is **who initiates**: every sound and every animation is a *response to the
+player's action*, never a lure. No sound ever calls into the room, nothing blinks on
+its own, no comeback fanfares, no daily-login jingle. What we avoid is not rewarding
+the player — it's *manipulating* them.
+
+| Event | Motion (≤ 250 ms, response-only) | Sound (candidates) |
+|---|---|---|
+| Select cell | spring-scale + indigo | soft select/click |
+| Pair matched | emerald pop, fade to ghost | pluck / confirm |
+| Row collapse | row lifts and dissolves | glass chime |
+| Add rows | new digits step in from below | drop / shuffle |
+| Hint | one amber pulse on the pair | soft question ping |
+| Quietly unavailable | dim to gray (no shake) | low muted tone |
+| Board cleared | emerald wave across cells | short jingle (the one loud moment; exempt from 250 ms) |
+| Level unlocked | brief pop on the next level | short upbeat |
+
+- **All sounds optional:** a settings toggle, and the device's silent mode is always
+  respected. No background music in v1.
+- **Assets:** Kenney.nl "Interface Sounds" + "Music Jingles", both **CC0** — bundled,
+  no attribution required (we credit anyway). Candidates are auditioned with their
+  animations in [`examples/ui/07-klang.html`](./examples/ui/07-klang.html).
+- The stillness rule (§9) is untouched: between responses, the board is perfectly
+  still.
+
+## 11. Open questions (for family playtesting)
 
 1. Should the hint button *passively* show gray whenever no pair exists (constant free
    information — kinder, but removes the scanning challenge)? v1: only on press.
@@ -188,3 +215,4 @@ notifications — **a game must never call you back**; it waits.
 3. Opening size (3 rows?) and Story difficulty curve.
 4. ~~Daily calendar view — v2 candidate.~~ **Promoted to v1** (family requirement):
    the calendar *is* the daily date picker (§6.2).
+5. Final sound picks per event (§10) — audition via `07-klang.html`, then freeze.

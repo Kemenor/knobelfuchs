@@ -14,6 +14,10 @@ Pad 5) reviews these directly. Final app is l10n'd en/de/fr/it as always.
 | `04-parameter-und-ende.html` | Free-Form parameter sheet + run-end screen with QR challenge |
 | `05-abenteuer.html` | Story mode ("Abenteuer") level list — sequential unlock, no timers |
 | `06-tages-knobel.html` | Daily Knobel calendar = date picker — past days playable/resumable per date, future locked by device date |
+| `07-klang.html` | Sound & motion audition board — every game event plays its animation + sound candidates (A/B) |
+
+`sounds/` holds the sound candidates: Kenney.nl "Interface Sounds" + "Music Jingles",
+**CC0 / public domain** (no attribution required; credited anyway).
 
 Terminology in the mockups (l10n keys later): *Nachlegen* = add rows · *Tipp* = hint ·
 *Startwert/Seed* = seed · *Punkteziel* = score to beat · *Tages-Knobel* = daily
