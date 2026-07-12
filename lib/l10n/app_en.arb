@@ -104,6 +104,7 @@
   "statHints": "Hints used",
   "ofBudget": "{used} of {budget}",
   "@ofBudget": { "placeholders": { "used": { "type": "int" }, "budget": { "type": "String" } } },
+  "nextLevel": "Next level",
   "again": "Again!",
   "toMenu": "To menu",
   "backToBoard": "Back to the board",

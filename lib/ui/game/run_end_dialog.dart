@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../domain/adventure.dart';
 import '../../domain/challenge.dart';
 import '../../domain/game.dart';
 import '../../l10n/app_localizations.dart';
@@ -124,13 +125,7 @@ class _RunEndDialog extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        controller.start(view.config); // same seed, retry
-                      },
-                      child: Text(l.again),
-                    ),
+                    child: _PrimaryEndButton(view: view, controller: controller),
                   ),
                 ],
               ),
@@ -243,6 +238,37 @@ class _ChallengeCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The forward action: a beaten adventure level advances to the next one;
+/// everything else retries the same board ("Nochmal!").
+class _PrimaryEndButton extends StatelessWidget {
+  final GameView view;
+  final GameController controller;
+  const _PrimaryEndButton({required this.view, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final level = view.adventureLevel;
+    final next = view.isAdventure &&
+            view.targetBeaten &&
+            level != null &&
+            level < kAdventureLevels
+        ? level + 1
+        : null;
+    return FilledButton(
+      onPressed: () {
+        Navigator.of(context).pop();
+        if (next != null) {
+          controller.start(adventureConfig(next), slot: adventureSlot(next));
+        } else {
+          controller.start(view.config, slot: view.slot); // same board, retry
+        }
+      },
+      child: Text(next != null ? l.nextLevel : l.again),
     );
   }
 }

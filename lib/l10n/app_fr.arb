@@ -95,6 +95,7 @@
   "statAdds": "Rajouts utilisés",
   "statHints": "Indices utilisés",
   "ofBudget": "{used} sur {budget}",
+  "nextLevel": "Niveau suivant",
   "again": "Encore !",
   "toMenu": "Au menu",
   "backToBoard": "Retour au plateau",
