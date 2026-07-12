@@ -26,11 +26,33 @@ is part of the puzzle, never a checkout moment.
 - Each cell is either a **digit 1–9** or **cleared** (was matched away).
 - The board reads like text: **row-major reading order**, left→right, top→bottom.
 
-### 2.1 Opening deal
-Every game is generated from a **seed**: the opening rows are drawn from a seeded PRNG,
-so the same seed always produces the identical game. This is the backbone of all three
-modes (§6) and of challenge-sharing (§7). The opening size is ~3 rows (tunable
-constant, same for all modes).
+### 2.1 Seeds
+Every game is generated from a **seed**, so the same seed always produces the
+identical game on every device. This is the backbone of all three modes (§6) and of
+challenge-sharing (§7).
+
+- **Seeds are strings** — words welcome (`herbst-fuchs`), numbers are just strings
+  too. Normalization makes dictated seeds robust: trim → Unicode **NFC** → lowercase →
+  internal whitespace collapses to a single dash; letters/digits/dashes only, max
+  **32 chars**. The app always displays (and QR-encodes) the normalized form.
+- The engine hashes the normalized string with a **fixed FNV-1a** (hand-rolled — never
+  the platform's `hashCode`, which isn't stable) into the PRNG's integer space.
+- **Randomized seeds** are drawn as 6-digit strings ("738 291") — easy to read out
+  loud at a family lunch.
+- **Daily seeds** are internal — `yyyymmdd` in their own namespace (the mode is mixed
+  into the hash), never typed, never colliding with player seeds.
+- The current seed is visible on the game screen and the run-end screen, so any game
+  can be shared after the fact.
+
+### 2.2 Opening deal & fairness gate
+The opening is **3 rows = 27 digits** (a named constant; width is always 9, and the
+board has **no length cap** — an ∞-adds board may grow as long as its player enjoys).
+
+Raw randomness can deal a dead opening (zero pairs). The **fairness gate** prevents
+it: after generating, the engine counts available pairs; below **3**, it rerolls
+deterministically. The PRNG state is **`hash(seed, attempt)`** — seed and attempt are
+separate hash inputs, so a reroll can never collide with another seed's (or another
+day's) board. The attempt counter is internal; players only ever see their seed.
 
 ## 3. The rules
 
@@ -57,23 +79,53 @@ A quiet moment of satisfaction — small animation, no fanfare screen.
 
 ### 3.4 Adding rows ("Nachlegen")
 The **add button** appends *all surviving digits* in reading order to the end of the
-board. Each game has an **add budget** — default **5**, up to **limitless** where the
-mode allows (§6). The remaining count sits on the button as neutral information; at 0
-the button turns **gray** (quietly unavailable, not alarmed — nothing red).
+board (the classic full-copy rule — the messier the board, the more material). Each
+game has an **add budget** — default **5**, up to **limitless** where the mode allows
+(§6). Adds are **never fairness-gated**: a copy that yields no new pair is the puzzle.
+The remaining count sits on the button as neutral information; at 0 the button turns
+**gray** (quietly unavailable, not alarmed — nothing red).
 
 ### 3.5 Hints
-The **hint button** highlights one currently-valid pair (**fox orange, and it stays
-highlighted until both cells are tapped** — impossible to miss; *information, not
-command*). Each game has a **hint budget** — default **5**, up to **limitless** where
-the mode allows. Pressing hint when **no valid pair exists** shows the button gray and
-points at the add button instead — this **does not consume** a hint (telling you
-"nothing is there" is honesty, not help). At budget 0 the button turns gray.
+The **hint button** highlights **the first valid pair in reading order** (fox orange,
+and it stays highlighted until both cells are tapped — impossible to miss;
+*information, not command*). Deterministic-first matters: on a shared Daily board,
+everyone's hint buys the same information — and it is exactly the baseline bot's move
+(§4.1), so the assist system and the difficulty system are the same mathematics.
 
-### 3.6 End of a run
-- **Board cleared** — the crowning finish (bonus, celebration).
-- **No moves left** (no valid pair, add budget exhausted) — the run **completes** with
-  its score. This is a natural end, *not a fail state*: no "GAME OVER", no red, the
-  score simply stands. One quiet screen: score, target comparison, "again?".
+- Each game has a **hint budget** — default **5**, up to **limitless** where the mode
+  allows. A hint is **consumed only when it reveals a new pair**; pressing hint while
+  a highlight is still active re-pulses it for free.
+- Highlight mechanics: hint and selection are **independent layers** — tapping works
+  exactly as §3.2 regardless of orange. Each hinted cell releases *its own* orange
+  when tapped; highlights are re-validated after every board change and drop silently
+  if the pair stops being valid. Nothing ever blinks.
+- Pressing hint when **no valid pair exists** shows the button gray and points at the
+  add button instead — this **does not consume** a hint (telling you "nothing is
+  there" is honesty, not help). There is **no passive** "pair exists" indicator —
+  whether something is still there *is* the puzzle (revisit only on playtest
+  evidence). At budget 0 the button turns gray.
+
+### 3.6 Undo
+Undo is a **true rewind**, one action per step, unlimited depth back to the opening:
+
+- A step reverses a **match** (cells return, collapsed rows return) or an **add** (the
+  copy vanishes **and the add budget is refunded** — un-mutating refunds).
+- Score rewinds exactly with each step (the move log is replayed).
+- **Hints live outside the move log** — never undone, never refunded; information
+  can't be un-seen.
+- **No redo.** Undoing and playing differently discards the old future.
+
+### 3.7 End of a run
+- **Board cleared** — the crowning finish (bonus, celebration). Final: "Nochmal",
+  "Zum Menü".
+- **Stuck** (no valid pair *and* add budget exhausted) — the engine **auto-detects**
+  this and shows the run-end screen; hiding a dead end would just mean scanning a
+  hopeless board. This is a natural end, *not a fail state*: no "GAME OVER", no red,
+  the score simply stands. The screen offers a quiet **"Zurück aufs Brett"** — undo
+  back in and try another line; a dead end means *this path* is exhausted, not you.
+- **Results commit at every run-end**, best kept: Daily best per date, Adventure best
+  per level (the target-beaten flag latches), Free Form last run + best-for-seed. End
+  better after undoing back in and the better result simply stands.
 - A game in progress is **autosaved** every move and waits indefinitely.
 
 ## 4. Scoring
@@ -83,21 +135,30 @@ formula is **simple, transparent, and shown in-app** — no hidden multipliers:
 
 | Event | Points |
 |---|---|
-| Pair matched | **+10** |
-| Row cleared | **+50** |
+| Pair matched | **+10** — flat, regardless of digits (score stays legible: pairs × 10, roughly) |
+| Row cleared | **+50** — **stacks**: one match emptying two rows scores +100 |
 | Board fully cleared | **+250** |
-| Each unused add at the end | **+50** |
+| Each unused add | **+50** — **paid only on a cleared board** (a "cleared efficiently" bonus, never a reward for giving up early) |
 
 - **Hints never cost points.** Assist use is not punished — the budget is the only
   limit (information, never punishment).
-- The formula is a v1 proposal — **frozen only after family playtesting**.
+- Formula **frozen** (design grilling, 2026-07).
 
 ### 4.1 Score to beat
 A game can carry a **target score**. Beating it is the win condition in Daily and
-Story modes and an optional spice in Free Form. Targets are **computed, not designed**:
-a deterministic **baseline bot** (greedy: always the first valid pair in reading order,
-adds when stuck) plays the seed at generation time; its final score is the target. Same
-seed ⇒ same target on every device — no server, no authoring burden.
+Story modes and an optional spice in Free Form.
+
+- **Daily & Adventure targets are computed, not designed:** the deterministic
+  **baseline bot** (greedy: always the first valid pair in reading order, adds when
+  stuck, **same add budget as the run**, no hints) plays the seed at generation time.
+  **Target = bot score × factor, rounded to the nearest 10** — Daily: **0.9** (the bot
+  is greedy; the game forgives a little suboptimal play), Adventure: **ramps 0.9 → 1.0**
+  across the levels. Same seed ⇒ same target on every device — no server, no
+  authoring burden.
+- **Free Form targets are never computed** (with ∞ adds the bot wouldn't terminate):
+  manual entry or QR-filled only.
+- A player-facing difficulty setting (shifting the factor) is a **v2 candidate** —
+  the machinery is one multiplier.
 
 ## 5. Accessibility — hard requirements
 
@@ -126,13 +187,17 @@ One engine, three framings. Each mode owns one colour of the Fuchsbau triad:
 | **Story** | emerald | fixed per level | per level | per level | per level, always on |
 
 ### 6.1 Free Form
-The everyday mode. "New game" opens a small parameter sheet:
+The everyday mode. **One saved run at a time** — the home card resumes it in a single
+tap; starting a new game over a live run confirms calmly first ("das laufende Spiel
+wird verworfen — 2 340 Punkte"). Multi-slot is deferred until someone asks. The
+parameter sheet:
 
-- **Seed** — empty = randomized (shown after generation so it can be shared);
-  enterable to replay or take on a challenge.
+- **Seed** — empty = randomized (shown in-game so it can be shared); words or numbers
+  (§2.1), enterable to replay or take on a challenge.
 - **Adds** — stepper, 0 … 20, then ∞. Default 5.
 - **Hints** — stepper, 0 … 20, then ∞. Default 5.
-- **Score to beat** — optional number, default off.
+- **Score to beat** — optional number, default off (manual or QR-filled; never
+  computed here).
 
 Sensible defaults mean the sheet is one tap ("Los!") for players who don't care —
 parameters are power, summoned not imposed.
@@ -146,32 +211,62 @@ per date.
 **Past days stay playable.** The mode opens on a **month-calendar date picker**: any
 past day (or today) can be started, resumed, or replayed — a rainy Sunday can catch up
 the whole week. Each date keeps its own autosaved run, so leaving Tuesday half-finished
-to play Wednesday loses nothing. **Future dates are locked** (quiet gray lock, checked
+to play Wednesday loses nothing. The archive begins at the **epoch, 2026‑07‑01** (a
+named constant — the fox has posed one puzzle a day since it existed); the calendar's
+back arrow grays out there. **Future dates are locked** (quiet gray lock, checked
 against the device date) — the point of a daily is that everyone meets the same board
 *on* the day; tomorrow simply isn't knowable yet.
+
+Clock edges, decided: a run **belongs to the date it was started for** (starting July
+12's board at 23:50 and finishing at 00:20 is a July‑12 result), and there is **zero
+anti-cheat** — no server, no leaderboard, no prize; whoever sets their tablet a year
+ahead to peek gets that joy for free. The future-lock is a design statement, not
+security.
 
 A missed day is simply an open slot, still waiting — **no streak guilt, no red, no
 notification**. The daily waits; it never calls.
 
 ### 6.3 Story
 A curated, numbered level collection (v1: ~20 levels). Each level = seed + add budget +
-hint budget + target score; **beating the target unlocks the next level**. Difficulty
-climbs by tightening budgets and raising targets — never by timers. Progress is stored
-locally; replaying a beaten level is always allowed (best score kept).
+hint budget + target (bot × ramping factor, §4.1); **ending a run with score ≥ target
+unlocks the next level** (the beaten flag latches — a later worse run never re-locks
+anything). Difficulty climbs by tightening budgets (5/5 early → 2/1 late) with the
+target factor ramping 0.9 → 1.0 — never by timers; the exact curve is curated during
+playtesting. Progress is stored locally; **each level keeps its own saved run** —
+replaying beaten level 5 never touches half-finished level 6. Replaying is always
+allowed (best score kept).
 
 ## 7. Challenge sharing (QR)
 
-Free Form settings (seed, add budget, hint budget, score to beat) encode into a QR code
-on the run-end screen — "beat me on this board." Scanning one inside knobelfuchs
-pre-fills the parameter sheet. Fully offline, peer-to-peer, no server; the QR *is* the
-challenge. (Scan via in-app camera view; family precedent: knabberfuchs's scanner.)
+Free Form settings encode into a QR code on the run-end screen — "beat me on this
+board." Fully offline, peer-to-peer, no server; the QR *is* the challenge.
+
+- **Payload:** a deep link, `knobelfuchs://c?v=1&s=<seed>&a=<adds>&h=<hints>&t=<target>`
+  — the **`v` version field is mandatory from day one** (a v2 app reads old codes and
+  politely declines future ones). The seed travels in normalized form (§2.1).
+- **No names, no message field** — the target *is* the personal touch, and shareable
+  artifacts carry no personal data.
+- **Scanning pre-fills the parameter sheet — never auto-starts.** The sheet stays
+  editable after scanning; the app doesn't police honor.
+- The `knobelfuchs://` scheme is registered on **both Android and iOS** (intent-filter
+  / `CFBundleURLTypes`), so system-camera scans work too; the in-app scanner
+  (knabberfuchs precedent) is convenience. Https App/Universal Links under
+  fuchsnest.ch — doubling as a "get the app" page — are a **v2 candidate**.
 
 ## 8. Stats — information, never punishment
 
-Per run: score, matches, rows cleared, adds/hints used, duration (recorded, **not
-displayed during play** — no clock on the game screen). Lifetime: runs, boards cleared,
-daily history, story progress. No streaks-with-guilt, no daily-login rewards, no
-notifications — **a game must never call you back**; it waits.
+**Record everything from day one, surface modestly.** Every run writes its full record
+(mode, seed, config, score, target, pairs, rows, adds/hints used, duration,
+timestamps) — the schema exists from the first release so no history is ever lost.
+
+Surfaced in v1: the run-end screen (per-run), the Daily calendar (per-date results),
+Adventure's best scores. **No lifetime-statistics page in v1** — the data waits; the
+page is a v2 candidate shaped by what turns out to be interesting.
+
+Never surfaced, by design: duration during play (no clock on the game screen), and
+anything streak-like — the calendar shows what *was played*, never counts what
+wasn't. No daily-login rewards, no notifications — **a game must never call you
+back**; it waits.
 
 ## 9. Ergonomics (Pad 5 reference)
 
@@ -217,10 +312,19 @@ because good motion for one player is noise for another. *Reduziert* keeps only
 essential state changes; *Aus* swaps states instantly. The OS "reduce motion"
 preference is respected as the default.
 
+**Scroll policy** (part of the stillness contract): the view only ever moves to follow
+the player's own action — Nachlegen scrolls the first appended row into view (≤ 250 ms;
+an instant jump under Reduziert/Aus), undoing an add scrolls back, and nothing else
+ever scrolls or moves the viewport.
+
 ### 10.3 Settings surface (v1)
-Effects volume · music on/off + volume · motion (Voll/Reduziert/Aus) · appearance
-(system/light/dark) · font (the Fuchsbau picker) · language · about. **No account, no
-premium, no notifications section — none exist.** Text size follows the OS (§5).
+Effects volume (default **80 %**) · music on/off (**default on**) + volume (default
+**45 %**) · motion (Voll/Reduziert/Aus) · appearance (system/light/dark) · font (the
+Fuchsbau picker) · language (follows the system locale, en fallback, manual override;
+the German localization uses **Swiss orthography** — ss, never ß) · about. **No
+account, no premium, no notifications section — none exist.** Text size follows the
+OS (§5). Settings and the Anleitung live on **Home only** (gear + `?`); the game
+screen stays chrome-minimal.
 Mockup: [`examples/ui/08-einstellungen.html`](./examples/ui/08-einstellungen.html).
 
 - **All audio optional:** settings toggles, and the device's silent mode is always
@@ -232,14 +336,39 @@ Mockup: [`examples/ui/08-einstellungen.html`](./examples/ui/08-einstellungen.htm
 - The stillness rule (§9) is untouched: between responses, the board is perfectly
   still — music is sound, not motion.
 
-## 11. Open questions (for family playtesting)
+## 11. Learning the game
 
-1. Should the hint button *passively* show gray whenever no pair exists (constant free
-   information — kinder, but removes the scanning challenge)? v1: only on press.
-2. Scoring weights (§4) — tune after real runs.
-3. Opening size (3 rows?) and Story difficulty curve.
-4. ~~Daily calendar view — v2 candidate.~~ **Promoted to v1** (family requirement):
-   the calendar *is* the daily date picker (§6.2).
-5. ~~Final sound picks per event and the music pool (§10).~~ **Frozen** after the
-   family audition (2026-07) — see the §10 table; music pool = all three candidates.
-   Still open: does music default to on or off at first launch?
+New players meet a mechanic whose line-of-sight rules (diagonals! reading-order wrap!)
+are genuinely non-obvious. v1 answer: a **static, illustrated "Anleitung"** screen —
+the pairing rule, the four sight-lines as small diagrams, Nachlegen/Tipp/Undo, and the
+scoring table (fulfilling §4's "shown in-app" promise). Reachable any time from Home
+(a quiet `?` beside the settings gear), plus a **one-time, skippable** offer on first
+launch ("Zum ersten Mal hier? → Kurz erklärt / Überspringen"). No interactive
+tutorial — Adventure level 1's generous budgets are the soft on-ramp.
+
+## 12. Home navigation
+
+Each mode card does the *most-wanted thing*, not the same thing: **Freies Spiel**
+resumes the live run in one tap (no run → parameter sheet; "new game anyway" lives in
+the game screen's menu) · **Tages-Knobel** always opens the calendar · **Abenteuer**
+always opens the level list.
+
+## 13. Open items
+
+**Still open (playtest-shaped):**
+1. The Adventure 20-level curve (budget/factor curation) — during playtesting.
+2. Passive hint-availability indicator — rejected for v1; revisit only if playtesting
+   shows hopeless-board scanning.
+
+**Resolved (design grilling, 2026-07):** fairness gate + salted rerolls · full-copy
+adds · scoring formula (flat 10, stacking rows, conditional add bonus) · auto-end with
+undo-back-in + best-kept commits · true-rewind undo · deterministic hints with free
+re-pulse · bot targets ×0.9/ramp · daily clock semantics + zero anti-cheat · QR
+payload with versioning on both platforms · run slots (FF single, per-date, per-level)
+· engine constants (27/9/no cap) · record-all stats · music default on · word seeds
+with normalization + FNV-1a · daily epoch 2026-07-01 · Swiss German · home-card
+semantics · scroll policy · hint/selection layering.
+
+**Deferred (v2 candidates):** difficulty setting (target-factor shift) · Free Form
+multi-slot · lifetime statistics page · jukebox track picker · https App/Universal
+Links under fuchsnest.ch · seed-word wordlist for prettier random seeds.

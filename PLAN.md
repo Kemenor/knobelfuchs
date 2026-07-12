@@ -23,7 +23,8 @@ semantics; this plan wins for implementation.
 | Game engine | **None — plain Flutter.** A static grid puzzle needs no Flame/game loop; widgets + implicit animations suffice. The Fuchsbau stack needs **no expansion** |
 | State | **Riverpod** |
 | Persistence | **drift / SQLite** — saved runs (board + undo log; Free Form/Story one each, Daily **one per date** so half-finished days survive), daily-knobel history, story progress, lifetime stats; with migrations |
-| Seeds & RNG | **Seeded PRNG in the domain core** (injected, deterministic) — same seed ⇒ identical board on every device. Daily seed = local date; targets from the deterministic baseline bot (concept §4.1) |
+| Seeds & RNG | **String seeds** (words or digits), normalized (trim/NFC/lowercase/spaces→dash, ≤32 chars), hashed with a **hand-rolled FNV-1a** (never platform `hashCode`) into the PRNG. Fairness gate ≥3 pairs via **`hash(seed, attempt)`** rerolls (no cross-seed collisions). Daily = internal `yyyymmdd` namespace, epoch **2026-07-01**. Targets from the baseline bot × factor (0.9 daily, 0.9→1.0 adventure), rounded to 10 |
+| Deep links | `knobelfuchs://c?v=1&s&a&h&t` registered on **Android (intent-filter) and iOS (CFBundleURLTypes)**; scan pre-fills the sheet, never auto-starts |
 | QR sharing | `qr_flutter` (render) + `mobile_scanner` (scan — knabberfuchs precedent). Free-Form challenge payload only; later phase |
 | Audio | **`audioplayers`** — low-latency mode for action-response sounds, a looping player for background music (concept §10). Sounds: Kenney **CC0**, bundled. Music: Kevin MacLeod **CC BY 4.0** (credited in About); mp3s are **not in git** (too heavy — `examples/ui/README.md` has the re-fetch commands); bundled into the app at build time. Jukebox track picker = post-v1 |
 | Design | **Material 3**, Fuchsbau triad & fonts via the [fuchsbau package](https://github.com/Kemenor/fuchsbau); deviations in [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
@@ -57,22 +58,35 @@ lib/
 
 ### Engine sketch
 
+Constants: opening **3 rows = 27 digits**, width **9** always, **no board-length cap**,
+fairness floor **≥3 pairs**, daily epoch **2026-07-01**.
+
+- `normalizeSeed(raw)` → trim → NFC → lowercase → whitespace→dash, ≤32 chars;
+  `fnv1a(normalized)` → engine seed. All deterministic, all in pure Dart.
 - `Board` = immutable list of cells (digit or cleared) + column count (9).
-- `generate(seed)` → opening board (seeded PRNG, deterministic across devices).
+- `generate(seed)` → opening board via `prng(hash(seed, attempt))`, attempt++ until
+  ≥3 available pairs (deterministic across devices).
 - `canMatch(board, a, b)` — value rule && line-of-sight (row / column / diagonal /
   reading-order, skipping cleared cells).
 - `match(board, a, b)` → new board, with collapsed rows removed.
-- `addRows(board)` → new board with surviving digits appended (budget enforced by
-  `GameState`, not the board).
-- `findHint(board)` → first valid pair or *none* (⇒ point at add; free).
-- `score(events)` — the transparent formula (concept §4): pair +10, row +50, clear
-  +250, unused add +50.
-- `baselineBot(seed, ruleset)` → target score: greedy first-pair-in-reading-order,
-  adds when stuck; deterministic, runs at generation time.
-- `GameState` = board + budgets (adds/hints remaining) + move log + score; undo =
-  replay log minus one (or board snapshots — decide by measuring; boards are tiny).
+- `addRows(board)` → full copy of survivors appended (never gated; budget enforced by
+  `GameState`, refunded on undo).
+- `findHint(board)` → **first valid pair in reading order** or *none*; consumption
+  logic (free re-pulse, free "nothing there") lives in `GameState`; highlights
+  re-validate after every board change.
+- `isStuck(state)` — no valid pair && adds exhausted ⇒ auto run-end (undo-back-in
+  allowed; results commit best-kept on every end).
+- `score(events)` — frozen formula: pair +10 flat; row +50 stacking; clear +250;
+  unused adds +50 **only on a cleared board**.
+- `baselineBot(seed, config)` → plays first-pair-greedy with the run's add budget, no
+  hints; `target = round10(botScore × factor)` — daily 0.9, adventure ramps 0.9→1.0.
+- `GameState` = board + budgets + move log + score; undo = true rewind (matches and
+  adds only — hints are outside the log); no redo.
 - `GameConfig` = seed + add budget + hint budget + optional target — one struct for
-  all three modes *and* the QR payload.
+  all three modes *and* the QR payload (`v=1` mandatory).
+- Saved-run slots: Free Form **one**, Daily **per date**, Adventure **per level**;
+  every run's full record written from day one (stats surfaced modestly, lifetime
+  page v2).
 
 ## Build order
 
@@ -105,5 +119,5 @@ PATH — plain `flutter` works).
 - Landing page location under fuchsnest.ch (subdomain vs. path) — decide before release.
 - Whether the fuchsbau package is consumed as a git dependency or path dependency
   during development.
-- Scoring weights + story difficulty curve — freeze after family playtesting
-  (concept §10).
+- The Adventure 20-level curve (budgets + target factors) — curate during playtesting.
+- App icon / fox artwork — release phase (concept §13 lists the v2 candidates).

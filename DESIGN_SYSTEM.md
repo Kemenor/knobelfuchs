@@ -62,10 +62,19 @@ law applies — nothing in normal play is ever red.
   strip stay fixed.
 - **Stillness rule:** nothing on the board moves without player input (concept §7).
   Match/collapse animations ≤ 250 ms, then perfect stillness again.
-- **Sound & motion pair up per event** (concept §10, auditioned in
+- **Sound & motion pair up per event** (concept §10, canon frozen in
   `examples/ui/07-klang.html`): feedback answers the player's action, never lures —
   no autonomous blinking, no comeback fanfares. Sounds toggleable, silent mode
   respected.
+- **Scroll policy:** the viewport only follows the player's own action — Nachlegen
+  scrolls the first new row into view (≤ 250 ms; instant under Reduziert/Aus), undo
+  of an add scrolls back, nothing else ever moves the view.
+- **Hint × selection are independent layers:** tap semantics never change under
+  orange; each hinted cell releases its own highlight when tapped; highlights
+  re-validate after every board change and drop silently. Nothing blinks.
+- **Run-end screens:** stuck ends offer a quiet "Zurück aufs Brett" (undo back in);
+  cleared ends are final — celebration, "Nochmal", "Zum Menü". Never "GAME OVER",
+  never red.
 
 ## 3. Layout — orientations (Pad 5)
 
@@ -85,7 +94,7 @@ carrying its **remaining budget** as a neutral count (tabular figures):
 | Action | Icon (Material Symbols Rounded) | Budget states |
 |---|---|---|
 | Add rows | `add_circle` | count `5…0` or `∞`; at **0 → gray** (calm unavailable — never red) |
-| Hint | `lightbulb` | count `5…0` or `∞`; at **0 → gray**; pressed with *no pair on the board* → brief gray flash + nudge toward Add, **budget untouched** |
+| Hint | `lightbulb` | count `5…0` or `∞`; at **0 → gray**; pressed with *no pair on the board* → brief gray flash + nudge toward Add, **budget untouched**; pressed while a highlight is active → free re-pulse (consumed only on *new* information) |
 | Undo | `undo` | gray only at the opening position |
 
 **Gray = quietly unavailable.** `onSurface` at ~38 % opacity, no error colour, no
@@ -94,7 +103,21 @@ shake. Exhausted budgets are game state, not warnings.
 No action ever opens an ad, a shop, or a "watch to continue" — obviously; they just
 *work*.
 
-## 5. Mockups
+## 5. Home & navigation
+
+- **Mode cards do the most-wanted thing** (concept §12): Freies Spiel resumes the live
+  run / opens the parameter sheet; Tages-Knobel always opens the calendar; Abenteuer
+  always opens the level list. "New game over a live run" is a game-screen menu
+  action with a calm discard confirmation.
+- **Home's top corner:** settings gear + a quiet `?` for the Anleitung — the only
+  places they live; the game screen stays chrome-minimal.
+- **Seed visibility:** the current seed appears small on the game screen and on the
+  run-end screen (shareable after the fact); the parameter sheet's field accepts
+  words or digits (normalized display, full keyboard).
+- **Daily calendar bounds:** back arrow grays out at the epoch (2026-07-01); forward
+  at the current month.
+
+## 6. Mockups
 
 `examples/ui/` will hold the static HTML canon (light/dark toggle, portrait + landscape
 frames) before widgets are built — same flow as checkfuchs.
