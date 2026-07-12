@@ -105,9 +105,13 @@ fairness floor **≥3 pairs**, daily epoch **2026-07-01**.
    future-bounded, latched beaten-flags); Abenteuer level list (provisional 20-level
    curve — budgets 5/5→2/1, factor 0.9→1.0 — unlock chain from run_results). Curve
    tuning still open for playtesting.
-5. **Polish.** Win/run-end screens, sound & motion pass (the family's picks from
-   `07-klang.html`), settings (theme/font/language/sound, 200 % scale pass), l10n,
-   QR share/scan.
+5. ✅ **Polish.** Frozen sound canon + background music bundled and wired
+   (audioplayers; music only in a foregrounded game, lifecycle-paused); settings
+   screen per mockup 08 (volumes, music toggle, motion Voll/Reduziert/Aus with OS
+   default, theme, fuchsbau font picker, language override, About with credits);
+   Anleitung + first-launch offer; QR challenge (render on run-end, in-app scanner,
+   `knobelfuchs://` deep links on Android + iOS). On-device verification pending
+   (sounds/scanner/deep links need the tablet).
 6. **Release.** Icon, store listing, fastlane, landing page (under fuchsnest.ch).
 
 ## Toolchain note

@@ -1,34 +1,87 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+
+import 'package:app_links/app_links.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/challenge.dart';
 import '../../l10n/app_localizations.dart';
 import '../adventure/adventure_screen.dart';
+import '../anleitung/anleitung_screen.dart';
 import '../daily/daily_calendar_screen.dart';
 import '../freeform/new_game_sheet.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
+import '../settings/settings.dart';
+import '../settings/settings_screen.dart';
 
 /// Home (§12): each mode card does the most-wanted thing. The three modes
 /// wear the three triad colours; the home screen *is* the palette.
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  StreamSubscription<Uri>? _links;
+
+  @override
+  void initState() {
+    super.initState();
+    // knobelfuchs:// challenge links (§7): pre-fill the sheet, never
+    // auto-start. Covers both cold start and while-running links.
+    final appLinks = AppLinks();
+    _links = appLinks.uriLinkStream.listen((uri) {
+      final config = decodeChallenge(uri);
+      if (config != null && mounted) {
+        showNewGameSheet(context, prefill: config);
+      }
+    });
+    // One-time, skippable Anleitung offer on very first launch (§11).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settings = ref.read(settingsProvider);
+      if (settings.anleitungSeen || !mounted) return;
+      final l = AppLocalizations.of(context)!;
+      ref.read(settingsProvider.notifier).markAnleitungSeen();
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l.firstLaunchTitle),
+          content: Text(l.firstLaunchBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l.firstLaunchSkip),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const AnleitungScreen()));
+              },
+              child: Text(l.firstLaunchShow),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _links?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final game = ref.watch(gameControllerProvider);
     final saved = ref.watch(savedFreeRunProvider).value;
     final resumeScore = game?.score ?? saved?.score;
-
-    void comingSoon() {
-      ScaffoldMessenger.of(context)
-        ..clearSnackBars()
-        ..showSnackBar(SnackBar(
-          content: Text(l.comingSoon),
-          behavior: SnackBarBehavior.floating,
-        ));
-    }
 
     return Scaffold(
       body: SafeArea(
@@ -60,11 +113,15 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: comingSoon,
+                        onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const AnleitungScreen())),
                         icon: const Icon(Icons.help_outline),
                       ),
                       IconButton(
-                        onPressed: comingSoon,
+                        onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const SettingsScreen())),
                         icon: const Icon(Icons.settings_outlined),
                       ),
                     ],

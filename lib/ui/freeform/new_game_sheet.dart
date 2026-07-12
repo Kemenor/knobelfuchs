@@ -8,23 +8,28 @@ import '../../domain/seed.dart';
 import '../../l10n/app_localizations.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
+import 'scan_challenge_screen.dart';
 
 /// Free Form parameter sheet (§6.1): one tap for players who don't care —
 /// parameters are power, summoned not imposed. Pass [pushGameScreen] false
 /// when the sheet is opened from *within* the game screen (§12's "new game
 /// anyway" path) — the controller swap re-renders the screen in place.
+/// [prefill] carries a scanned/deep-linked challenge (§7) — still editable,
+/// never auto-started.
 Future<void> showNewGameSheet(BuildContext context,
-    {bool pushGameScreen = true}) {
+    {bool pushGameScreen = true, GameConfig? prefill}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (_) => _NewGameSheet(pushGameScreen: pushGameScreen),
+    builder: (_) =>
+        _NewGameSheet(pushGameScreen: pushGameScreen, prefill: prefill),
   );
 }
 
 class _NewGameSheet extends ConsumerStatefulWidget {
   final bool pushGameScreen;
-  const _NewGameSheet({required this.pushGameScreen});
+  final GameConfig? prefill;
+  const _NewGameSheet({required this.pushGameScreen, this.prefill});
 
   @override
   ConsumerState<_NewGameSheet> createState() => _NewGameSheetState();
@@ -36,6 +41,21 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
   int? _adds = 5; // null = ∞
   int? _hints = 5;
   bool _targetOn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.prefill;
+    if (p != null) {
+      _seed.text = p.seed;
+      _adds = p.adds;
+      _hints = p.hints;
+      if (p.target != null) {
+        _targetOn = true;
+        _target.text = '${p.target}';
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -145,6 +165,26 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
             child: Text(l.startGame,
                 style: const TextStyle(
                     fontSize: 17, fontWeight: FontWeight.w800)),
+          ),
+          TextButton.icon(
+            onPressed: () async {
+              final config = await Navigator.of(context).push<GameConfig>(
+                MaterialPageRoute(
+                    builder: (_) => const ScanChallengeScreen()),
+              );
+              if (config != null && mounted) {
+                setState(() {
+                  _seed.text = config.seed;
+                  _adds = config.adds;
+                  _hints = config.hints;
+                  _targetOn = config.target != null;
+                  _target.text =
+                      config.target != null ? '${config.target}' : '';
+                });
+              }
+            },
+            icon: const Icon(Icons.qr_code_scanner),
+            label: Text(l.scanChallenge),
           ),
         ],
       ),

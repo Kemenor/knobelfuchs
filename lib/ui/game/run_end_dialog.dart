@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../domain/challenge.dart';
 import '../../domain/game.dart';
 import '../../l10n/app_localizations.dart';
 import 'game_controller.dart';
@@ -90,6 +92,10 @@ class _RunEndDialog extends ConsumerWidget {
                   label: l.statHints,
                   value: l.ofBudget(
                       view.hintsUsed, budget(view.config.hints))),
+              if (view.slot == kFreeSlot && view.score > 0) ...[
+                const SizedBox(height: 14),
+                _ChallengeCard(view: view),
+              ],
               const SizedBox(height: 20),
               if (!cleared)
                 TextButton(
@@ -125,6 +131,64 @@ class _RunEndDialog extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// "Beat me on this board" (§7): the QR carries seed + budgets + this run's
+/// score as the target. Peer-to-peer, no server — the QR *is* the challenge.
+class _ChallengeCard extends StatelessWidget {
+  final GameView view;
+  const _ChallengeCard({required this.view});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final challenge = encodeChallenge(GameConfig(
+      seed: view.config.seed,
+      adds: view.config.adds,
+      hints: view.config.hints,
+      target: view.score,
+    ));
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: scheme.outlineVariant),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white, // QR needs its own contrast island
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: QrImageView(
+              data: challenge.toString(),
+              size: 96,
+              backgroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.shareChallenge,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(
+                  l.shareChallengeBody,
+                  style: TextStyle(
+                      fontSize: 12, color: scheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

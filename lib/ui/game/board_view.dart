@@ -13,6 +13,7 @@ const double _gap = 6;
 class BoardView extends StatelessWidget {
   final GameView view;
   final ScrollController controller;
+  final Duration cellAnimation; // from the motion setting (§10.2)
   final ValueChanged<double> onRowExtent;
   final ValueChanged<int> onTap;
 
@@ -20,6 +21,7 @@ class BoardView extends StatelessWidget {
     super.key,
     required this.view,
     required this.controller,
+    this.cellAnimation = const Duration(milliseconds: 150),
     required this.onRowExtent,
     required this.onTap,
   });
@@ -46,6 +48,7 @@ class BoardView extends StatelessWidget {
               board: view.board,
               row: r,
               cellSize: cell,
+              animation: cellAnimation,
               selectedId: view.selectedId,
               hintCellIds: view.hintCellIds,
               onTap: onTap,
@@ -61,6 +64,7 @@ class _RowView extends StatelessWidget {
   final Board board;
   final int row;
   final double cellSize;
+  final Duration animation;
   final int? selectedId;
   final Set<int> hintCellIds;
   final ValueChanged<int> onTap;
@@ -69,6 +73,7 @@ class _RowView extends StatelessWidget {
     required this.board,
     required this.row,
     required this.cellSize,
+    required this.animation,
     required this.selectedId,
     required this.hintCellIds,
     required this.onTap,
@@ -85,6 +90,7 @@ class _RowView extends StatelessWidget {
           _CellView(
             cell: board.cells[i],
             size: cellSize,
+            animation: animation,
             selected: board.cells[i].id == selectedId,
             hinted: hintCellIds.contains(board.cells[i].id),
             onTap: onTap,
@@ -98,6 +104,7 @@ class _RowView extends StatelessWidget {
 class _CellView extends StatelessWidget {
   final Cell cell;
   final double size;
+  final Duration animation;
   final bool selected;
   final bool hinted;
   final ValueChanged<int> onTap;
@@ -105,6 +112,7 @@ class _CellView extends StatelessWidget {
   const _CellView({
     required this.cell,
     required this.size,
+    required this.animation,
     required this.selected,
     required this.hinted,
     required this.onTap,
@@ -136,7 +144,7 @@ class _CellView extends StatelessWidget {
     return GestureDetector(
       onTap: cell.cleared ? null : () => onTap(cell.id),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: animation,
         width: size,
         height: size,
         alignment: Alignment.center,

@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import '../../domain/constants.dart';
 import '../../domain/game.dart';
 import '../../l10n/app_localizations.dart';
+import '../audio/audio_service.dart';
 import '../freeform/new_game_sheet.dart';
+import '../settings/settings.dart';
 import 'board_view.dart';
 import 'game_controller.dart';
 import 'run_end_dialog.dart';
@@ -17,20 +19,79 @@ class GameScreen extends ConsumerStatefulWidget {
   ConsumerState<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends ConsumerState<GameScreen> {
+class _GameScreenState extends ConsumerState<GameScreen>
+    with WidgetsBindingObserver {
   final _scroll = ScrollController();
   double _rowExtent = 56; // updated by BoardView's layout callback
   bool _endShown = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Music only during a foregrounded game (§10.1).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final view = ref.read(gameControllerProvider);
+      if (view != null) {
+        ref
+            .read(audioServiceProvider)
+            .startMusicFor(slot: view.slot, seed: view.config.seed);
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    ref.read(audioServiceProvider).stopMusic();
     _scroll.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final audio = ref.read(audioServiceProvider);
+    if (state == AppLifecycleState.resumed) {
+      audio.resumeMusic();
+    } else {
+      audio.pauseMusic(); // never from the background, never a lure
+    }
+  }
+
+  /// Sounds answer the player's action (§10) — priority: the loud moment,
+  /// then row chime, then match, then add, then plain selection.
+  void _playFor(GameView prev, GameView next) {
+    final audio = ref.read(audioServiceProvider);
+    if (next.status == GameStatus.cleared &&
+        prev.status != GameStatus.cleared) {
+      audio.play(SoundEvent.boardCleared);
+    } else if (next.status == GameStatus.stuck &&
+        prev.status == GameStatus.playing &&
+        next.isAdventure &&
+        next.targetBeaten) {
+      audio.play(SoundEvent.levelUnlocked);
+    } else if (next.rowsCleared > prev.rowsCleared) {
+      audio.play(SoundEvent.rowCleared);
+    } else if (next.pairsMatched > prev.pairsMatched) {
+      audio.play(SoundEvent.match);
+    } else if (next.addsUsed > prev.addsUsed) {
+      audio.play(SoundEvent.addRows);
+    } else if (next.selectedId != null &&
+        next.selectedId != prev.selectedId) {
+      audio.play(SoundEvent.select);
+    }
   }
 
   /// Scroll policy (§10.2): the view only follows the player's own action.
   void _onViewChange(GameView? prev, GameView? next) {
     if (prev == null || next == null) return;
+    if (prev.slot != next.slot || prev.config.seed != next.config.seed) {
+      // New game started in place ("Nochmal" / new-game sheet) — fresh track.
+      ref
+          .read(audioServiceProvider)
+          .startMusicFor(slot: next.slot, seed: next.config.seed);
+    }
+    _playFor(prev, next);
     if (next.addsUsed > prev.addsUsed) {
       // Nachlegen: bring the first appended row into view.
       final row = prev.board.cells.length ~/ kColumns;
@@ -53,15 +114,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     if (!_scroll.hasClients) return;
     final target = (row * _rowExtent)
         .clamp(0.0, _scroll.position.maxScrollExtent);
-    final reduced = MediaQuery.of(context).disableAnimations;
-    if (reduced) {
-      _scroll.jumpTo(target);
-    } else {
+    // §10.2: instant jump under Reduziert/Aus.
+    final motion = ref.read(settingsProvider).effectiveMotion(context);
+    if (motion == MotionMode.full) {
       _scroll.animateTo(
         target,
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
       );
+    } else {
+      _scroll.jumpTo(target);
     }
   }
 
@@ -81,9 +143,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     final landscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+    final motion =
+        ref.watch(settingsProvider).effectiveMotion(context);
     final board = BoardView(
       view: view,
       controller: _scroll,
+      cellAnimation: switch (motion) {
+        MotionMode.full => const Duration(milliseconds: 150),
+        MotionMode.reduced => const Duration(milliseconds: 60),
+        MotionMode.off => Duration.zero,
+      },
       onRowExtent: (extent) => _rowExtent = extent,
       onTap: (id) => ref.read(gameControllerProvider.notifier).tapCell(id),
     );
@@ -346,7 +415,14 @@ class _ActionBar extends ConsumerWidget {
         count: budget(view.hintsRemaining),
         enabled: view.hintsRemaining == null || view.hintsRemaining! > 0,
         onPressed: () {
+          final audio = ref.read(audioServiceProvider);
           final outcome = controller.requestHint();
+          switch (outcome) {
+            case HintOutcome.shown || HintOutcome.repulsed:
+              audio.play(SoundEvent.hint);
+            case HintOutcome.nonePossible || HintOutcome.exhausted:
+              audio.play(SoundEvent.unavailable);
+          }
           if (outcome == HintOutcome.nonePossible && context.mounted) {
             ScaffoldMessenger.of(context)
               ..clearSnackBars()
