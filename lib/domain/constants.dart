@@ -2,8 +2,11 @@
 library;
 
 const int kColumns = 9;
-const int kOpeningRows = 3;
-const int kOpeningCells = kColumns * kOpeningRows; // 27
+
+/// 3 full rows + 8 — matches the reference game's opening (family playtest,
+/// 2026-07-12); the partial last row puts the reading-order wrap in play from
+/// the first board.
+const int kOpeningCells = 35;
 const int kFairnessFloor = 3; // minimum available pairs at open (§2.2)
 const int kMaxSeedLength = 32; // runes, after normalization (§2.1)
 

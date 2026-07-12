@@ -58,8 +58,8 @@ lib/
 
 ### Engine sketch
 
-Constants: opening **3 rows = 27 digits**, width **9** always, **no board-length cap**,
-fairness floor **≥3 pairs**, daily epoch **2026-07-01**.
+Constants: opening **35 digits (3 full rows + 8, reference-game match)**, width **9**
+always, **no board-length cap**, fairness floor **≥3 pairs**, daily epoch **2026-07-01**.
 
 - `normalizeSeed(raw)` → trim → NFC → lowercase → whitespace→dash, ≤32 chars;
   `fnv1a(normalized)` → engine seed. All deterministic, all in pure Dart.

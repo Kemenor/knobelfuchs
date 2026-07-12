@@ -15,7 +15,7 @@ void main() {
   }
 
   group('fresh state', () {
-    test('opens with 27 cells, full budgets, playing', () {
+    test('opens with 35 cells, full budgets, playing', () {
       final s = fresh();
       expect(s.board.cells.length, kOpeningCells);
       expect(s.addsRemaining, 5);

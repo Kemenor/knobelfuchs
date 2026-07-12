@@ -76,8 +76,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
       audio.play(SoundEvent.match);
     } else if (next.addsUsed > prev.addsUsed) {
       audio.play(SoundEvent.addRows);
-    } else if (next.selectedId != null &&
-        next.selectedId != prev.selectedId) {
+    } else if (next.selectedId != null && next.selectedId != prev.selectedId) {
       audio.play(SoundEvent.select);
     }
   }
@@ -98,8 +97,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
       _animateToRow(row);
     } else if (next.addsUsed < prev.addsUsed) {
       // Undo of an add: scroll back to the previous end.
-      final row =
-          (next.board.cells.length ~/ kColumns) - 1;
+      final row = (next.board.cells.length ~/ kColumns) - 1;
       _animateToRow(row < 0 ? 0 : row);
     }
     if (next.status != GameStatus.playing &&
@@ -112,8 +110,10 @@ class _GameScreenState extends ConsumerState<GameScreen>
 
   void _animateToRow(int row) {
     if (!_scroll.hasClients) return;
-    final target = (row * _rowExtent)
-        .clamp(0.0, _scroll.position.maxScrollExtent);
+    final target = (row * _rowExtent).clamp(
+      0.0,
+      _scroll.position.maxScrollExtent,
+    );
     // §10.2: instant jump under Reduziert/Aus.
     final motion = ref.read(settingsProvider).effectiveMotion(context);
     if (motion == MotionMode.full) {
@@ -143,8 +143,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
 
     final landscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    final motion =
-        ref.watch(settingsProvider).effectiveMotion(context);
+    final motion = ref.watch(settingsProvider).effectiveMotion(context);
     final board = BoardView(
       view: view,
       controller: _scroll,
@@ -162,20 +161,24 @@ class _GameScreenState extends ConsumerState<GameScreen>
         child: landscape
             ? Row(
                 children: [
-                  Expanded(child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 0, 16),
-                    child: board,
-                  )),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 0, 16),
+                      child: board,
+                    ),
+                  ),
                   SizedBox(width: 224, child: _Rail(view: view)),
                 ],
               )
             : Column(
                 children: [
                   _TopBar(view: view),
-                  Expanded(child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: board,
-                  )),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: board,
+                    ),
+                  ),
                   _ActionBar(view: view),
                 ],
               ),
@@ -286,8 +289,8 @@ class _ModeChip extends StatelessWidget {
     final (hue, fill, label) = view.isDaily
         ? (scheme.secondary, scheme.secondaryContainer, l.modeDaily)
         : view.isAdventure
-            ? (scheme.tertiary, scheme.tertiaryContainer, l.modeStory)
-            : (scheme.primary, scheme.primaryContainer, l.modeFree);
+        ? (scheme.tertiary, scheme.tertiaryContainer, l.modeStory)
+        : (scheme.primary, scheme.primaryContainer, l.modeFree);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
@@ -323,17 +326,23 @@ class _Score extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(l.score.toUpperCase(),
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: .5,
-                    color: scheme.onSurfaceVariant)),
-            Text('${view.score}',
-                style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    fontFeatures: tabular)),
+            Text(
+              l.score.toUpperCase(),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: .5,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            Text(
+              '${view.score}',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                fontFeatures: tabular,
+              ),
+            ),
           ],
         ),
         if (view.config.target != null) ...[
@@ -341,18 +350,24 @@ class _Score extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(l.target.toUpperCase(),
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: .5,
-                      color: scheme.onSurfaceVariant)),
-              Text('${view.config.target}',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurfaceVariant,
-                      fontFeatures: tabular)),
+              Text(
+                l.target.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: .5,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                '${view.config.target}',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurfaceVariant,
+                  fontFeatures: tabular,
+                ),
+              ),
             ],
           ),
         ],
@@ -373,12 +388,14 @@ class _Rail extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(children: [
-            const BackButton(),
-            _ModeChip(view: view),
-            const Spacer(),
-            _NewGameButton(view: view),
-          ]),
+          Row(
+            children: [
+              const BackButton(),
+              _ModeChip(view: view),
+              const Spacer(),
+              _NewGameButton(view: view),
+            ],
+          ),
           const SizedBox(height: 12),
           _Score(view: view),
           const Spacer(),
@@ -426,10 +443,12 @@ class _ActionBar extends ConsumerWidget {
           if (outcome == HintOutcome.nonePossible && context.mounted) {
             ScaffoldMessenger.of(context)
               ..clearSnackBars()
-              ..showSnackBar(SnackBar(
-                content: Text(l.hintNonePossible),
-                behavior: SnackBarBehavior.floating,
-              ));
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(l.hintNonePossible),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
           }
         },
       ),
@@ -457,8 +476,9 @@ class _ActionBar extends ConsumerWidget {
               children: [
                 for (final b in buttons)
                   Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: b),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: b,
+                  ),
               ],
             ),
     );
@@ -505,18 +525,20 @@ class _ActionButton extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 26),
                 const SizedBox(width: 8),
-                Text(label,
-                    style: TextStyle(
-                        color: color, fontWeight: FontWeight.w700)),
+                Text(
+                  label,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
+                ),
                 if (count != null) ...[
                   const SizedBox(width: 6),
-                  Text(count!,
-                      style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w800,
-                          fontFeatures: const [
-                            FontFeature.tabularFigures()
-                          ])),
+                  Text(
+                    count!,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w800,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
                 ],
               ],
             ),

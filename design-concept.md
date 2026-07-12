@@ -45,8 +45,11 @@ challenge-sharing (§7).
   can be shared after the fact.
 
 ### 2.2 Opening deal & fairness gate
-The opening is **3 rows = 27 digits** (a named constant; width is always 9, and the
-board has **no length cap** — an ∞-adds board may grow as long as its player enjoys).
+The opening is **35 digits — 3 full rows + 8** (a named constant; width is always 9,
+and the board has **no length cap** — an ∞-adds board may grow as long as its player
+enjoys). 35 matches the reference game's opening (verified against Number Clash on
+the family tablet, 2026-07-12, amending the grilling's provisional 27), and the
+partial last row puts the reading-order wrap in play from the very first board.
 
 Raw randomness can deal a dead opening (zero pairs). The **fairness gate** prevents
 it: after generating, the engine counts available pairs; below **3**, it rerolls
@@ -365,7 +368,8 @@ adds · scoring formula (flat 10, stacking rows, conditional add bonus) · auto-
 undo-back-in + best-kept commits · true-rewind undo · deterministic hints with free
 re-pulse · bot targets ×0.9/ramp · daily clock semantics + zero anti-cheat · QR
 payload with versioning on both platforms · run slots (FF single, per-date, per-level)
-· engine constants (27/9/no cap) · record-all stats · music default on · word seeds
+· engine constants (35/9/no cap — opening amended from 27 to 35 on 2026-07-12 to
+match the reference game) · record-all stats · music default on · word seeds
 with normalization + FNV-1a · daily epoch 2026-07-01 · Swiss German · home-card
 semantics · scroll policy · hint/selection layering.
 
