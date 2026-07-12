@@ -260,9 +260,11 @@ class GameState {
     if (board.isEmpty) {
       score += kPointsBoardCleared;
       // Unused-add bonus only on a cleared board (§4); a limitless budget
-      // earns no bonus — there was nothing to conserve.
+      // earns no bonus — there was nothing to conserve. At most 4 adds are
+      // rewarded, keeping the 800 ceiling hard under any budget.
       final remaining = config.adds == null ? 0 : config.adds! - addsUsed;
-      score += remaining * kPointsPerUnusedAdd;
+      score +=
+          remaining.clamp(0, kMaxRewardedUnusedAdds) * kPointsPerUnusedAdd;
     }
     return true;
   }

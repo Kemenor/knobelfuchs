@@ -155,9 +155,11 @@ swamp every fixed bonus and bot targets become trivially beatable.)
 | Cell **from the opening board** cleared | **+10** — copies from Nachlegen score nothing (max 350) |
 | Row cleared | **0** — the glass chime is the celebration; points would be farmable |
 | Board fully cleared | **+250** |
-| Each unused add | **+50** — **paid only on a cleared board**; parity caps this at 4×50 (see below) |
+| Each unused add | **+50** — **paid only on a cleared board**; **at most 4 adds are rewarded** (engine-enforced, family decision 2026-07-12) |
 
-- **Fixed ceiling ≈ 800 per board** — every score is comparable; targets are honest.
+- **Fixed ceiling = 800 per board** — every score is comparable; targets are honest.
+  With the default 5-add budget parity alone caps the bonus at 4×50 (clearing needs
+  ≥1 add); the explicit cap extends the ceiling to Free-Form games with big budgets.
 - **Hints never cost points.** Assist use is not punished — the budget is the only
   limit (information, never punishment).
 - **Parity fact:** a 35-digit opening is odd and matches remove two, so **clearing
@@ -178,7 +180,8 @@ Story modes and an optional spice in Free Form.
   across the levels. Same seed ⇒ same target on every device — no server, no
   authoring burden.
 - **Free Form targets are never computed** (with ∞ adds the bot wouldn't terminate):
-  manual entry or QR-filled only.
+  manual entry or QR-filled only, validated against the 800 ceiling — a target no
+  board can pay is a typo, not a challenge.
 - A player-facing difficulty setting (shifting the factor) is a **v2 candidate** —
   the machinery is one multiplier.
 

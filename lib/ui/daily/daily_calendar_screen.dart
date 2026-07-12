@@ -154,7 +154,10 @@ class _MonthGrid extends StatelessWidget {
     final rows = (cells + 6) ~/ 7;
 
     return GridView.builder(
-      padding: const EdgeInsets.only(bottom: 24),
+      // Explicit padding disables the automatic safe-area inset — add the
+      // system nav bar back ourselves.
+      padding: EdgeInsets.only(
+          bottom: 24 + MediaQuery.viewPaddingOf(context).bottom),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
         mainAxisSpacing: 8,

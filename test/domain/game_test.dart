@@ -176,15 +176,25 @@ void main() {
 
     test('clearing the board pays clear + unused-add bonuses', () {
       final s = GameState.forBoard(
-        const GameConfig(seed: 'x', adds: 5, hints: 5, target: 500),
+        const GameConfig(seed: 'x', adds: 5, hints: 5, target: 450),
         b('5 5c 5c 5c 5c 5c 5c 5c 5'),
       );
       expect(s.match(0, 8), isTrue);
       expect(s.status, GameStatus.cleared);
       // originalsOnly default: 2 opening cells × 10 (rows pay nothing)
-      // + clear 250 + 5 unused adds × 50
-      expect(s.score, 20 + 250 + 250);
+      // + clear 250 + unused adds capped at 4 × 50
+      expect(s.score, 20 + 250 + 200);
       expect(s.targetBeaten, isTrue);
+    });
+
+    test('unused-add bonus is capped at 4 — the 800 ceiling stays hard', () {
+      final s = GameState.forBoard(
+        const GameConfig(seed: 'x', adds: 20, hints: 5),
+        b('5 5c 5c 5c 5c 5c 5c 5c 5'),
+      );
+      s.match(0, 8);
+      // 20 unused adds, but only kMaxRewardedUnusedAdds pay out.
+      expect(s.score, 20 + 250 + kMaxRewardedUnusedAdds * 50);
     });
 
     test('limitless adds earn no unused-add bonus', () {

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/constants.dart';
 import '../../domain/game.dart';
 import '../../domain/seed.dart';
 import '../../l10n/app_localizations.dart';
@@ -42,9 +43,15 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
   int? _hints = 5;
   bool _targetOn = false;
 
+  /// No board can pay more than [kMaxScore] (§4) — a higher target is a typo,
+  /// not a challenge. Also guards QR payloads.
+  bool get _targetTooHigh =>
+      _targetOn && (int.tryParse(_target.text.trim()) ?? 0) > kMaxScore;
+
   @override
   void initState() {
     super.initState();
+    _target.addListener(() => setState(() {})); // live max validation
     final p = widget.prefill;
     if (p != null) {
       _seed.text = p.seed;
@@ -140,11 +147,16 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
               ),
               if (_targetOn)
                 SizedBox(
-                  width: 120,
+                  width: 140,
                   child: TextField(
                     controller: _target,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(isDense: true),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      errorText: _targetTooHigh
+                          ? l.targetTooHigh(kMaxScore)
+                          : null,
+                    ),
                     textAlign: TextAlign.end,
                   ),
                 )
@@ -161,7 +173,7 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
           ),
           const SizedBox(height: 12),
           FilledButton(
-            onPressed: _start,
+            onPressed: _targetTooHigh ? null : _start,
             style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(56)),
             child: Text(l.startGame,

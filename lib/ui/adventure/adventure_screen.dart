@@ -57,7 +57,10 @@ class AdventureScreen extends ConsumerWidget {
                   ),
                   Expanded(
                     child: ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                      // Explicit padding disables the automatic safe-area
+                      // inset — add the system nav bar back ourselves.
+                      padding: EdgeInsets.fromLTRB(20, 0, 20,
+                          24 + MediaQuery.viewPaddingOf(context).bottom),
                       itemCount: list.length,
                       separatorBuilder: (_, i) => const SizedBox(height: 10),
                       itemBuilder: (context, i) =>

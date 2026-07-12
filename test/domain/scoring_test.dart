@@ -16,16 +16,16 @@ void main() {
     test('classic: pair + stacking rows', () {
       final s = onBoard('5 5c 5c 5c 5c 5c 5c 5c 5', ScoringVariant.classic);
       s.match(0, 8);
-      // pair 10 + row 50 + clear 250 + 5 unused adds × 50
-      expect(s.score, 10 + 50 + 250 + 250);
+      // pair 10 + row 50 + clear 250 + unused adds capped at 4 × 50
+      expect(s.score, 10 + 50 + 250 + 200);
     });
 
     test('originalsOnly: opening cells pay, copies and rows do not', () {
       // Two originals (ids < kOpeningCells) + row clear.
       final a = onBoard('5 5c 5c 5c 5c 5c 5c 5c 5', ScoringVariant.originalsOnly);
       a.match(0, 8);
-      // 2 original cells × 10, no row bonus, + clear 250 + unused 250
-      expect(a.score, 20 + 250 + 250);
+      // 2 original cells × 10, no row bonus, + clear 250 + unused capped 200
+      expect(a.score, 20 + 250 + 200);
 
       // A pair of copies (ids ≥ kOpeningCells) pays nothing.
       final board = b('5 5 1 2 3 4 6 7 8'); // ids 0..8 — rebuild with big ids

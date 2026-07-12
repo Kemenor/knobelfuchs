@@ -27,7 +27,10 @@ class SettingsScreen extends ConsumerWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: ListView(
-            padding: const EdgeInsets.only(bottom: 32),
+            // Explicit padding disables the automatic safe-area inset — add
+            // the system nav bar back ourselves.
+            padding: EdgeInsets.only(
+                bottom: 32 + MediaQuery.viewPaddingOf(context).bottom),
             children: [
               FuchsbauSectionHeader(l.sectionSound),
               FuchsbauSettingsCard(children: [
