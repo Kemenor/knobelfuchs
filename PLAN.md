@@ -22,7 +22,7 @@ semantics; this plan wins for implementation.
 | Framework | **Flutter**, Android-first (iOS possible) — same toolchain as siblings |
 | Game engine | **None — plain Flutter.** A static grid puzzle needs no Flame/game loop; widgets + implicit animations suffice. The Fuchsbau stack needs **no expansion** |
 | State | **Riverpod** |
-| Persistence | **drift / SQLite** — saved runs (board + undo log, one per mode), daily-knobel history, story progress, lifetime stats; with migrations |
+| Persistence | **drift / SQLite** — saved runs (board + undo log; Free Form/Story one each, Daily **one per date** so half-finished days survive), daily-knobel history, story progress, lifetime stats; with migrations |
 | Seeds & RNG | **Seeded PRNG in the domain core** (injected, deterministic) — same seed ⇒ identical board on every device. Daily seed = local date; targets from the deterministic baseline bot (concept §4.1) |
 | QR sharing | `qr_flutter` (render) + `mobile_scanner` (scan — knabberfuchs precedent). Free-Form challenge payload only; later phase |
 | Design | **Material 3**, Fuchsbau triad & fonts via the [fuchsbau package](https://github.com/Kemenor/fuchsbau); deviations in [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
@@ -85,8 +85,9 @@ lib/
    animations, add/hint/undo with budgets, the parameter sheet — playable end-to-end
    on the Pad 5, both orientations.
 3. **Persistence.** Autosave every move; resume on launch; run history + stats.
-4. **Daily & Story.** Date seed + computed target; the level list + unlock chain
-   (curate ~20 levels via the bot).
+4. **Daily & Story.** Date seed + computed target; the **month-calendar picker**
+   (past days playable/resumable per-date, future locked by device date); the level
+   list + unlock chain (curate ~20 levels via the bot).
 5. **Polish.** Win/run-end screens, settings (theme/font/language, 200 % scale pass),
    l10n, QR share/scan.
 6. **Release.** Icon, store listing, fastlane, landing page (under fuchsnest.ch).

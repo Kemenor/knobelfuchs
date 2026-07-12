@@ -13,6 +13,7 @@ Pad 5) reviews these directly. Final app is l10n'd en/de/fr/it as always.
 | `03-spielbrett-quer.html` | Game board, landscape — board left, thumb rail right (Daily mode chrome) |
 | `04-parameter-und-ende.html` | Free-Form parameter sheet + run-end screen with QR challenge |
 | `05-abenteuer.html` | Story mode ("Abenteuer") level list — sequential unlock, no timers |
+| `06-tages-knobel.html` | Daily Knobel calendar = date picker — past days playable/resumable per date, future locked by device date |
 
 Terminology in the mockups (l10n keys later): *Nachlegen* = add rows · *Tipp* = hint ·
 *Startwert/Seed* = seed · *Punkteziel* = score to beat · *Tages-Knobel* = daily

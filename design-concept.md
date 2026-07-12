@@ -140,7 +140,16 @@ parameters are power, summoned not imposed.
 One board per calendar day: **seed = the date** (local), so every player worldwide
 knobles the *same* board — no server, no account, pure math. Adds and hints fixed at 5;
 the target score is computed from the seed (§4.1). Result (score, beaten y/n) is stored
-per date. A missed day is simply an empty slot — **no streak guilt, no red, no
+per date.
+
+**Past days stay playable.** The mode opens on a **month-calendar date picker**: any
+past day (or today) can be started, resumed, or replayed — a rainy Sunday can catch up
+the whole week. Each date keeps its own autosaved run, so leaving Tuesday half-finished
+to play Wednesday loses nothing. **Future dates are locked** (quiet gray lock, checked
+against the device date) — the point of a daily is that everyone meets the same board
+*on* the day; tomorrow simply isn't knowable yet.
+
+A missed day is simply an open slot, still waiting — **no streak guilt, no red, no
 notification**. The daily waits; it never calls.
 
 ### 6.3 Story
@@ -177,4 +186,5 @@ notifications — **a game must never call you back**; it waits.
    information — kinder, but removes the scanning challenge)? v1: only on press.
 2. Scoring weights (§4) — tune after real runs.
 3. Opening size (3 rows?) and Story difficulty curve.
-4. Daily calendar view (month grid of played days) — v2 candidate.
+4. ~~Daily calendar view — v2 candidate.~~ **Promoted to v1** (family requirement):
+   the calendar *is* the daily date picker (§6.2).
