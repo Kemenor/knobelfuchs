@@ -57,6 +57,15 @@ deterministically. The PRNG state is **`hash(seed, attempt)`** — seed and atte
 separate hash inputs, so a reroll can never collide with another seed's (or another
 day's) board. The attempt counter is internal; players only ever see their seed.
 
+**Balanced deal** (added 2026-07-12): the 2026-07-11 daily contained no 5s — and 5
+only pairs with 5, so the board lost its hardest constraint and played far too easy.
+Player, daily and QR boards therefore deal from a **bag** (every digit 1–9 at least
+⌊35/9⌋ = 3 times, the 8 remaining slots PRNG-drawn, seeded-shuffled) instead of raw
+uniform draws. **Adventure levels keep the raw uniform deal on purpose** — the skew
+quirk is curation material for deliberately easy or strange levels. The variant
+derives from the seed namespace (`level:` = uniform), so replay and QR need no extra
+field.
+
 ## 3. The rules
 
 ### 3.1 Matching pair

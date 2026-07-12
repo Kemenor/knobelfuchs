@@ -158,5 +158,31 @@ void main() {
             reason: 'seed$i');
       }
     });
+
+    test('balanced deal: every digit appears at least 3 times', () {
+      // Uniform draws can void a digit (the no-5s daily of 2026-07-11);
+      // the bag deal guarantees the full spectrum on every board.
+      for (var i = 0; i < 200; i++) {
+        final board = generateOpening(seedHash('daily:2026$i'));
+        final counts = <int, int>{};
+        for (final c in board.cells) {
+          counts[c.digit] = (counts[c.digit] ?? 0) + 1;
+        }
+        for (var d = 1; d <= 9; d++) {
+          expect(counts[d] ?? 0, greaterThanOrEqualTo(3),
+              reason: 'digit $d missing in seed $i');
+        }
+      }
+    });
+
+    test('uniform deal (adventure) skips the bag', () {
+      final seed = seedHash('level:7');
+      final uniform = generateOpening(seed, balanced: false);
+      final balanced = generateOpening(seed, balanced: true);
+      expect(digitsOf(uniform), isNot(digitsOf(balanced)));
+      // Determinism holds for both.
+      expect(digitsOf(generateOpening(seed, balanced: false)),
+          digitsOf(uniform));
+    });
   });
 }

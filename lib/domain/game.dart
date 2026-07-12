@@ -56,6 +56,11 @@ class GameConfig {
 
   int get engineSeed => seedHash(seed);
 
+  /// Adventure levels keep the raw uniform deal (skew = curation material);
+  /// everything else deals from the balanced bag (§2.2). Derived from the
+  /// seed namespace so replay/QR need no extra field.
+  bool get balancedDeal => !seed.startsWith('level:');
+
   GameConfig withTarget(int? target) => GameConfig(
       seed: seed, adds: adds, hints: hints, target: target, scoring: scoring);
 }
@@ -123,7 +128,8 @@ class GameState {
   int _nextId;
 
   GameState.fresh(this.config)
-      : board = generateOpening(config.engineSeed),
+      : board = generateOpening(config.engineSeed,
+            balanced: config.balancedDeal),
         _nextId = 0 {
     _nextId = board.cells.length;
   }
@@ -195,7 +201,7 @@ class GameState {
 
   /// Reset to the seeded opening and re-apply [actions] in order.
   void _rebuild(List<GameAction> actions) {
-    board = generateOpening(config.engineSeed);
+    board = generateOpening(config.engineSeed, balanced: config.balancedDeal);
     _nextId = board.cells.length;
     score = 0;
     pairsMatched = 0;

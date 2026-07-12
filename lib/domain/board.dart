@@ -199,14 +199,40 @@ class Board {
 
 /// Opening deal with the fairness gate (§2.2): PRNG state is
 /// hash(seed, attempt); reroll deterministically until ≥ [kFairnessFloor]
-/// pairs are available. Ids are 0..26 in reading order.
-Board generateOpening(int engineSeed) {
+/// pairs are available. Ids are assigned in reading order.
+///
+/// [balanced] (the default, used for daily/free/QR boards) deals from a bag —
+/// every digit 1–9 at least ⌊35/9⌋ = 3 times plus PRNG extras, seeded-
+/// shuffled. Uniform draws can void a digit entirely (2026-07-11's daily had
+/// no 5s — and 5 only pairs with 5, so the board lost its hardest
+/// constraint). Adventure levels keep the raw uniform deal on purpose: the
+/// skew quirk is curation material for easy/strange levels.
+Board generateOpening(int engineSeed, {bool balanced = true}) {
   for (var attempt = 0;; attempt++) {
     final rng = SplitMix64(mixSeedAttempt(engineSeed, attempt));
-    final cells = [
-      for (var i = 0; i < kOpeningCells; i++) Cell(id: i, digit: rng.nextDigit()),
-    ];
-    final board = Board(cells);
+    final digits = balanced
+        ? _balancedDeal(rng)
+        : [for (var i = 0; i < kOpeningCells; i++) rng.nextDigit()];
+    final board = Board([
+      for (var i = 0; i < kOpeningCells; i++) Cell(id: i, digit: digits[i]),
+    ]);
     if (board.countAvailablePairs() >= kFairnessFloor) return board;
   }
+}
+
+List<int> _balancedDeal(SplitMix64 rng) {
+  const perDigit = kOpeningCells ~/ 9; // 3 of each digit guaranteed
+  final bag = <int>[
+    for (var d = 1; d <= 9; d++)
+      for (var i = 0; i < perDigit; i++) d,
+    for (var i = 0; i < kOpeningCells - perDigit * 9; i++) rng.nextDigit(),
+  ];
+  // Seeded Fisher–Yates — same shuffle on every device.
+  for (var i = bag.length - 1; i > 0; i--) {
+    final j = (rng.next() >>> 32) % (i + 1);
+    final tmp = bag[i];
+    bag[i] = bag[j];
+    bag[j] = tmp;
+  }
+  return bag;
 }
