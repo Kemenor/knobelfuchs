@@ -145,7 +145,14 @@ formula is **simple, transparent, and shown in-app** — no hidden multipliers:
 
 - **Hints never cost points.** Assist use is not punished — the budget is the only
   limit (information, never punishment).
-- Formula **frozen** (design grilling, 2026-07).
+- ⚠️ **Un-frozen 2026-07-12:** playtesting exposed that this formula rewards
+  add-spam — every add doubles the material and pairs pay flat +10, so volume
+  swamps every fixed bonus and bot targets become trivially beatable. Four candidate
+  formulas ship behind a settings switch (classic · opening-cells-only · adds cost
+  their pair-value · adds cheapen pairs); the family picks one, then this section
+  gets rewritten and re-frozen. Related parity fact: a 35-digit opening is odd, so
+  **clearing is impossible without at least one Nachlegen** (matches preserve
+  parity; an add doubles survivors to even).
 
 ### 4.1 Score to beat
 A game can carry a **target score**. Beating it is the win condition in Daily and
