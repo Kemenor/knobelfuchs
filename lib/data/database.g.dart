@@ -135,6 +135,18 @@ class $SavedRunsTable extends SavedRuns
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _scoringMeta = const VerificationMeta(
+    'scoring',
+  );
+  @override
+  late final GeneratedColumn<String> scoring = GeneratedColumn<String>(
+    'scoring',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('classic'),
+  );
   static const VerificationMeta _startedAtMeta = const VerificationMeta(
     'startedAt',
   );
@@ -171,6 +183,7 @@ class $SavedRunsTable extends SavedRuns
     hintAReleased,
     hintBReleased,
     scoreCache,
+    scoring,
     startedAt,
     updatedAt,
   ];
@@ -274,6 +287,12 @@ class $SavedRunsTable extends SavedRuns
     } else if (isInserting) {
       context.missing(_scoreCacheMeta);
     }
+    if (data.containsKey('scoring')) {
+      context.handle(
+        _scoringMeta,
+        scoring.isAcceptableOrUnknown(data['scoring']!, _scoringMeta),
+      );
+    }
     if (data.containsKey('started_at')) {
       context.handle(
         _startedAtMeta,
@@ -347,6 +366,10 @@ class $SavedRunsTable extends SavedRuns
         DriftSqlType.int,
         data['${effectivePrefix}score_cache'],
       )!,
+      scoring: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scoring'],
+      )!,
       startedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}started_at'],
@@ -377,6 +400,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
   final bool hintAReleased;
   final bool hintBReleased;
   final int scoreCache;
+  final String scoring;
   final DateTime startedAt;
   final DateTime updatedAt;
   const SavedRun({
@@ -392,6 +416,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
     required this.hintAReleased,
     required this.hintBReleased,
     required this.scoreCache,
+    required this.scoring,
     required this.startedAt,
     required this.updatedAt,
   });
@@ -420,6 +445,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
     map['hint_a_released'] = Variable<bool>(hintAReleased);
     map['hint_b_released'] = Variable<bool>(hintBReleased);
     map['score_cache'] = Variable<int>(scoreCache);
+    map['scoring'] = Variable<String>(scoring);
     map['started_at'] = Variable<DateTime>(startedAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -447,6 +473,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
       hintAReleased: Value(hintAReleased),
       hintBReleased: Value(hintBReleased),
       scoreCache: Value(scoreCache),
+      scoring: Value(scoring),
       startedAt: Value(startedAt),
       updatedAt: Value(updatedAt),
     );
@@ -470,6 +497,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
       hintAReleased: serializer.fromJson<bool>(json['hintAReleased']),
       hintBReleased: serializer.fromJson<bool>(json['hintBReleased']),
       scoreCache: serializer.fromJson<int>(json['scoreCache']),
+      scoring: serializer.fromJson<String>(json['scoring']),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -490,6 +518,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
       'hintAReleased': serializer.toJson<bool>(hintAReleased),
       'hintBReleased': serializer.toJson<bool>(hintBReleased),
       'scoreCache': serializer.toJson<int>(scoreCache),
+      'scoring': serializer.toJson<String>(scoring),
       'startedAt': serializer.toJson<DateTime>(startedAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -508,6 +537,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
     bool? hintAReleased,
     bool? hintBReleased,
     int? scoreCache,
+    String? scoring,
     DateTime? startedAt,
     DateTime? updatedAt,
   }) => SavedRun(
@@ -523,6 +553,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
     hintAReleased: hintAReleased ?? this.hintAReleased,
     hintBReleased: hintBReleased ?? this.hintBReleased,
     scoreCache: scoreCache ?? this.scoreCache,
+    scoring: scoring ?? this.scoring,
     startedAt: startedAt ?? this.startedAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -546,6 +577,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
       scoreCache: data.scoreCache.present
           ? data.scoreCache.value
           : this.scoreCache,
+      scoring: data.scoring.present ? data.scoring.value : this.scoring,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -566,6 +598,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
           ..write('hintAReleased: $hintAReleased, ')
           ..write('hintBReleased: $hintBReleased, ')
           ..write('scoreCache: $scoreCache, ')
+          ..write('scoring: $scoring, ')
           ..write('startedAt: $startedAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -586,6 +619,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
     hintAReleased,
     hintBReleased,
     scoreCache,
+    scoring,
     startedAt,
     updatedAt,
   );
@@ -605,6 +639,7 @@ class SavedRun extends DataClass implements Insertable<SavedRun> {
           other.hintAReleased == this.hintAReleased &&
           other.hintBReleased == this.hintBReleased &&
           other.scoreCache == this.scoreCache &&
+          other.scoring == this.scoring &&
           other.startedAt == this.startedAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -622,6 +657,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
   final Value<bool> hintAReleased;
   final Value<bool> hintBReleased;
   final Value<int> scoreCache;
+  final Value<String> scoring;
   final Value<DateTime> startedAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -638,6 +674,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
     this.hintAReleased = const Value.absent(),
     this.hintBReleased = const Value.absent(),
     this.scoreCache = const Value.absent(),
+    this.scoring = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -655,6 +692,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
     this.hintAReleased = const Value.absent(),
     this.hintBReleased = const Value.absent(),
     required int scoreCache,
+    this.scoring = const Value.absent(),
     required DateTime startedAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -678,6 +716,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
     Expression<bool>? hintAReleased,
     Expression<bool>? hintBReleased,
     Expression<int>? scoreCache,
+    Expression<String>? scoring,
     Expression<DateTime>? startedAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -695,6 +734,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
       if (hintAReleased != null) 'hint_a_released': hintAReleased,
       if (hintBReleased != null) 'hint_b_released': hintBReleased,
       if (scoreCache != null) 'score_cache': scoreCache,
+      if (scoring != null) 'scoring': scoring,
       if (startedAt != null) 'started_at': startedAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -714,6 +754,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
     Value<bool>? hintAReleased,
     Value<bool>? hintBReleased,
     Value<int>? scoreCache,
+    Value<String>? scoring,
     Value<DateTime>? startedAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -731,6 +772,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
       hintAReleased: hintAReleased ?? this.hintAReleased,
       hintBReleased: hintBReleased ?? this.hintBReleased,
       scoreCache: scoreCache ?? this.scoreCache,
+      scoring: scoring ?? this.scoring,
       startedAt: startedAt ?? this.startedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -776,6 +818,9 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
     if (scoreCache.present) {
       map['score_cache'] = Variable<int>(scoreCache.value);
     }
+    if (scoring.present) {
+      map['scoring'] = Variable<String>(scoring.value);
+    }
     if (startedAt.present) {
       map['started_at'] = Variable<DateTime>(startedAt.value);
     }
@@ -803,6 +848,7 @@ class SavedRunsCompanion extends UpdateCompanion<SavedRun> {
           ..write('hintAReleased: $hintAReleased, ')
           ..write('hintBReleased: $hintBReleased, ')
           ..write('scoreCache: $scoreCache, ')
+          ..write('scoring: $scoring, ')
           ..write('startedAt: $startedAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -963,6 +1009,18 @@ class $RunResultsTable extends RunResults
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _scoringMeta = const VerificationMeta(
+    'scoring',
+  );
+  @override
+  late final GeneratedColumn<String> scoring = GeneratedColumn<String>(
+    'scoring',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('classic'),
+  );
   static const VerificationMeta _startedAtMeta = const VerificationMeta(
     'startedAt',
   );
@@ -1001,6 +1059,7 @@ class $RunResultsTable extends RunResults
     addsUsed,
     hintsUsed,
     durationMs,
+    scoring,
     startedAt,
     endedAt,
   ];
@@ -1120,6 +1179,12 @@ class $RunResultsTable extends RunResults
     } else if (isInserting) {
       context.missing(_durationMsMeta);
     }
+    if (data.containsKey('scoring')) {
+      context.handle(
+        _scoringMeta,
+        scoring.isAcceptableOrUnknown(data['scoring']!, _scoringMeta),
+      );
+    }
     if (data.containsKey('started_at')) {
       context.handle(
         _startedAtMeta,
@@ -1201,6 +1266,10 @@ class $RunResultsTable extends RunResults
         DriftSqlType.int,
         data['${effectivePrefix}duration_ms'],
       )!,
+      scoring: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scoring'],
+      )!,
       startedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}started_at'],
@@ -1233,6 +1302,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
   final int addsUsed;
   final int hintsUsed;
   final int durationMs;
+  final String scoring;
   final DateTime startedAt;
   final DateTime endedAt;
   const RunResult({
@@ -1250,6 +1320,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
     required this.addsUsed,
     required this.hintsUsed,
     required this.durationMs,
+    required this.scoring,
     required this.startedAt,
     required this.endedAt,
   });
@@ -1276,6 +1347,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
     map['adds_used'] = Variable<int>(addsUsed);
     map['hints_used'] = Variable<int>(hintsUsed);
     map['duration_ms'] = Variable<int>(durationMs);
+    map['scoring'] = Variable<String>(scoring);
     map['started_at'] = Variable<DateTime>(startedAt);
     map['ended_at'] = Variable<DateTime>(endedAt);
     return map;
@@ -1301,6 +1373,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
       addsUsed: Value(addsUsed),
       hintsUsed: Value(hintsUsed),
       durationMs: Value(durationMs),
+      scoring: Value(scoring),
       startedAt: Value(startedAt),
       endedAt: Value(endedAt),
     );
@@ -1326,6 +1399,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
       addsUsed: serializer.fromJson<int>(json['addsUsed']),
       hintsUsed: serializer.fromJson<int>(json['hintsUsed']),
       durationMs: serializer.fromJson<int>(json['durationMs']),
+      scoring: serializer.fromJson<String>(json['scoring']),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
       endedAt: serializer.fromJson<DateTime>(json['endedAt']),
     );
@@ -1348,6 +1422,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
       'addsUsed': serializer.toJson<int>(addsUsed),
       'hintsUsed': serializer.toJson<int>(hintsUsed),
       'durationMs': serializer.toJson<int>(durationMs),
+      'scoring': serializer.toJson<String>(scoring),
       'startedAt': serializer.toJson<DateTime>(startedAt),
       'endedAt': serializer.toJson<DateTime>(endedAt),
     };
@@ -1368,6 +1443,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
     int? addsUsed,
     int? hintsUsed,
     int? durationMs,
+    String? scoring,
     DateTime? startedAt,
     DateTime? endedAt,
   }) => RunResult(
@@ -1385,6 +1461,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
     addsUsed: addsUsed ?? this.addsUsed,
     hintsUsed: hintsUsed ?? this.hintsUsed,
     durationMs: durationMs ?? this.durationMs,
+    scoring: scoring ?? this.scoring,
     startedAt: startedAt ?? this.startedAt,
     endedAt: endedAt ?? this.endedAt,
   );
@@ -1408,6 +1485,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
       durationMs: data.durationMs.present
           ? data.durationMs.value
           : this.durationMs,
+      scoring: data.scoring.present ? data.scoring.value : this.scoring,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
     );
@@ -1430,6 +1508,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
           ..write('addsUsed: $addsUsed, ')
           ..write('hintsUsed: $hintsUsed, ')
           ..write('durationMs: $durationMs, ')
+          ..write('scoring: $scoring, ')
           ..write('startedAt: $startedAt, ')
           ..write('endedAt: $endedAt')
           ..write(')'))
@@ -1452,6 +1531,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
     addsUsed,
     hintsUsed,
     durationMs,
+    scoring,
     startedAt,
     endedAt,
   );
@@ -1473,6 +1553,7 @@ class RunResult extends DataClass implements Insertable<RunResult> {
           other.addsUsed == this.addsUsed &&
           other.hintsUsed == this.hintsUsed &&
           other.durationMs == this.durationMs &&
+          other.scoring == this.scoring &&
           other.startedAt == this.startedAt &&
           other.endedAt == this.endedAt);
 }
@@ -1492,6 +1573,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
   final Value<int> addsUsed;
   final Value<int> hintsUsed;
   final Value<int> durationMs;
+  final Value<String> scoring;
   final Value<DateTime> startedAt;
   final Value<DateTime> endedAt;
   const RunResultsCompanion({
@@ -1509,6 +1591,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
     this.addsUsed = const Value.absent(),
     this.hintsUsed = const Value.absent(),
     this.durationMs = const Value.absent(),
+    this.scoring = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.endedAt = const Value.absent(),
   });
@@ -1527,6 +1610,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
     required int addsUsed,
     required int hintsUsed,
     required int durationMs,
+    this.scoring = const Value.absent(),
     required DateTime startedAt,
     required DateTime endedAt,
   }) : slot = Value(slot),
@@ -1556,6 +1640,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
     Expression<int>? addsUsed,
     Expression<int>? hintsUsed,
     Expression<int>? durationMs,
+    Expression<String>? scoring,
     Expression<DateTime>? startedAt,
     Expression<DateTime>? endedAt,
   }) {
@@ -1574,6 +1659,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
       if (addsUsed != null) 'adds_used': addsUsed,
       if (hintsUsed != null) 'hints_used': hintsUsed,
       if (durationMs != null) 'duration_ms': durationMs,
+      if (scoring != null) 'scoring': scoring,
       if (startedAt != null) 'started_at': startedAt,
       if (endedAt != null) 'ended_at': endedAt,
     });
@@ -1594,6 +1680,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
     Value<int>? addsUsed,
     Value<int>? hintsUsed,
     Value<int>? durationMs,
+    Value<String>? scoring,
     Value<DateTime>? startedAt,
     Value<DateTime>? endedAt,
   }) {
@@ -1612,6 +1699,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
       addsUsed: addsUsed ?? this.addsUsed,
       hintsUsed: hintsUsed ?? this.hintsUsed,
       durationMs: durationMs ?? this.durationMs,
+      scoring: scoring ?? this.scoring,
       startedAt: startedAt ?? this.startedAt,
       endedAt: endedAt ?? this.endedAt,
     );
@@ -1662,6 +1750,9 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
     if (durationMs.present) {
       map['duration_ms'] = Variable<int>(durationMs.value);
     }
+    if (scoring.present) {
+      map['scoring'] = Variable<String>(scoring.value);
+    }
     if (startedAt.present) {
       map['started_at'] = Variable<DateTime>(startedAt.value);
     }
@@ -1688,6 +1779,7 @@ class RunResultsCompanion extends UpdateCompanion<RunResult> {
           ..write('addsUsed: $addsUsed, ')
           ..write('hintsUsed: $hintsUsed, ')
           ..write('durationMs: $durationMs, ')
+          ..write('scoring: $scoring, ')
           ..write('startedAt: $startedAt, ')
           ..write('endedAt: $endedAt')
           ..write(')'))
@@ -1721,6 +1813,7 @@ typedef $$SavedRunsTableCreateCompanionBuilder =
       Value<bool> hintAReleased,
       Value<bool> hintBReleased,
       required int scoreCache,
+      Value<String> scoring,
       required DateTime startedAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -1739,6 +1832,7 @@ typedef $$SavedRunsTableUpdateCompanionBuilder =
       Value<bool> hintAReleased,
       Value<bool> hintBReleased,
       Value<int> scoreCache,
+      Value<String> scoring,
       Value<DateTime> startedAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -1810,6 +1904,11 @@ class $$SavedRunsTableFilterComposer
 
   ColumnFilters<int> get scoreCache => $composableBuilder(
     column: $table.scoreCache,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scoring => $composableBuilder(
+    column: $table.scoring,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1893,6 +1992,11 @@ class $$SavedRunsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get scoring => $composableBuilder(
+    column: $table.scoring,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnOrderings(column),
@@ -1955,6 +2059,9 @@ class $$SavedRunsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get scoring =>
+      $composableBuilder(column: $table.scoring, builder: (column) => column);
+
   GeneratedColumn<DateTime> get startedAt =>
       $composableBuilder(column: $table.startedAt, builder: (column) => column);
 
@@ -2002,6 +2109,7 @@ class $$SavedRunsTableTableManager
                 Value<bool> hintAReleased = const Value.absent(),
                 Value<bool> hintBReleased = const Value.absent(),
                 Value<int> scoreCache = const Value.absent(),
+                Value<String> scoring = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -2018,6 +2126,7 @@ class $$SavedRunsTableTableManager
                 hintAReleased: hintAReleased,
                 hintBReleased: hintBReleased,
                 scoreCache: scoreCache,
+                scoring: scoring,
                 startedAt: startedAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -2036,6 +2145,7 @@ class $$SavedRunsTableTableManager
                 Value<bool> hintAReleased = const Value.absent(),
                 Value<bool> hintBReleased = const Value.absent(),
                 required int scoreCache,
+                Value<String> scoring = const Value.absent(),
                 required DateTime startedAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -2052,6 +2162,7 @@ class $$SavedRunsTableTableManager
                 hintAReleased: hintAReleased,
                 hintBReleased: hintBReleased,
                 scoreCache: scoreCache,
+                scoring: scoring,
                 startedAt: startedAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -2094,6 +2205,7 @@ typedef $$RunResultsTableCreateCompanionBuilder =
       required int addsUsed,
       required int hintsUsed,
       required int durationMs,
+      Value<String> scoring,
       required DateTime startedAt,
       required DateTime endedAt,
     });
@@ -2113,6 +2225,7 @@ typedef $$RunResultsTableUpdateCompanionBuilder =
       Value<int> addsUsed,
       Value<int> hintsUsed,
       Value<int> durationMs,
+      Value<String> scoring,
       Value<DateTime> startedAt,
       Value<DateTime> endedAt,
     });
@@ -2193,6 +2306,11 @@ class $$RunResultsTableFilterComposer
 
   ColumnFilters<int> get durationMs => $composableBuilder(
     column: $table.durationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scoring => $composableBuilder(
+    column: $table.scoring,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2286,6 +2404,11 @@ class $$RunResultsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get scoring => $composableBuilder(
+    column: $table.scoring,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnOrderings(column),
@@ -2352,6 +2475,9 @@ class $$RunResultsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get scoring =>
+      $composableBuilder(column: $table.scoring, builder: (column) => column);
+
   GeneratedColumn<DateTime> get startedAt =>
       $composableBuilder(column: $table.startedAt, builder: (column) => column);
 
@@ -2404,6 +2530,7 @@ class $$RunResultsTableTableManager
                 Value<int> addsUsed = const Value.absent(),
                 Value<int> hintsUsed = const Value.absent(),
                 Value<int> durationMs = const Value.absent(),
+                Value<String> scoring = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime> endedAt = const Value.absent(),
               }) => RunResultsCompanion(
@@ -2421,6 +2548,7 @@ class $$RunResultsTableTableManager
                 addsUsed: addsUsed,
                 hintsUsed: hintsUsed,
                 durationMs: durationMs,
+                scoring: scoring,
                 startedAt: startedAt,
                 endedAt: endedAt,
               ),
@@ -2440,6 +2568,7 @@ class $$RunResultsTableTableManager
                 required int addsUsed,
                 required int hintsUsed,
                 required int durationMs,
+                Value<String> scoring = const Value.absent(),
                 required DateTime startedAt,
                 required DateTime endedAt,
               }) => RunResultsCompanion.insert(
@@ -2457,6 +2586,7 @@ class $$RunResultsTableTableManager
                 addsUsed: addsUsed,
                 hintsUsed: hintsUsed,
                 durationMs: durationMs,
+                scoring: scoring,
                 startedAt: startedAt,
                 endedAt: endedAt,
               ),

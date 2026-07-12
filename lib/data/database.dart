@@ -18,6 +18,8 @@ class SavedRuns extends Table {
   BoolColumn get hintAReleased => boolean().withDefault(const Constant(false))();
   BoolColumn get hintBReleased => boolean().withDefault(const Constant(false))();
   IntColumn get scoreCache => integer()(); // home card without replaying
+  TextColumn get scoring =>
+      text().withDefault(const Constant('classic'))(); // playtest variant
   DateTimeColumn get startedAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -42,6 +44,8 @@ class RunResults extends Table {
   IntColumn get addsUsed => integer()();
   IntColumn get hintsUsed => integer()();
   IntColumn get durationMs => integer()(); // recorded, never shown in play
+  TextColumn get scoring =>
+      text().withDefault(const Constant('classic'))(); // playtest variant
   DateTimeColumn get startedAt => dateTime()();
   DateTimeColumn get endedAt => dateTime()();
 }
@@ -54,5 +58,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // Scoring playtest variant (2026-07-12 family session).
+            await m.addColumn(savedRuns, savedRuns.scoring);
+            await m.addColumn(runResults, runResults.scoring);
+          }
+        },
+      );
 }

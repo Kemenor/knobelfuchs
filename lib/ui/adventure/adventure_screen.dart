@@ -5,6 +5,7 @@ import '../../domain/adventure.dart';
 import '../../l10n/app_localizations.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
+import '../settings/settings.dart';
 import 'adventure_providers.dart';
 
 /// The level list (§6.3, mockup 05): emerald = beaten, indigo = the action
@@ -84,7 +85,9 @@ class _LevelRow extends ConsumerWidget {
     final nav = Navigator.of(context);
     final resumed = await controller.resumeSaved(slot: slot);
     if (!resumed) {
-      controller.start(adventureConfig(info.level), slot: slot);
+      final scoring = ref.read(settingsProvider).scoring;
+      controller.start(
+          adventureConfig(info.level, scoring: scoring), slot: slot);
     }
     nav.push(MaterialPageRoute(builder: (_) => const GameScreen()));
   }

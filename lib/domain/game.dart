@@ -6,6 +6,27 @@ import 'board.dart';
 import 'constants.dart';
 import 'seed.dart';
 
+/// Playtest scoring variants (family session 2026-07-12): the classic
+/// formula rewards add-spam — every add doubles the material and pairs score
+/// flat +10, so volume swamps every fixed bonus. Four candidate fixes ship
+/// behind a settings switch until the family picks one.
+enum ScoringVariant {
+  /// The grilled formula: pair +10, row +50, clear +250, unused add +50.
+  classic,
+
+  /// Only cleared cells from the opening score (+10 each; copies are
+  /// helpers, not loot). Rows chime but score 0. Fixed ceiling per board.
+  originalsOnly,
+
+  /// Classic, but each Nachlegen costs the pair-value it deals
+  /// (−10 per appended pair) — volume becomes point-neutral.
+  addCosts,
+
+  /// Classic, but each add used makes every later pair 2 points cheaper
+  /// (10 → 8 → 6 → …, floor 0).
+  decayingPairs,
+}
+
 /// One struct for all three modes and the QR payload (§6, §7).
 class GameConfig {
   /// Normalized user seed (§2.1), or an internal key like `daily:20260712`.
@@ -20,17 +41,21 @@ class GameConfig {
   /// Score to beat; null = off.
   final int? target;
 
+  /// Locked in at game start; replay/undo depend on it (playtest switch).
+  final ScoringVariant scoring;
+
   const GameConfig({
     required this.seed,
     this.adds = kDefaultAdds,
     this.hints = kDefaultHints,
     this.target,
+    this.scoring = ScoringVariant.classic,
   });
 
   int get engineSeed => seedHash(seed);
 
-  GameConfig withTarget(int? target) =>
-      GameConfig(seed: seed, adds: adds, hints: hints, target: target);
+  GameConfig withTarget(int? target) => GameConfig(
+      seed: seed, adds: adds, hints: hints, target: target, scoring: scoring);
 }
 
 sealed class GameAction {}
@@ -211,7 +236,19 @@ class GameState {
     board = next;
     pairsMatched++;
     rowsCleared += removedRows;
-    score += kPointsPerPair + removedRows * kPointsPerRow;
+    score += switch (config.scoring) {
+      ScoringVariant.classic ||
+      ScoringVariant.addCosts =>
+        kPointsPerPair + removedRows * kPointsPerRow,
+      ScoringVariant.decayingPairs =>
+        (kPointsPerPair - 2 * addsUsed).clamp(0, kPointsPerPair) +
+            removedRows * kPointsPerRow,
+      // Copies are helpers, not loot: only opening cells score; rows chime
+      // but pay nothing.
+      ScoringVariant.originalsOnly =>
+        (aId < kOpeningCells ? kPointsPerPair : 0) +
+            (bId < kOpeningCells ? kPointsPerPair : 0),
+    };
     if (board.isEmpty) {
       score += kPointsBoardCleared;
       // Unused-add bonus only on a cleared board (§4); a limitless budget
@@ -226,9 +263,16 @@ class GameState {
     if (board.isEmpty) return false;
     final remaining = addsRemaining;
     if (remaining != null && remaining <= 0) return false;
+    final survivors =
+        board.cells.where((c) => !c.cleared).length;
     final (next, nextId) = board.addSurvivors(_nextId);
     board = next;
     _nextId = nextId;
+    if (config.scoring == ScoringVariant.addCosts) {
+      // The add deals survivors/2 potential pairs — charge their value so
+      // volume is point-neutral. May go negative; that's honest math.
+      score -= (survivors * kPointsPerPair) ~/ 2;
+    }
     return true;
   }
 

@@ -7,6 +7,7 @@ import '../../domain/daily.dart';
 import '../../l10n/app_localizations.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
+import '../settings/settings.dart';
 import 'daily_providers.dart';
 
 /// The calendar IS the mode's home (§6.2, mockup 06): every past day
@@ -49,7 +50,8 @@ class _DailyCalendarScreenState extends ConsumerState<DailyCalendarScreen> {
     final nav = Navigator.of(context);
     final resumed = await controller.resumeSaved(slot: slot);
     if (!resumed) {
-      controller.start(dailyConfig(day.date), slot: slot);
+      final scoring = ref.read(settingsProvider).scoring;
+      controller.start(dailyConfig(day.date, scoring: scoring), slot: slot);
     }
     nav.push(MaterialPageRoute(builder: (_) => const GameScreen()));
   }

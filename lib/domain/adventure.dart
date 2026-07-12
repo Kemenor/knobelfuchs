@@ -39,13 +39,16 @@ double adventureFactor(int level) =>
     0.9 + (level - 1) * (0.1 / (kAdventureLevels - 1));
 
 /// The full config for a level, target included (computed, deterministic —
-/// same on every device, no authoring burden).
-GameConfig adventureConfig(int level) {
+/// same on every device, no authoring burden; the bot plays under the same
+/// scoring variant).
+GameConfig adventureConfig(int level,
+    {ScoringVariant scoring = ScoringVariant.classic}) {
   assert(level >= 1 && level <= kAdventureLevels);
   final base = GameConfig(
     seed: adventureSeedKey(level),
     adds: adventureAdds(level),
     hints: adventureHints(level),
+    scoring: scoring,
   );
   return base.withTarget(targetScore(base, adventureFactor(level)));
 }

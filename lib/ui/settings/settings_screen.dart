@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuchsbau/fuchsbau.dart';
 
+import '../../domain/game.dart' show ScoringVariant;
 import '../../l10n/app_localizations.dart';
 import 'settings.dart';
 
@@ -128,6 +129,22 @@ class SettingsScreen extends ConsumerWidget {
                     ('en', 'English'),
                   ],
                   onChanged: n.setLocaleOverride,
+                ),
+              ]),
+              _SectionHeader(l.sectionPlaytest),
+              _Card(children: [
+                _ChipsRow<ScoringVariant>(
+                  icon: Icons.science_outlined,
+                  label: l.sectionPlaytest,
+                  sub: l.scoringSub,
+                  value: s.scoring,
+                  options: [
+                    (ScoringVariant.classic, l.scoringClassic),
+                    (ScoringVariant.originalsOnly, l.scoringOriginals),
+                    (ScoringVariant.addCosts, l.scoringAddCosts),
+                    (ScoringVariant.decayingPairs, l.scoringDecay),
+                  ],
+                  onChanged: n.setScoring,
                 ),
               ]),
               _SectionHeader(l.sectionAbout),

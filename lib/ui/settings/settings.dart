@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuchsbau/fuchsbau.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../domain/game.dart' show ScoringVariant;
+
 /// Motion levels (concept §10.2). `null` in [Settings.motion] = follow the
 /// OS reduce-motion preference.
 enum MotionMode { full, reduced, off }
@@ -17,6 +19,9 @@ class Settings {
   final String? localeOverride; // 'de' | 'fr' | 'it' | 'en' | null = system
   final bool anleitungSeen; // first-launch offer (§11)
 
+  /// Playtest switch (2026-07-12): applies to newly started games.
+  final ScoringVariant scoring;
+
   const Settings({
     this.effectsVolume = .8,
     this.musicOn = true,
@@ -26,6 +31,7 @@ class Settings {
     this.font = FuchsbauFont.figtree,
     this.localeOverride,
     this.anleitungSeen = false,
+    this.scoring = ScoringVariant.classic,
   });
 
   Settings copyWith({
@@ -37,6 +43,7 @@ class Settings {
     FuchsbauFont? font,
     String? Function()? localeOverride,
     bool? anleitungSeen,
+    ScoringVariant? scoring,
   }) =>
       Settings(
         effectsVolume: effectsVolume ?? this.effectsVolume,
@@ -48,6 +55,7 @@ class Settings {
         localeOverride:
             localeOverride != null ? localeOverride() : this.localeOverride,
         anleitungSeen: anleitungSeen ?? this.anleitungSeen,
+        scoring: scoring ?? this.scoring,
       );
 
   /// Resolve the effective motion mode against the OS preference.
@@ -88,7 +96,15 @@ class SettingsNotifier extends Notifier<Settings> {
           FuchsbauFont.figtree,
       localeOverride: p.getString('locale'),
       anleitungSeen: p.getBool('anleitung_seen') ?? false,
+      scoring:
+          ScoringVariant.values.asNameMap()[p.getString('scoring') ?? ''] ??
+              ScoringVariant.classic,
     );
+  }
+
+  void setScoring(ScoringVariant v) {
+    state = state.copyWith(scoring: v);
+    _prefs.setString('scoring', v.name);
   }
 
   void setEffectsVolume(double v) {

@@ -16,12 +16,15 @@ String dailySeedKey(DateTime date) {
   return 'daily:$y$m$d';
 }
 
-/// The full config for a date, target included (computed, deterministic).
-GameConfig dailyConfig(DateTime date) {
+/// The full config for a date, target included (computed, deterministic —
+/// the bot plays under the same scoring variant).
+GameConfig dailyConfig(DateTime date,
+    {ScoringVariant scoring = ScoringVariant.classic}) {
   final base = GameConfig(
     seed: dailySeedKey(date),
     adds: kDefaultAdds,
     hints: kDefaultHints,
+    scoring: scoring,
   );
   return base.withTarget(targetScore(base, kDailyTargetFactor));
 }
