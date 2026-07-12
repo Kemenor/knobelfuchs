@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "fr",
   "appTitle": "Knobelfuchs",
   "tagline": "Des chiffres, en toute tranquillité.",
@@ -9,6 +9,11 @@
   "modeStory": "Aventure",
   "modeStoryDesc": "Niveau après niveau — chaque réussite débloque le suivant.",
   "comingSoon": "Bientôt disponible.",
+  "levelN": "Niveau {n}",
+  "bestScore": "Record : {score}",
+  "play": "Jouer",
+  "progressOf": "{done} sur {total} réussis",
+  "today": "Auj.",
   "resume": "Continuer",
   "footerOffline": "Tout hors ligne · sans pub · sans achats — juste du jeu.",
   "score": "Points",

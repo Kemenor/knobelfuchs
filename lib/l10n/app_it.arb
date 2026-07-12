@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "it",
   "appTitle": "Knobelfuchs",
   "tagline": "Numeri e calma.",
@@ -9,6 +9,11 @@
   "modeStory": "Avventura",
   "modeStoryDesc": "Livello dopo livello — ogni vittoria sblocca il prossimo.",
   "comingSoon": "In arrivo.",
+  "levelN": "Livello {n}",
+  "bestScore": "Record: {score}",
+  "play": "Gioca",
+  "progressOf": "{done} su {total} superati",
+  "today": "Oggi",
   "resume": "Continua",
   "footerOffline": "Tutto offline · niente pubblicità · niente acquisti — solo gioco.",
   "score": "Punti",

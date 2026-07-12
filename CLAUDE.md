@@ -25,8 +25,9 @@ Tablet-first (Xiaomi Pad 5), ad-free, local-first, no dark patterns.
 - App id `ch.fuchsnest.knobelfuchs`; deep link scheme `knobelfuchs://` (both platforms).
 
 ## State (keep current)
-- Phase 0 (mockups) ✅ · Phase 1 (engine) ✅ · Phase 2 (board UI + Free Form,
-  playing on the Pad 5, app icon set) ✅ · Phase 3 (persistence, verified across
-  force-kill) ✅ · next: Phase 4 — Daily calendar + Abenteuer levels.
-- 63 tests green. Debug installs via `flutter build apk --debug` +
+- Phase 0 (mockups) ✅ · Phase 1 (engine) ✅ · Phase 2 (board UI + Free Form) ✅ ·
+  Phase 3 (persistence, verified across force-kill) ✅ · Phase 4 (Daily calendar +
+  Abenteuer levels; on-device verification pending — tablet back with its owner) ✅ ·
+  next: Phase 5 — polish (sounds, motion pass, settings, Anleitung, QR).
+- 70 tests green. Debug installs via `flutter build apk --debug` +
   `adb install -r build\app\outputs\flutter-apk\app-debug.apk`.

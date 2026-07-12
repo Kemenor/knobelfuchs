@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "de",
   "appTitle": "Knobelfuchs",
   "tagline": "Zahlen knobeln, in Ruhe.",
@@ -9,6 +9,11 @@
   "modeStory": "Abenteuer",
   "modeStoryDesc": "Level für Level — jedes gelöste schaltet das nächste frei.",
   "comingSoon": "Kommt bald.",
+  "levelN": "Level {n}",
+  "bestScore": "Best: {score}",
+  "play": "Spielen",
+  "progressOf": "{done} von {total} geschafft",
+  "today": "Heute",
   "resume": "Weiterspielen",
   "footerOffline": "Alles offline · keine Werbung · keine Käufe — einfach knobeln.",
   "score": "Punkte",

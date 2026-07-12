@@ -2,6 +2,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../adventure/adventure_screen.dart';
+import '../daily/daily_calendar_screen.dart';
 import '../freeform/new_game_sheet.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
@@ -103,8 +105,8 @@ class HomeScreen extends ConsumerWidget {
                     icon: Icons.calendar_today_outlined,
                     title: l.modeDaily,
                     subtitle: l.modeDailyDesc,
-                    enabled: false,
-                    onTap: comingSoon,
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const DailyCalendarScreen())),
                   ),
                   const SizedBox(height: 14),
                   _ModeCard(
@@ -112,8 +114,8 @@ class HomeScreen extends ConsumerWidget {
                     icon: Icons.map_outlined,
                     title: l.modeStory,
                     subtitle: l.modeStoryDesc,
-                    enabled: false,
-                    onTap: comingSoon,
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const AdventureScreen())),
                   ),
                   const Spacer(),
                   Text(
@@ -138,7 +140,6 @@ class _ModeCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String? trailing;
-  final bool enabled;
   final VoidCallback onTap;
 
   const _ModeCard({
@@ -148,7 +149,6 @@ class _ModeCard extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.trailing,
-    this.enabled = true,
   });
 
   @override
@@ -207,7 +207,7 @@ class _ModeCard extends StatelessWidget {
     );
 
     return Opacity(
-      opacity: enabled ? 1 : .55,
+      opacity: 1,
       child: Material(
         color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),

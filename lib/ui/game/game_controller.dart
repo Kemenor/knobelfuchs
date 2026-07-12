@@ -1,32 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/database.dart';
-import '../../data/game_repository.dart';
 import '../../domain/board.dart';
 import '../../domain/game.dart';
+import '../providers.dart';
 
-/// Free Form's single run slot (§6.1); daily/adventure get their own keys.
-const String kFreeSlot = 'free';
-
-final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  ref.onDispose(db.close);
-  return db;
-});
-
-final gameRepositoryProvider =
-    Provider<GameRepository>((ref) => GameRepository(ref.watch(databaseProvider)));
-
-/// The autosaved Free Form run, for the home card. Bumped after every
-/// controller persist.
-final savedFreeRunProvider = FutureProvider<SavedRunSummary?>(
-  (ref) => ref.watch(gameRepositoryProvider).loadSummary(kFreeSlot),
-);
+export '../providers.dart'
+    show kFreeSlot, databaseProvider, gameRepositoryProvider, savedFreeRunProvider;
 
 /// Immutable snapshot of the running game for the UI. The mutable [GameState]
 /// lives inside the controller; every mutation publishes a fresh view.
 class GameView {
   final GameConfig config;
+  final String slot; // 'free' | 'daily:yyyymmdd' | 'level:N'
   final Board board;
   final int score;
   final GameStatus status;
@@ -42,6 +27,7 @@ class GameView {
 
   const GameView({
     required this.config,
+    required this.slot,
     required this.board,
     required this.score,
     required this.status,
@@ -55,6 +41,11 @@ class GameView {
     required this.hintCellIds,
     required this.targetBeaten,
   });
+
+  bool get isDaily => slot.startsWith('daily:');
+  bool get isAdventure => slot.startsWith('level:');
+  int? get adventureLevel =>
+      isAdventure ? int.tryParse(slot.substring('level:'.length)) : null;
 }
 
 final gameControllerProvider =
@@ -62,25 +53,25 @@ final gameControllerProvider =
 
 class GameController extends Notifier<GameView?> {
   GameState? _game;
+  String _slot = kFreeSlot;
   int? _selectedId;
   DateTime _startedAt = DateTime.now();
 
   @override
   GameView? build() => null;
 
-  GameRepository get _repo => ref.read(gameRepositoryProvider);
-
-  void start(GameConfig config) {
+  void start(GameConfig config, {String slot = kFreeSlot}) {
     _game = GameState.fresh(config);
+    _slot = slot;
     _selectedId = null;
     _startedAt = DateTime.now();
     _publish();
     _persist(GameStatus.playing);
   }
 
-  /// Rebuild the autosaved run from its move log (§3.7: every move durable).
-  Future<bool> resumeSaved() async {
-    final saved = await _repo.loadRun(kFreeSlot);
+  /// Rebuild an autosaved run from its move log (§3.7: every move durable).
+  Future<bool> resumeSaved({String slot = kFreeSlot}) async {
+    final saved = await ref.read(gameRepositoryProvider).loadRun(slot);
     if (saved == null) return false;
     _game = GameState.replay(
       saved.config,
@@ -88,6 +79,7 @@ class GameController extends Notifier<GameView?> {
       hintsUsed: saved.hintsUsed,
       activeHint: saved.activeHint,
     );
+    _slot = slot;
     _selectedId = null;
     _startedAt = saved.startedAt;
     _publish();
@@ -97,11 +89,12 @@ class GameController extends Notifier<GameView?> {
   /// Leave the game for good (run-end "Zum Menü") — the slot is cleared;
   /// the result was already recorded at run end.
   Future<void> quit() async {
+    final slot = _slot;
     _game = null;
     _selectedId = null;
     _publish();
-    await _repo.clearRun(kFreeSlot);
-    ref.invalidate(savedFreeRunProvider);
+    await ref.read(gameRepositoryProvider).clearRun(slot);
+    _invalidate(slot);
   }
 
   /// Tap-tap interaction (§3.2): select → match-or-move-selection → deselect.
@@ -172,24 +165,35 @@ class GameController extends Notifier<GameView?> {
   void _persist(GameStatus before) {
     final game = _game;
     if (game == null) return;
+    final repo = ref.read(gameRepositoryProvider);
+    final slot = _slot;
     final now = DateTime.now();
     final after = game.status;
     final startedAt = _startedAt;
 
     Future<void> run() async {
-      await _repo.saveRun(kFreeSlot, game, startedAt: startedAt, now: now);
+      await repo.saveRun(slot, game, startedAt: startedAt, now: now);
       if (before == GameStatus.playing && after != GameStatus.playing) {
-        await _repo.recordResult(kFreeSlot, game,
-            startedAt: startedAt, endedAt: now);
+        await repo.recordResult(slot, game, startedAt: startedAt, endedAt: now);
         if (after == GameStatus.cleared) {
           // No way back into a cleared board — the slot is done (§3.7).
-          await _repo.clearRun(kFreeSlot);
+          await repo.clearRun(slot);
         }
       }
-      ref.invalidate(savedFreeRunProvider);
+      _invalidate(slot);
     }
 
     run();
+  }
+
+  void _invalidate(String slot) {
+    if (slot == kFreeSlot) {
+      ref.invalidate(savedFreeRunProvider);
+    } else if (slot.startsWith('daily:')) {
+      ref.read(dailyVersionProvider.notifier).bump();
+    } else if (slot.startsWith('level:')) {
+      ref.read(adventureVersionProvider.notifier).bump();
+    }
   }
 
   void _publish() {
@@ -207,6 +211,7 @@ class GameController extends Notifier<GameView?> {
     final hint = game.activeHint;
     state = GameView(
       config: game.config,
+      slot: _slot,
       board: game.board,
       score: game.score,
       status: game.status,

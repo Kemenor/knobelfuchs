@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/constants.dart';
 import '../../domain/game.dart';
@@ -114,13 +115,30 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 }
 
+/// Daily runs show their date, adventure runs their level — never the
+/// internal seed keys (§2.1).
+String _subtitle(BuildContext context, GameView view) {
+  final l = AppLocalizations.of(context)!;
+  if (view.isDaily) {
+    final raw = view.config.seed.substring('daily:'.length); // yyyymmdd
+    final date = DateTime(
+      int.parse(raw.substring(0, 4)),
+      int.parse(raw.substring(4, 6)),
+      int.parse(raw.substring(6, 8)),
+    );
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMMd(locale).format(date);
+  }
+  if (view.isAdventure) return l.levelN(view.adventureLevel ?? 0);
+  return l.seedShort(view.config.seed);
+}
+
 class _TopBar extends StatelessWidget {
   final GameView view;
   const _TopBar({required this.view});
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
@@ -131,7 +149,7 @@ class _TopBar extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              l.seedShort(view.config.seed),
+              _subtitle(context, view),
               style: TextStyle(
                 color: scheme.onSurfaceVariant,
                 fontSize: 12,
@@ -194,16 +212,23 @@ class _ModeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    // Mode hue lives in passive chrome only (DESIGN_SYSTEM §0):
+    // Free Form orange, Daily indigo, Adventure emerald.
+    final (hue, fill, label) = view.isDaily
+        ? (scheme.secondary, scheme.secondaryContainer, l.modeDaily)
+        : view.isAdventure
+            ? (scheme.tertiary, scheme.tertiaryContainer, l.modeStory)
+            : (scheme.primary, scheme.primaryContainer, l.modeFree);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
-        color: scheme.primaryContainer,
+        color: fill,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        l.modeFree.toUpperCase(),
+        label.toUpperCase(),
         style: TextStyle(
-          color: scheme.primary,
+          color: hue,
           fontWeight: FontWeight.w800,
           fontSize: 11,
           letterSpacing: .5,

@@ -101,9 +101,10 @@ fairness floor **≥3 pairs**, daily epoch **2026-07-01**.
 3. ✅ **Persistence.** drift/SQLite: per-slot autosave after every move (board =
    seed + move-log replay, sticky hints included), run_results at every run-end,
    resume via the home card. Verified on-device across a force-kill.
-4. **Daily & Story.** Date seed + computed target; the **month-calendar picker**
-   (past days playable/resumable per-date, future locked by device date); the level
-   list + unlock chain (curate ~20 levels via the bot).
+4. ✅ **Daily & Story.** Month-calendar picker (per-date slots, resumable, epoch- and
+   future-bounded, latched beaten-flags); Abenteuer level list (provisional 20-level
+   curve — budgets 5/5→2/1, factor 0.9→1.0 — unlock chain from run_results). Curve
+   tuning still open for playtesting.
 5. **Polish.** Win/run-end screens, sound & motion pass (the family's picks from
    `07-klang.html`), settings (theme/font/language/sound, 200 % scale pass), l10n,
    QR share/scan.

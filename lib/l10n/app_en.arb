@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "en",
   "appTitle": "Knobelfuchs",
   "tagline": "Number puzzles, in peace.",
@@ -9,6 +9,14 @@
   "modeStory": "Adventure",
   "modeStoryDesc": "Level by level — each one solved unlocks the next.",
   "comingSoon": "Coming soon.",
+  "levelN": "Level {n}",
+  "@levelN": { "placeholders": { "n": { "type": "int" } } },
+  "bestScore": "Best: {score}",
+  "@bestScore": { "placeholders": { "score": { "type": "int" } } },
+  "play": "Play",
+  "progressOf": "{done} of {total} done",
+  "@progressOf": { "placeholders": { "done": { "type": "int" }, "total": { "type": "int" } } },
+  "today": "Today",
   "resume": "Resume",
   "footerOffline": "Fully offline · no ads · no purchases — just puzzling.",
   "score": "Score",
