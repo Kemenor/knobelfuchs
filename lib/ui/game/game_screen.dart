@@ -229,6 +229,8 @@ class _TopBar extends StatelessWidget {
 }
 
 /// §12: "new game despite live run" lives here, behind a calm confirmation.
+/// Context-aware: Free Form opens the parameter sheet; Daily and Adventure
+/// restart *their own* challenge — same board, same target, fresh start.
 class _NewGameButton extends ConsumerWidget {
   final GameView view;
   const _NewGameButton({required this.view});
@@ -237,7 +239,7 @@ class _NewGameButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     return IconButton(
-      tooltip: l.newGameTitle,
+      tooltip: view.slot == kFreeSlot ? l.newGameTitle : l.again,
       icon: const Icon(Icons.restart_alt),
       onPressed: () async {
         final confirmed = await showDialog<bool>(
@@ -257,8 +259,14 @@ class _NewGameButton extends ConsumerWidget {
             ],
           ),
         );
-        if (confirmed == true && context.mounted) {
+        if (confirmed != true || !context.mounted) return;
+        if (view.slot == kFreeSlot) {
           showNewGameSheet(context, pushGameScreen: false);
+        } else {
+          // Daily / Adventure: the challenge is fixed — just restart it.
+          ref
+              .read(gameControllerProvider.notifier)
+              .start(view.config, slot: view.slot);
         }
       },
     );
@@ -430,12 +438,20 @@ class _ActionBar extends ConsumerWidget {
               audio.play(SoundEvent.unavailable);
           }
           if (outcome == HintOutcome.nonePossible && context.mounted) {
+            // Floats *above* the action bar — the buttons stay visible
+            // (tablet feedback, 2026-07-12).
             ScaffoldMessenger.of(context)
               ..clearSnackBars()
               ..showSnackBar(
                 SnackBar(
-                  content: Text(l.hintNonePossible),
+                  content:
+                      Text(l.hintNonePossible, textAlign: TextAlign.center),
                   behavior: SnackBarBehavior.floating,
+                  margin:
+                      const EdgeInsets.only(left: 48, right: 48, bottom: 110),
+                  duration: const Duration(seconds: 2),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999)),
                 ),
               );
           }
