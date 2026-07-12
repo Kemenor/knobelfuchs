@@ -95,10 +95,12 @@ fairness floor **≥3 pairs**, daily epoch **2026-07-01**.
 1. ✅ **Engine + tests.** The full ruleset as pure Dart in `lib/domain/` — seeds
    (normalize + FNV-1a), fairness-gated generation, line-of-sight, collapse, adds,
    hints, undo-as-replay, scoring, bot targets, daily, QR codec — 57 tests green.
-2. **Board UI + Free Form.** Adaptive grid, tap-tap selection, match/collapse
-   animations, add/hint/undo with budgets, the parameter sheet — playable end-to-end
-   on the Pad 5, both orientations.
-3. **Persistence.** Autosave every move; resume on launch; run history + stats.
+2. ✅ **Board UI + Free Form.** Adaptive grid on the fuchsbau theme, tap-tap
+   selection, sticky hints, budgeted action bar, parameter sheet, run-end dialog,
+   l10n en/de/fr/it — playing on the Pad 5. (Full motion/sound pass = Phase 5.)
+3. ✅ **Persistence.** drift/SQLite: per-slot autosave after every move (board =
+   seed + move-log replay, sticky hints included), run_results at every run-end,
+   resume via the home card. Verified on-device across a force-kill.
 4. **Daily & Story.** Date seed + computed target; the **month-calendar picker**
    (past days playable/resumable per-date, future locked by device date); the level
    list + unlock chain (curate ~20 levels via the bot).
