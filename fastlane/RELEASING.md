@@ -25,15 +25,15 @@ Manual fallback (Android): `flutter build appbundle --release` →
 | Secret | Status |
 |---|---|
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `ANDROID_STORE_PASSWORD` | ✅ set 2026-07-14 (keystore generated on the Windows box) |
-| `PLAY_STORE_KEY_JSON_BASE64` | ⏳ reuse the knabberfuchs service-account key (ProtonDrive / Linux box) — also grant the service account access to this app in the Play Console |
-| `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_API_KEY_P8_BASE64` | ⏳ reuse knabberfuchs's values (team-scoped key) |
-| `IOS_DIST_CERT_P12_BASE64`, `IOS_DIST_CERT_PASSWORD`, `KEYCHAIN_PASSWORD` | ⏳ reuse knabberfuchs's values (team distribution cert) |
-| `IOS_PROVISION_PROFILE_BASE64` | ⏳ NEW — App Store profile for `ch.fuchsnest.knobelfuchs` (Mac step below) |
+| `PLAY_STORE_KEY_JSON_BASE64` | ✅ set 2026-07-14 (knabberfuchs service account; API access to this app verified with an edit round-trip) |
+| `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_API_KEY_P8_BASE64` | ✅ set 2026-07-14 (team key, from ProtonDrive) |
+| `IOS_DIST_CERT_P12_BASE64`, `IOS_DIST_CERT_PASSWORD`, `KEYCHAIN_PASSWORD` | ✅ set 2026-07-14 (team distribution cert, from the ProtonDrive signing backup) |
+| `IOS_PROVISION_PROFILE_BASE64` | ⏳ NEW — App Store profile for `ch.fuchsnest.knobelfuchs` (Mac step below; also commit `ios/ExportOptions.plist`). Until then `ios.yml` fails at the signing step — expected. |
 
-**Keystore backup:** `android/upload-keystore.jks` + `android/key.properties`
-exist only on the Windows box and in the GitHub secrets — copy both to
-ProtonDrive like the knabberfuchs keystore. Losing the upload key is
-recoverable via Play's upload-key reset, but the backup is cheaper.
+**Keystore backup:** ✅ `knobelfuchs-upload-keystore.jks` + `knobelfuchs-key.properties`
+copied to `ProtonDrive/…/knobelfuchs-secrets/` on 2026-07-14 (alongside the
+GitHub secrets). Losing the upload key would be recoverable via Play's
+upload-key reset, but the backup is cheaper.
 
 ## One-time Play Console setup (manual, owner account)
 
