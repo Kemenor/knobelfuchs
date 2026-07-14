@@ -1,0 +1,128 @@
+name: iOS · TestFlight
+
+# Build the iOS app and upload it to TestFlight on a version tag (v*).
+# Free on GitHub-hosted macOS runners because this repo is public.
+# Ported from knabberfuchs — same team, same App Store Connect API key.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   ASC_KEY_ID                    App Store Connect API key id      — reuse knabberfuchs (team key)
+#   ASC_ISSUER_ID                 App Store Connect issuer id       — reuse knabberfuchs
+#   ASC_API_KEY_P8_BASE64         base64 of AuthKey_<id>.p8         — reuse knabberfuchs (ProtonDrive)
+#   IOS_DIST_CERT_P12_BASE64      base64 of the Apple Distribution .p12 — reuse knabberfuchs (team cert)
+#   IOS_DIST_CERT_PASSWORD        password set when exporting that .p12 — reuse knabberfuchs
+#   IOS_PROVISION_PROFILE_BASE64  base64 App Store .mobileprovision — NEW: per-bundle-id, create for
+#                                 ch.fuchsnest.knobelfuchs (Mac/Xcode or `fastlane sigh`)
+#   KEYCHAIN_PASSWORD             any random string for the temp keychain
+#
+# One-time Mac/ASC setup before this can succeed:
+#   1. Register bundle id ch.fuchsnest.knobelfuchs + create the app in
+#      App Store Connect.
+#   2. One manual signed TestFlight build in Xcode (creates/uses the team
+#      distribution cert + a new App Store provisioning profile). Export the
+#      profile, base64 it into IOS_PROVISION_PROFILE_BASE64, and commit the
+#      generated ios/ExportOptions.plist.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  # Same analyze + test suite as test.yml: a v* tag on a red or never-tested
+  # commit must not reach TestFlight. Runs on Linux — cheaper than macOS.
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: .fvmrc
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+  testflight:
+    needs: test
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Verify tag matches pubspec version
+        if: github.ref_type == 'tag'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          PUBSPEC=$(grep -m1 '^version:' pubspec.yaml | awk '{print $2}')
+          if [ "${TAG#v}" != "${PUBSPEC%%+*}" ]; then
+            echo "::error::Tag $TAG does not match pubspec.yaml version: $PUBSPEC — bump pubspec (and the four changelogs) before tagging."
+            exit 1
+          fi
+
+      - name: Select latest Xcode
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: .fvmrc
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Install App Store Connect API key (.p8)
+        env:
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          mkdir -p fastlane
+          echo "$ASC_API_KEY_P8_BASE64" | base64 --decode > "fastlane/AuthKey_${ASC_KEY_ID}.p8"
+
+      - name: Import signing certificate & provisioning profile
+        env:
+          IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERT="$RUNNER_TEMP/dist.p12"
+          PROFILE="$RUNNER_TEMP/profile.mobileprovision"
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          echo "$IOS_DIST_CERT_P12_BASE64" | base64 --decode > "$CERT"
+          echo "$IOS_PROVISION_PROFILE_BASE64" | base64 --decode > "$PROFILE"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$CERT" -P "$IOS_DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PROFILE" "$HOME/Library/MobileDevice/Provisioning Profiles/"
+
+      - name: Build signed IPA
+        # ios/ExportOptions.plist is created during the one-time Mac setup:
+        # method=app-store, manual signing, the new App Store profile.
+        run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+
+      - name: Pin fastlane
+        run: sudo gem install fastlane --no-document -v 2.236.1
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_FILEPATH: fastlane/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+        run: fastlane ios beta

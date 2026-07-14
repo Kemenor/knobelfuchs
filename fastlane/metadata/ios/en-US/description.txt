@@ -1,0 +1,18 @@
+Cross out pairs of numbers until the board is empty — two numbers match when they are equal or add up to ten. The puzzle you know from countless ad-stuffed apps, rebuilt the calm way: no ads, no timer, no lives, no way to lose. A stuck board simply ends with its score.
+
+THREE MODES
+• Free play — your board, your rules: pick a seed (any word works), your add and hint budgets, and an optional score to beat.
+• Daily Knobel — one board per day, the same for everyone. Missed days wait patiently in the calendar; nothing is ever lost.
+• Adventure — 50 measured levels in five chapters, from very easy to very hard. Each solved level unlocks the next.
+
+CHALLENGE SOMEONE
+Share any board as a QR code or link: same board, same rules, your score as the target. No account, no server — the whole challenge fits in the code.
+
+CALM BY DESIGN
+Hints never cost points. Undo takes back any move, as far as you like. Background music you can shape: switch off any track you dislike — the rotation simply skips it.
+
+FOR ALL EYES
+Dark and light themes, text scaling up to 200 %, and typefaces for dyslexia and low vision — the digits are huge anyway. In English, German, French and Italian.
+
+YOUR DATA STAYS YOURS
+Fully offline. No accounts, no analytics, no ads, no purchases, no data collection. Free and open source — part of the fuchs family of calm apps (fuchsnest.ch).

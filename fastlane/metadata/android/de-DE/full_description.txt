@@ -1,0 +1,18 @@
+Streiche Zahlenpaare weg, bis das Brett leer ist — zwei Zahlen passen, wenn sie gleich sind oder zusammen zehn ergeben. Das Puzzle, das du aus unzähligen werbeverseuchten Apps kennst, ruhig neu gebaut: keine Werbung, kein Timer, keine Leben, kein Verlieren. Ein festgefahrenes Brett endet einfach mit seinem Punktestand.
+
+DREI MODI
+• Freies Spiel — dein Brett, deine Regeln: Startwert wählen (jedes Wort geht), Nachlege- und Tipp-Budget selbst bestimmen, optional ein Punkteziel.
+• Tages-Knobel — jeden Tag ein Brett, dasselbe für alle. Verpasste Tage warten geduldig im Kalender; nichts geht je verloren.
+• Abenteuer — 50 vermessene Level in fünf Kapiteln, von sehr leicht bis sehr schwer. Jedes gelöste Level schaltet das nächste frei.
+
+JEMANDEN HERAUSFORDERN
+Teile jedes Brett als QR-Code oder Link: gleiches Brett, gleiche Regeln, dein Punktestand als Ziel. Kein Konto, kein Server — die ganze Herausforderung steckt im Code.
+
+RUHIG GEBAUT
+Tipps kosten keine Punkte. Zurück nimmt jeden Zug zurück, so weit du willst. Hintergrundmusik nach deinem Geschmack: Schalte Titel aus, die dir nicht gefallen — die Rotation überspringt sie einfach.
+
+FÜR ALLE AUGEN
+Dunkles und helles Design, Textgrösse bis 200 %, Schriften für Legasthenie und schwache Augen — und die Zahlen sind sowieso gross. Auf Deutsch, Englisch, Französisch und Italienisch.
+
+DEINE DATEN BLEIBEN DEINE
+Komplett offline. Keine Konten, keine Analyse, keine Werbung, keine Käufe, keine Datensammlung. Kostenlos und quelloffen — Teil der fuchs-Familie ruhiger Apps (fuchsnest.ch).

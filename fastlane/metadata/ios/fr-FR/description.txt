@@ -1,0 +1,18 @@
+Barre des paires de chiffres jusqu'à vider le plateau — deux chiffres vont ensemble s'ils sont égaux ou si leur somme fait dix. Le puzzle que tu connais des applis bourrées de pub, reconstruit dans le calme : sans pub, sans chrono, sans vies, sans défaite. Un plateau bloqué se termine simplement avec son score.
+
+TROIS MODES
+• Partie libre — ton plateau, tes règles : choisis une graine (n'importe quel mot), tes budgets de rajouts et d'indices, et un score à battre en option.
+• Défi du jour — un plateau par jour, le même pour tout le monde. Les jours manqués attendent patiemment dans le calendrier ; rien n'est jamais perdu.
+• Aventure — 50 niveaux mesurés en cinq chapitres, de très facile à très difficile. Chaque niveau résolu débloque le suivant.
+
+DÉFIE QUELQU'UN
+Partage n'importe quel plateau en QR code ou en lien : même plateau, mêmes règles, ton score comme objectif. Sans compte, sans serveur — tout le défi tient dans le code.
+
+CALME PAR CONSTRUCTION
+Les indices ne coûtent jamais de points. Annuler reprend chaque coup, aussi loin que tu veux. Une musique de fond à ta façon : désactive les morceaux qui ne te plaisent pas — la rotation les saute simplement.
+
+POUR TOUS LES YEUX
+Thèmes sombre et clair, taille du texte jusqu'à 200 %, polices adaptées à la dyslexie et à la basse vision — et les chiffres sont déjà énormes. En français, allemand, anglais et italien.
+
+TES DONNÉES RESTENT À TOI
+Entièrement hors ligne. Pas de comptes, pas d'analyse, pas de pub, pas d'achats, pas de collecte de données. Gratuit et open source — membre de la famille fuchs des applis calmes (fuchsnest.ch).

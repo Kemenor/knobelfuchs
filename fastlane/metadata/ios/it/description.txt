@@ -1,0 +1,18 @@
+Cancella coppie di numeri finché la tavola non è vuota — due numeri combaciano se sono uguali o se la loro somma fa dieci. Il puzzle che conosci da mille app piene di pubblicità, ricostruito con calma: niente pubblicità, niente timer, niente vite, nessun modo di perdere. Una tavola bloccata finisce semplicemente con il suo punteggio.
+
+TRE MODALITÀ
+• Gioco libero — la tua tavola, le tue regole: scegli un seme (va bene qualsiasi parola), i budget di aggiunte e indizi, e un punteggio da battere facoltativo.
+• Sfida del giorno — una tavola al giorno, la stessa per tutti. I giorni persi aspettano pazienti nel calendario; niente va mai perduto.
+• Avventura — 50 livelli misurati in cinque capitoli, da facilissimo a difficilissimo. Ogni livello risolto sblocca il successivo.
+
+SFIDA QUALCUNO
+Condividi qualsiasi tavola come QR code o link: stessa tavola, stesse regole, il tuo punteggio come obiettivo. Senza account, senza server — l'intera sfida sta nel codice.
+
+CALMO PER PROGETTO
+Gli indizi non costano mai punti. Annulla riprende ogni mossa, fin dove vuoi. Musica di sottofondo a modo tuo: spegni i brani che non ti piacciono — la rotazione li salta e basta.
+
+PER TUTTI GLI OCCHI
+Tema scuro e chiaro, testo fino al 200 %, caratteri adatti a dislessia e ipovisione — e i numeri sono comunque enormi. In italiano, tedesco, francese e inglese.
+
+I TUOI DATI RESTANO TUOI
+Completamente offline. Niente account, niente analisi, niente pubblicità, niente acquisti, nessuna raccolta dati. Gratuito e open source — parte della famiglia fuchs di app tranquille (fuchsnest.ch).

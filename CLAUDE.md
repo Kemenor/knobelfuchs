@@ -26,11 +26,17 @@ Tablet-first (Xiaomi Pad 5), ad-free, local-first, no dark patterns.
 
 ## State (keep current)
 - Phases 0–5 ✅ (mockups · engine · board UI + Free Form · persistence · Daily +
-  Abenteuer · polish: sounds/music/settings/Anleitung/QR). On-device verification
-  pending for phases 4–5 (tablet with its owner) — first tablet session: smoke-test
-  Daily calendar, Abenteuer, sounds/music, settings, scanner, deep link.
-- Remaining: Phase 6 release (fox icon done; fastlane, signing, store listing,
-  landing page under fuchsnest.ch once live). Full match/collapse motion pass =
-  iterate on device.
-- 71 tests green. Debug installs via `flutter build apk --debug` +
+  Abenteuer · polish: sounds/music/settings/Anleitung/QR/jukebox). Both test
+  devices verified (tablet = Mom's Xiaomi Pad 5 — **never install on it without
+  explicit go-ahead**; phone = A024, install freely).
+- Phase 6 release: signing keystore + CI pipeline DONE (knabberfuchs-style —
+  see `fastlane/RELEASING.md` for the flow AND the pending manual steps:
+  Play Console app creation, service-account link, `PLAY_STORE_KEY_JSON_BASE64`
+  + ASC secrets, iOS Mac step, screenshots). Landing pages live:
+  knobelfuchs.fuchsnest.ch (+/de/, /privacy/). Remaining: family verdict on
+  bot-vs-P75 targets (both shown in adventure list), music audition (12 tracks),
+  match/collapse motion pass.
+- Release flow: write 4 changelogs → `tool/cut_release.sh x.y.z` → v-tag → CI
+  ships to Play internal+alpha and TestFlight. 87 tests green.
+- Debug installs via `flutter build apk --debug` +
   `adb install -r build\app\outputs\flutter-apk\app-debug.apk`.

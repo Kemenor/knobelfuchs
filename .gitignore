@@ -25,6 +25,8 @@ lib/l10n/app_localizations*.dart
 
 # Secrets — never commit
 play-store-key.json
+AuthKey_*.p8
+asc_api_key.json
 *.env
 
 # Music audition files — too heavy for git; see examples/ui/README.md to re-fetch
