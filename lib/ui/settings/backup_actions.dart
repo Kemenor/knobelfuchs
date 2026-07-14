@@ -23,10 +23,16 @@ class BackupActions {
   final Ref ref;
   BackupActions(this.ref);
 
+  /// The authoritative path of the OPEN database — asked of SQLite itself
+  /// rather than guessed from drift_flutter's defaults (a wrong guess made
+  /// the first import a silent no-op, phone playtest 2026-07-14).
   Future<String> _dbPath() async {
-    // drift_flutter's default location for driftDatabase(name: 'knobelfuchs').
-    final dir = await getApplicationSupportDirectory();
-    return p.join(dir.path, 'knobelfuchs.sqlite');
+    final db = ref.read(databaseProvider);
+    final row = await db
+        .customSelect(
+            "SELECT file FROM pragma_database_list WHERE name = 'main'")
+        .getSingle();
+    return row.read<String>('file');
   }
 
   /// Build the backup zip and open the system SAVE dialog (SAF) — the
@@ -92,8 +98,8 @@ class BackupActions {
     ref.invalidate(gameControllerProvider);
 
     final db = ref.read(databaseProvider);
+    final dbPath = await _dbPath(); // must be read while the db is open
     await db.close();
-    final dbPath = await _dbPath();
     for (final suffix in ['', '-wal', '-shm', '-journal']) {
       final f = File('$dbPath$suffix');
       if (f.existsSync()) f.deleteSync();
