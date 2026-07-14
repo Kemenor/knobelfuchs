@@ -1,0 +1,1 @@
+Sauvegardes fiables sur chaque appareil : l'export et l'import gèrent les caprices du stockage (tailles de fichier obsolètes), l'export confirme avec la taille du fichier, et « À propos » affiche la version exacte installée.

@@ -1,0 +1,1 @@
+Backup affidabili su ogni dispositivo: esportazione e importazione gestiscono le stranezze dell'archiviazione (dimensioni file obsolete), l'esportazione conferma con la dimensione del file e «Informazioni» mostra la versione esatta installata.

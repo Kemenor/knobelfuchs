@@ -1,0 +1,1 @@
+Zuverlässige Sicherungen auf jedem Gerät: Export und Import umgehen Speicher-Eigenheiten (veraltete Dateigrössen), der Export bestätigt mit der Dateigrösse, und «Über» zeigt die genau installierte Version.

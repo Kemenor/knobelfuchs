@@ -1,0 +1,1 @@
+Reliable backups on every device: export/import now handle storage quirks (stale file sizes) gracefully, the export confirms with the file size, and About shows the exact installed version.
