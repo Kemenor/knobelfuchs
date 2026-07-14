@@ -65,23 +65,42 @@ def main():
         print('uploaded versionCode %s' % vc)
 
         notes = release_notes(vc)
-        for track in TRACKS:
-            svc.edits().tracks().update(
-                packageName=PKG, editId=edit_id, track=track,
-                body={'track': track,
-                      'releases': [{'versionCodes': [str(vc)],
-                                    'status': 'completed',
-                                    'releaseNotes': notes}]}
-            ).execute()
-            print('assigned to track "%s"' % track)
 
+        def assign(status):
+            for track in TRACKS:
+                svc.edits().tracks().update(
+                    packageName=PKG, editId=edit_id, track=track,
+                    body={'track': track,
+                          'releases': [{'versionCodes': [str(vc)],
+                                        'status': status,
+                                        'releaseNotes': notes}]}
+                ).execute()
+                print('assigned to track "%s" (%s)' % (track, status))
+
+        def commit():
+            try:
+                svc.edits().commit(packageName=PKG, editId=edit_id,
+                                   changesNotSentForReview=True).execute()
+            except HttpError as e:
+                if e.resp.status == 400 and 'changesNotSentForReview' in str(
+                        e._get_reason()):
+                    svc.edits().commit(packageName=PKG,
+                                       editId=edit_id).execute()
+                else:
+                    raise
+
+        assign('completed')
         try:
-            svc.edits().commit(packageName=PKG, editId=edit_id,
-                               changesNotSentForReview=True).execute()
+            commit()
         except HttpError as e:
-            if e.resp.status == 400 and 'changesNotSentForReview' in str(
-                    e._get_reason()):
-                svc.edits().commit(packageName=PKG, editId=edit_id).execute()
+            # A brand-new ("draft") app accepts only DRAFT releases until its
+            # first Console rollout — stage as draft and roll out manually
+            # once; every later release commits as completed like knabberfuchs.
+            if e.resp.status == 400 and 'draft app' in str(e._get_reason()):
+                print('draft app — staging as DRAFT release instead; '
+                      'roll it out once in the Play Console')
+                assign('draft')
+                commit()
             else:
                 raise
         print('committed — release staged on: %s' % ', '.join(
