@@ -37,3 +37,6 @@ examples/ui/music/*.mp3
 
 # Claude session scratch
 claude.session
+
+# Screenshot harness scratch (filed copies live in fastlane/metadata)
+screenshots/
