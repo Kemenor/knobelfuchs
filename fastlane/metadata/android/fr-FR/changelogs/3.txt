@@ -1,0 +1,1 @@
+Sauvegarde : exporte ta progression dans un fichier et importe-la sur un autre appareil — parties, records et réglages voyagent avec toi. En plus : rouvrir une partie terminée réaffiche son résultat.
