@@ -1,0 +1,1 @@
+Sicherung: Exportiere deinen Fortschritt als Datei und importiere ihn auf einem anderen Gerät — Spielstände, Bestleistungen und Einstellungen ziehen mit. Ausserdem: Ein beendetes Spiel zeigt beim Öffnen wieder sein Ergebnis.

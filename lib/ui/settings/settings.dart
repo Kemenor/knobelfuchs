@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../audio/music_tracks.dart';
 
+/// Shown in About and stamped into backups.
+const String kAppVersion = '0.1';
+
 /// Motion levels (concept §10.2). `null` in [Settings.motion] = follow the
 /// OS reduce-motion preference.
 enum MotionMode { full, reduced, off }

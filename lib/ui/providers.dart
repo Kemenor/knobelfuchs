@@ -9,7 +9,14 @@ const String kFreeSlot = 'free';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
-  ref.onDispose(db.close);
+  // Guarded close: backup-import closes the database manually before
+  // swapping the file, then invalidates this provider — the second close
+  // must not throw into the rebuild.
+  ref.onDispose(() async {
+    try {
+      await db.close();
+    } catch (_) {}
+  });
   return db;
 });
 

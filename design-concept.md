@@ -301,6 +301,17 @@ back**; it waits.
 - Portrait and landscape both first-class (§ DESIGN_SYSTEM); phones supported by the
   same adaptive layout.
 
+### 9.1 Backup & device moves (added 2026-07-14)
+
+No server means no sync — by design. Moving devices is a **file the player
+owns**: settings offer *Export progress* (the SQLite database snapshotted with
+`VACUUM INTO` plus the typed SharedPreferences, zipped, handed to the system
+share sheet) and *Import progress* (file picker → validation → one explicit
+"replace everything on this device" confirmation). Import rejects foreign
+files and backups from newer app versions (`format`/`schema` gates in
+`meta.json`); a broken settings blob never blocks the runs. Same pattern as
+knabberfuchs's ZIP backup — one gesture across the family.
+
 ## 10. Sound & motion — reward the action, never bait the return
 
 Good game feel is not a dark pattern. A found pair *should* feel satisfying — the line

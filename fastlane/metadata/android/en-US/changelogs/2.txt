@@ -1,0 +1,1 @@
+Backup: export your progress as a file and import it on another device — saves, best scores and settings travel with you. Plus: resuming a finished game shows its result again.

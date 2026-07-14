@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuchsbau/fuchsbau.dart';
 
+import '../../data/backup.dart';
 import '../../l10n/app_localizations.dart';
 import '../audio/audio_service.dart';
 import '../audio/music_tracks.dart';
+import 'backup_actions.dart';
 import 'settings.dart';
-
-const String kAppVersion = '0.1';
 
 /// Deliberately short (§10.3): volumes, music, motion, appearance, font,
 /// language, about. No account, no premium, no notifications — none exist.
@@ -118,6 +118,24 @@ class SettingsScreen extends ConsumerWidget {
                   onChanged: n.setLocaleOverride,
                 ),
               ]),
+              // §9.1: local-first device moves — the player owns the file.
+              FuchsbauSectionHeader(l.sectionBackup),
+              FuchsbauSettingsCard(children: [
+                ListTile(
+                  contentPadding: fuchsbauCardRowPadding,
+                  leading: const Icon(Icons.ios_share),
+                  title: Text(l.exportTitle),
+                  subtitle: Text(l.exportSub),
+                  onTap: () => _export(context, ref, l),
+                ),
+                ListTile(
+                  contentPadding: fuchsbauCardRowPadding,
+                  leading: const Icon(Icons.file_open_outlined),
+                  title: Text(l.importTitle),
+                  subtitle: Text(l.importSub),
+                  onTap: () => _import(context, ref, l),
+                ),
+              ]),
               FuchsbauSectionHeader(l.sectionAbout),
               FuchsbauSettingsCard(children: [
                 Padding(
@@ -136,6 +154,55 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+Future<void> _export(
+    BuildContext context, WidgetRef ref, AppLocalizations l) async {
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    await ref.read(backupActionsProvider).exportBackup();
+    // The share sheet itself is the success feedback.
+  } catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(l.backupFailed('$e'))));
+  }
+}
+
+Future<void> _import(
+    BuildContext context, WidgetRef ref, AppLocalizations l) async {
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    final contents = await ref.read(backupActionsProvider).pickBackup();
+    if (contents == null) return; // picker cancelled — no ceremony
+    if (!context.mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.importConfirmTitle),
+        content: Text(l.importConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.importReplace),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(backupActionsProvider).applyBackup(contents);
+    messenger.showSnackBar(SnackBar(content: Text(l.importDone)));
+  } on BackupException catch (e) {
+    messenger.showSnackBar(SnackBar(
+      content: Text(e.error == BackupError.tooNew
+          ? l.importTooNew
+          : l.importInvalid),
+    ));
+  } catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(l.backupFailed('$e'))));
   }
 }
 
