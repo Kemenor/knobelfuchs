@@ -86,7 +86,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final scheme = Theme.of(context).colorScheme;
     final game = ref.watch(gameControllerProvider);
     final saved = ref.watch(savedFreeRunProvider).value;
-    final resumeScore = game?.score ?? saved?.score;
+    // Only a live FREE game belongs to the Free-Play card. A daily or
+    // adventure run left via the back button stays in the controller —
+    // it must not hijack this card (family bug report 2026-07-13).
+    final liveFree = (game != null && game.slot == kFreeSlot) ? game : null;
+    final resumeScore = liveFree?.score ?? saved?.score;
 
     return Scaffold(
       body: SafeArea(
@@ -142,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         : null,
                     onTap: () async {
                       final nav = Navigator.of(context);
-                      if (game != null) {
+                      if (liveFree != null) {
                         nav.push(MaterialPageRoute(
                             builder: (_) => const GameScreen()));
                         return;
