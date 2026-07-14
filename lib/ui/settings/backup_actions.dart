@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -37,8 +37,10 @@ class BackupActions {
   /// Build the backup zip and open the system SAVE dialog (SAF) — the
   /// player picks the destination: device storage or any cloud provider.
   /// (The share sheet has no reliable "save to file" target on every ROM —
-  /// phone playtest 2026-07-14.) Returns false when the dialog is cancelled.
-  Future<bool> exportBackup() async {
+  /// phone playtest 2026-07-14.) Returns the zip size in bytes, or null when
+  /// the dialog is cancelled — the size shows in the confirmation so an
+  /// empty-file bug is visible immediately (tablet 0-byte hunt).
+  Future<int?> exportBackup() async {
     final db = ref.read(databaseProvider);
     final tmp = await getTemporaryDirectory();
     final snapPath = p.join(tmp.path, 'knobelfuchs-export.sqlite');
@@ -52,7 +54,7 @@ class BackupActions {
       dbBytes: await snap.readAsBytes(),
       settings: settings,
       schemaVersion: db.schemaVersion,
-      appVersion: kAppVersion,
+      appVersion: (await PackageInfo.fromPlatform()).version,
     );
     snap.deleteSync();
 
@@ -73,7 +75,7 @@ class BackupActions {
           mimeTypesFilter: const ['application/zip'],
         ),
       );
-      return saved != null;
+      return saved != null ? zip.length : null;
     } finally {
       if (tmpZip.existsSync()) tmpZip.deleteSync();
     }
@@ -81,17 +83,21 @@ class BackupActions {
 
   /// Let the player pick a backup file; returns null when they cancel.
   /// Throws [BackupException] on an invalid or too-new file.
+  ///
+  /// Picked via flutter_file_dialog (not file_selector): MIUI's documents
+  /// provider reports stale 0-byte sizes and file_selector trusted them,
+  /// yielding empty reads for perfectly good files (tablet playtest
+  /// 2026-07-14). This plugin streams the copy to EOF instead. No mime
+  /// filter — parseBackup is the validator, and filters hid the file on
+  /// some pickers.
   Future<BackupContents?> pickBackup() async {
-    final file = await openFile(acceptedTypeGroups: [
-      const XTypeGroup(
-        label: 'Knobelfuchs',
-        extensions: ['zip'],
-        mimeTypes: ['application/zip'],
-        uniformTypeIdentifiers: ['public.zip-archive'],
+    final path = await FlutterFileDialog.pickFile(
+      params: const OpenFileDialogParams(
+        dialogType: OpenFileDialogType.document,
       ),
-    ]);
-    if (file == null) return null;
-    final contents = parseBackup(await file.readAsBytes());
+    );
+    if (path == null) return null;
+    final contents = parseBackup(await File(path).readAsBytes());
     if (contents.schemaVersion > ref.read(databaseProvider).schemaVersion) {
       // The backup came from a newer app — importing would lose columns.
       throw const BackupException(BackupError.tooNew);

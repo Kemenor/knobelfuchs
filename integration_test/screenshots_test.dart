@@ -52,6 +52,9 @@ void main() {
     await prefs.setDouble('fx_vol', 0);
     await prefs.setBool('anleitung_seen', true);
     await prefs.setString('locale', loc);
+    // Deterministic set regardless of the device's system theme: scenes run
+    // light, the dedicated dark scene flips explicitly.
+    await prefs.setString('theme', 'light');
 
     final container = ProviderContainer(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
@@ -196,7 +199,7 @@ void main() {
       await settle(tester);
       if (await tapText(l10n().modeFree)) await shot('05_dark');
       await popToHome();
-      container.read(settingsProvider.notifier).setThemeMode(ThemeMode.system);
+      container.read(settingsProvider.notifier).setThemeMode(ThemeMode.light);
       await settle(tester);
     } catch (_) {}
 

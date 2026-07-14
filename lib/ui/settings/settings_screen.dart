@@ -141,7 +141,8 @@ class SettingsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    l.aboutText(kAppVersion),
+                    l.aboutText(
+                        ref.watch(appVersionProvider).value ?? '…'),
                     style: TextStyle(
                         fontSize: 13,
                         height: 1.6,
@@ -161,9 +162,12 @@ Future<void> _export(
     BuildContext context, WidgetRef ref, AppLocalizations l) async {
   final messenger = ScaffoldMessenger.of(context);
   try {
-    final saved = await ref.read(backupActionsProvider).exportBackup();
-    if (saved) {
-      messenger.showSnackBar(SnackBar(content: Text(l.exportDone)));
+    final bytes = await ref.read(backupActionsProvider).exportBackup();
+    if (bytes != null) {
+      final size = bytes >= 1024 * 1024
+          ? '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB'
+          : '${(bytes / 1024).round()} KB';
+      messenger.showSnackBar(SnackBar(content: Text(l.exportDone(size))));
     } // cancelled save dialog = no ceremony
   } catch (e) {
     messenger.showSnackBar(SnackBar(content: Text(l.backupFailed('$e'))));

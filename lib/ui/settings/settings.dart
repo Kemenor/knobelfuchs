@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuchsbau/fuchsbau.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../audio/music_tracks.dart';
 
-/// Shown in About and stamped into backups.
-const String kAppVersion = '0.1';
+/// The real installed version, read at runtime (never a stale constant —
+/// family request 2026-07-14): "0.2.1 (3)", plus the build stamp my debug
+/// builds pass via --dart-define=BUILT=... so successive dev installs are
+/// distinguishable. Release/CI builds omit BUILT and show version+build only.
+final appVersionProvider = FutureProvider<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  const built = String.fromEnvironment('BUILT');
+  return '${info.version} (${info.buildNumber})'
+      '${built.isEmpty ? '' : ' · $built'}';
+});
 
 /// Motion levels (concept §10.2). `null` in [Settings.motion] = follow the
 /// OS reduce-motion preference.

@@ -46,7 +46,7 @@
   "sectionBackup": "Sauvegarde",
   "exportTitle": "Exporter la progression",
   "exportSub": "Enregistrer parties, records et réglages dans un fichier",
-  "exportDone": "Sauvegarde enregistrée.",
+  "exportDone": "Sauvegarde enregistrée ({size}).",
   "importTitle": "Importer la progression",
   "importSub": "Restaurer une sauvegarde — remplace l'état de cet appareil",
   "importConfirmTitle": "Remplacer toute la progression ?",

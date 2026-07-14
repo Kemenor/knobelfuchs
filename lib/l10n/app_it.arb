@@ -46,7 +46,7 @@
   "sectionBackup": "Backup",
   "exportTitle": "Esporta i progressi",
   "exportSub": "Salva partite, record e impostazioni in un file",
-  "exportDone": "Backup salvato.",
+  "exportDone": "Backup salvato ({size}).",
   "importTitle": "Importa i progressi",
   "importSub": "Ripristina un backup — sostituisce lo stato di questo dispositivo",
   "importConfirmTitle": "Sostituire tutti i progressi?",

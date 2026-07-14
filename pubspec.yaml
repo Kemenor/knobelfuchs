@@ -52,9 +52,9 @@ dependencies:
   app_links: ^7.2.1
   share_plus: ^13.2.0
   archive: ^4.0.9
-  file_selector: ^1.1.0
   path: ^1.9.1
   flutter_file_dialog: ^3.3.1
+  package_info_plus: ^10.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
