@@ -23,10 +23,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   final _scroll = ScrollController();
   double _rowExtent = 56; // updated by BoardView's layout callback
   bool _endShown = false;
+  // Captured for dispose(): `ref` must not be used once the element is
+  // unmounting (Riverpod state error, surfaced by the screenshot harness).
+  late final AudioService _audio;
 
   @override
   void initState() {
     super.initState();
+    _audio = ref.read(audioServiceProvider);
     // The game picks its own background track (§10.1); lifecycle stops are
     // handled centrally by the AudioService.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -48,7 +52,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   void dispose() {
     // Back to the menus — the jukebox takes over.
-    ref.read(audioServiceProvider).playMenuMusic();
+    _audio.playMenuMusic();
     _scroll.dispose();
     super.dispose();
   }

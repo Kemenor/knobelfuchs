@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
@@ -61,14 +60,23 @@ class BackupActions {
     final stamp = '${now.year}'
         '-${now.month.toString().padLeft(2, '0')}'
         '-${now.day.toString().padLeft(2, '0')}';
-    final saved = await FlutterFileDialog.saveFile(
-      params: SaveFileDialogParams(
-        data: Uint8List.fromList(zip),
-        fileName: 'knobelfuchs-$stamp.zip',
-        mimeTypesFilter: const ['application/zip'],
-      ),
-    );
-    return saved != null;
+    // Write to a temp file and hand the PATH to the save dialog — the
+    // in-memory `data:` mode produced 0-byte files on MIUI (tablet
+    // playtest 2026-07-14).
+    final tmpZip = File(p.join(tmp.path, 'knobelfuchs-$stamp.zip'));
+    await tmpZip.writeAsBytes(zip, flush: true);
+    try {
+      final saved = await FlutterFileDialog.saveFile(
+        params: SaveFileDialogParams(
+          sourceFilePath: tmpZip.path,
+          fileName: 'knobelfuchs-$stamp.zip',
+          mimeTypesFilter: const ['application/zip'],
+        ),
+      );
+      return saved != null;
+    } finally {
+      if (tmpZip.existsSync()) tmpZip.deleteSync();
+    }
   }
 
   /// Let the player pick a backup file; returns null when they cancel.
