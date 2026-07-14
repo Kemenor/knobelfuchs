@@ -1,10 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../data/backup.dart';
 import '../game/game_controller.dart';
@@ -28,8 +29,11 @@ class BackupActions {
     return p.join(dir.path, 'knobelfuchs.sqlite');
   }
 
-  /// Build the backup zip and hand it to the system share sheet.
-  Future<void> exportBackup() async {
+  /// Build the backup zip and open the system SAVE dialog (SAF) — the
+  /// player picks the destination: device storage or any cloud provider.
+  /// (The share sheet has no reliable "save to file" target on every ROM —
+  /// phone playtest 2026-07-14.) Returns false when the dialog is cancelled.
+  Future<bool> exportBackup() async {
     final db = ref.read(databaseProvider);
     final tmp = await getTemporaryDirectory();
     final snapPath = p.join(tmp.path, 'knobelfuchs-export.sqlite');
@@ -51,11 +55,14 @@ class BackupActions {
     final stamp = '${now.year}'
         '-${now.month.toString().padLeft(2, '0')}'
         '-${now.day.toString().padLeft(2, '0')}';
-    final out = File(p.join(tmp.path, 'knobelfuchs-$stamp.zip'));
-    await out.writeAsBytes(zip, flush: true);
-    await SharePlus.instance.share(ShareParams(
-      files: [XFile(out.path, mimeType: 'application/zip')],
-    ));
+    final saved = await FlutterFileDialog.saveFile(
+      params: SaveFileDialogParams(
+        data: Uint8List.fromList(zip),
+        fileName: 'knobelfuchs-$stamp.zip',
+        mimeTypesFilter: const ['application/zip'],
+      ),
+    );
+    return saved != null;
   }
 
   /// Let the player pick a backup file; returns null when they cancel.

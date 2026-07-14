@@ -161,8 +161,10 @@ Future<void> _export(
     BuildContext context, WidgetRef ref, AppLocalizations l) async {
   final messenger = ScaffoldMessenger.of(context);
   try {
-    await ref.read(backupActionsProvider).exportBackup();
-    // The share sheet itself is the success feedback.
+    final saved = await ref.read(backupActionsProvider).exportBackup();
+    if (saved) {
+      messenger.showSnackBar(SnackBar(content: Text(l.exportDone)));
+    } // cancelled save dialog = no ceremony
   } catch (e) {
     messenger.showSnackBar(SnackBar(content: Text(l.backupFailed('$e'))));
   }
