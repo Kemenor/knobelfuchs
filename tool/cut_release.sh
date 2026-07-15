@@ -39,10 +39,16 @@ echo "✓ pubspec: $CURRENT → $NEW"
 MISSING=0
 for LOC in en-US de-DE fr-FR it-IT; do
   F="fastlane/metadata/android/$LOC/changelogs/$NEW_BUILD.txt"
-  if [ ! -s "$F" ]; then echo "✗ missing changelog: $F"; MISSING=1; fi
+  if [ ! -s "$F" ]; then echo "✗ missing changelog: $F"; MISSING=1; continue; fi
+  # Play rejects release notes over 500 characters — at upload time, after
+  # the 9-minute build (fr-FR was 517 on v0.2.4's first try). Catch it here.
+  LEN=$(tr -d '\n' < "$F" | wc -m)
+  if [ "$LEN" -gt 500 ]; then
+    echo "✗ changelog too long: $F ($LEN chars, Play max 500)"; MISSING=1
+  fi
 done
-[ "$MISSING" -eq 0 ] || { echo "  write the four changelogs for build $NEW_BUILD, then re-run"; exit 1; }
-echo "✓ changelogs $NEW_BUILD.txt ×4 locales exist"
+[ "$MISSING" -eq 0 ] || { echo "  fix the changelogs for build $NEW_BUILD, then re-run"; exit 1; }
+echo "✓ changelogs $NEW_BUILD.txt ×4 locales exist, all ≤500 chars"
 echo "ℹ reminder: fastlane/metadata/ios/*/release_notes.txt is the TestFlight/App-Store"
 echo "  'What's New' — update it if this build changes user-visible behaviour"
 
