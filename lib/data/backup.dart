@@ -13,6 +13,12 @@ import 'package:archive/archive.dart';
 
 /// Bump when the zip layout changes; older apps refuse newer formats.
 const int kBackupFormat = 1;
+
+/// Hard ceiling for a backup file and its decompressed entries. The real
+/// database is a few hundred KB; anything near this is not one of ours.
+/// Checked before decompression so a zip bomb can't OOM the import
+/// (§9.1: hostile files are rejected, never obeyed).
+const int kMaxBackupBytes = 64 * 1024 * 1024;
 const String kBackupDbEntry = 'knobelfuchs.sqlite';
 const String _kMetaEntry = 'meta.json';
 const String _kSettingsEntry = 'settings.json';
@@ -116,16 +122,42 @@ Uint8List buildBackup({
 /// has to compare [BackupContents.schemaVersion] against the running app's
 /// database schema (a newer schema must be rejected as [BackupError.tooNew]).
 BackupContents parseBackup(Uint8List zipBytes) {
+  if (zipBytes.length > kMaxBackupBytes) {
+    throw const BackupException(BackupError.invalid);
+  }
+
+  // Deliberately NO verify=true: that pass decompresses every entry
+  // (including junk ones a hostile zip may carry) just to compare CRCs,
+  // which is exactly what a zip bomb wants. Instead: gate on the declared
+  // header sizes, then lazily inflate only the three entries we actually
+  // read — corruption is caught by the guarded reads here plus the
+  // downstream validators (JSON parse, SQLite magic, user_version
+  // cross-check, and applyBackup's probe-query-with-rollback).
   final Archive archive;
   try {
-    archive = ZipDecoder().decodeBytes(zipBytes, verify: true);
+    archive = ZipDecoder().decodeBytes(zipBytes);
   } catch (_) {
     throw const BackupException(BackupError.invalid);
+  }
+  var declared = 0;
+  for (final f in archive.files) {
+    if (f.size < 0) throw const BackupException(BackupError.invalid);
+    declared += f.size;
+    if (declared > kMaxBackupBytes) {
+      throw const BackupException(BackupError.invalid);
+    }
   }
 
   Uint8List? entry(String name) {
     for (final f in archive.files) {
-      if (f.name == name) return f.readBytes();
+      if (f.name == name) {
+        try {
+          return f.readBytes();
+        } catch (_) {
+          // Corrupt deflate stream — not a readable backup.
+          throw const BackupException(BackupError.invalid);
+        }
+      }
     }
     return null;
   }
@@ -151,13 +183,26 @@ BackupContents parseBackup(Uint8List zipBytes) {
   final schema = meta['schema'];
   if (schema is! int) throw const BackupException(BackupError.invalid);
 
-  if (dbBytes.length < _sqliteMagic.length) {
+  // A real SQLite file starts with a 100-byte header.
+  if (dbBytes.length < 100) {
     throw const BackupException(BackupError.invalid);
   }
   for (var i = 0; i < _sqliteMagic.length; i++) {
     if (dbBytes[i] != _sqliteMagic[i]) {
       throw const BackupException(BackupError.invalid);
     }
+  }
+
+  // meta.json must agree with the database's own PRAGMA user_version
+  // (big-endian at header offset 60). A lying meta would either bypass the
+  // tooNew gate or re-run migrations onto a database that already has the
+  // columns — a crash loop on every launch after the swap.
+  final fileSchema = (dbBytes[60] << 24) |
+      (dbBytes[61] << 16) |
+      (dbBytes[62] << 8) |
+      dbBytes[63];
+  if (fileSchema != schema) {
+    throw const BackupException(BackupError.invalid);
   }
 
   var settings = const <String, Object?>{};

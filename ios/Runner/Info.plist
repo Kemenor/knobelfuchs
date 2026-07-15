@@ -17,6 +17,22 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Scans challenge QR codes from other players.</string>
+	<!-- Fully offline app, no non-exempt encryption: answers the App Store
+	     export-compliance question so TestFlight builds never sit in
+	     "Missing Compliance" (fastlane relies on this key). -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Challenge links are handled by app_links exclusively (see the
+	     matching flutter_deeplinking_enabled=false on Android). -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>de</string>
+		<string>fr</string>
+		<string>it</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

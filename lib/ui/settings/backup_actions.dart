@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/backup.dart';
 import '../game/game_controller.dart';
@@ -97,7 +98,12 @@ class BackupActions {
       ),
     );
     if (path == null) return null;
-    final contents = parseBackup(await File(path).readAsBytes());
+    final file = File(path);
+    if (await file.length() > kMaxBackupBytes) {
+      // Reject before reading into memory — see kMaxBackupBytes.
+      throw const BackupException(BackupError.invalid);
+    }
+    final contents = parseBackup(await file.readAsBytes());
     if (contents.schemaVersion > ref.read(databaseProvider).schemaVersion) {
       // The backup came from a newer app — importing would lose columns.
       throw const BackupException(BackupError.tooNew);
@@ -107,22 +113,100 @@ class BackupActions {
 
   /// Replace this device's state with [contents]. Destructive — the caller
   /// confirms with the player first.
+  ///
+  /// The swap is transactional: the imported bytes are staged next to the
+  /// live database, the old file survives as `.bak` until the imported one
+  /// has proven it opens and answers a query, and every failure path puts
+  /// the old database back. (The first version deleted before writing — one
+  /// disk-full or SAF hiccup away from losing all progress.)
   Future<void> applyBackup(BackupContents contents) async {
     // Drop the live run first so nothing persists into the dying database.
     ref.invalidate(gameControllerProvider);
 
     final db = ref.read(databaseProvider);
     final dbPath = await _dbPath(); // must be read while the db is open
-    await db.close();
-    for (final suffix in ['', '-wal', '-shm', '-journal']) {
-      final f = File('$dbPath$suffix');
-      if (f.existsSync()) f.deleteSync();
-    }
-    await File(dbPath).writeAsBytes(contents.dbBytes, flush: true);
+    final temp = File('$dbPath.import');
+    final bak = File('$dbPath.bak');
 
+    // Stage the imported bytes while the live db is untouched — if this
+    // write fails, nothing has happened yet.
+    await temp.writeAsBytes(contents.dbBytes, flush: true);
+
+    await db.close();
+    try {
+      if (bak.existsSync()) bak.deleteSync();
+      File(dbPath).renameSync(bak.path);
+      for (final suffix in ['-wal', '-shm', '-journal']) {
+        final f = File('$dbPath$suffix');
+        if (f.existsSync()) f.deleteSync();
+      }
+      temp.renameSync(dbPath);
+    } catch (_) {
+      // Swap failed halfway — put the old database back into place.
+      if (temp.existsSync()) temp.deleteSync();
+      if (!File(dbPath).existsSync() && bak.existsSync()) {
+        bak.renameSync(dbPath);
+      }
+      // Never leave the app pinned to the closed database.
+      ref.invalidate(databaseProvider);
+      rethrow;
+    }
+
+    // Open the imported file and probe it. The magic-byte check upstream
+    // can't tell a truncated or foreign SQLite file from a real backup;
+    // only an actual query can.
+    ref.invalidate(databaseProvider);
+    try {
+      await ref
+          .read(databaseProvider)
+          .customSelect('SELECT count(*) AS n FROM saved_runs')
+          .getSingle();
+    } catch (_) {
+      final broken = ref.read(databaseProvider);
+      try {
+        await broken.close();
+      } catch (_) {}
+      // Also drop the -wal/-shm/-journal the failed open just created —
+      // a foreign WAL next to the restored database would be replayed
+      // into it by SQLite's recovery on the next open.
+      for (final suffix in ['', '-wal', '-shm', '-journal']) {
+        final f = File('$dbPath$suffix');
+        if (f.existsSync()) f.deleteSync();
+      }
+      if (bak.existsSync()) bak.renameSync(dbPath);
+      ref.invalidate(databaseProvider);
+      throw const BackupException(BackupError.invalid);
+    }
+    if (bak.existsSync()) bak.deleteSync();
+
+    // Settings are optional by design (§9.1) — restore best-effort, and on
+    // failure fall back to the previous values rather than a half-import.
     final prefs = ref.read(sharedPrefsProvider);
-    await prefs.clear();
-    for (final e in contents.settings.entries) {
+    final oldPrefs = {for (final k in prefs.getKeys()) k: prefs.get(k)};
+    try {
+      await prefs.clear();
+      await _restorePrefs(prefs, contents.settings);
+    } catch (_) {
+      try {
+        await prefs.clear();
+        await _restorePrefs(prefs, oldPrefs);
+      } catch (_) {
+        // Empty settings fall back to defaults; the runs made it, which is
+        // the half §9.1 cares about.
+      }
+    }
+
+    // Rebuild the provider world on the imported state. The old database
+    // provider's guarded dispose tolerates the manual close above.
+    ref.invalidate(settingsProvider);
+    ref.invalidate(savedFreeRunProvider);
+    ref.read(dailyVersionProvider.notifier).bump();
+    ref.read(adventureVersionProvider.notifier).bump();
+  }
+
+  Future<void> _restorePrefs(
+      SharedPreferences prefs, Map<String, Object?> settings) async {
+    for (final e in settings.entries) {
       final v = e.value;
       switch (v) {
         case bool b:
@@ -139,13 +223,5 @@ class BackupActions {
           break;
       }
     }
-
-    // Rebuild the provider world on the imported state. The old database
-    // provider's guarded dispose tolerates the manual close above.
-    ref.invalidate(databaseProvider);
-    ref.invalidate(settingsProvider);
-    ref.invalidate(savedFreeRunProvider);
-    ref.read(dailyVersionProvider.notifier).bump();
-    ref.read(adventureVersionProvider.notifier).bump();
   }
 }

@@ -110,5 +110,25 @@ void main() {
       expect(day.state, DayState.beaten); // the flag latches (§6.3 semantics)
       expect(day.score, 950); // best score still shown
     });
+
+    test('a DST fall-back month has each day exactly once', () async {
+      // Europe/Zurich sets clocks back on 2026-10-25: naive +24h iteration
+      // repeats that local day and deals October 32 cells. On a CET/CEST
+      // host the old loop fails this; calendar arithmetic passes anywhere.
+      final future = ProviderContainer(overrides: [
+        databaseProvider.overrideWithValue(db),
+        nowProvider.overrideWithValue(() => DateTime(2026, 11, 3, 9, 0)),
+      ]);
+      addTearDown(future.dispose);
+
+      final info = await future
+          .read(dailyMonthProvider(DateTime(2026, 10, 1)).future);
+      expect(info.days.length, 31);
+      final dates = {for (final d in info.days) '${d.date}'};
+      expect(dates.length, 31, reason: 'no duplicated calendar day');
+      for (var i = 0; i < 31; i++) {
+        expect(info.days[i].date.day, i + 1);
+      }
+    });
   });
 }

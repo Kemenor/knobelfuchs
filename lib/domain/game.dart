@@ -167,10 +167,24 @@ class GameState {
 
   GameStatus get status {
     if (board.isEmpty) return GameStatus.cleared;
-    if (board.firstPair() == null && addsRemaining == 0) {
+    if (board.firstPair() == null && !canAdd) {
       return GameStatus.stuck;
     }
     return GameStatus.playing;
+  }
+
+  /// An add is currently possible: budget left (`<= 0`, not `== 0` — a
+  /// config from a corrupt source must not disable stuck detection) and the
+  /// board stays under the [kMaxBoardCells] ceiling.
+  bool get canAdd =>
+      _canAddWith(board.cells.where((c) => !c.cleared).length);
+
+  /// Single home of the add predicate — [_applyAdd] passes its own survivor
+  /// count so the check and the append can never disagree about the size.
+  bool _canAddWith(int survivors) {
+    final remaining = addsRemaining;
+    if (remaining != null && remaining <= 0) return false;
+    return board.cells.length + survivors <= kMaxBoardCells;
   }
 
   bool get targetBeaten => config.target != null && score >= config.target!;
@@ -222,7 +236,8 @@ class GameState {
     if (activeHint != null) return HintOutcome.repulsed;
     final pair = board.firstPair();
     if (pair == null) return HintOutcome.nonePossible;
-    if (hintsRemaining == 0) return HintOutcome.exhausted;
+    final remaining = hintsRemaining;
+    if (remaining != null && remaining <= 0) return HintOutcome.exhausted;
     hintsUsed++;
     activeHint =
         ActiveHint(board.cells[pair.$1].id, board.cells[pair.$2].id);
@@ -271,10 +286,9 @@ class GameState {
 
   bool _applyAdd() {
     if (board.isEmpty) return false;
-    final remaining = addsRemaining;
-    if (remaining != null && remaining <= 0) return false;
     final survivors =
         board.cells.where((c) => !c.cleared).length;
+    if (!_canAddWith(survivors)) return false;
     final (next, nextId) = board.addSurvivors(_nextId);
     board = next;
     _nextId = nextId;
@@ -293,16 +307,15 @@ class GameState {
     final i = board.indexOfId(hint.aId), j = board.indexOfId(hint.bId);
     final aAlive = i != null && !board.cells[i].cleared;
     final bAlive = j != null && !board.cells[j].cleared;
-    if (!hint.aReleased && !aAlive) {
-      activeHint = null;
-      return;
-    }
-    if (!hint.bReleased && !bAlive) {
+    // A dead cell can never complete the pair — released or not (tapping a
+    // hinted cell releases it, but matching it away with a third cell must
+    // still drop its partner's highlight).
+    if (!aAlive || !bAlive) {
       activeHint = null;
       return;
     }
     // Both still unreleased → the pair itself must still be matchable.
-    if (!hint.aReleased && !hint.bReleased && !board.canMatch(i!, j!)) {
+    if (!hint.aReleased && !hint.bReleased && !board.canMatch(i, j)) {
       activeHint = null;
     }
   }

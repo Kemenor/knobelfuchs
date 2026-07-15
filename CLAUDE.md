@@ -30,13 +30,19 @@ Tablet-first (Xiaomi Pad 5), ad-free, local-first, no dark patterns.
   devices verified (tablet = Mom's Xiaomi Pad 5 — **never install on it without
   explicit go-ahead**; phone = A024, install freely).
 - Phase 6 release: signing keystore + CI pipeline DONE (knabberfuchs-style —
-  see `fastlane/RELEASING.md` for the flow AND the pending manual steps:
-  Play Console app creation, service-account link, `PLAY_STORE_KEY_JSON_BASE64`
-  + ASC secrets, iOS Mac step, screenshots). Landing pages live:
-  knobelfuchs.fuchsnest.ch (+/de/, /privacy/). Remaining: family verdict on
-  bot-vs-P75 targets (both shown in adventure list), music audition (12 tracks),
+  `fastlane/RELEASING.md`). Play Console app, service account, secrets and
+  Android screenshots DONE 2026-07-14; **closed testing live at 0.2.3+5**.
+  Landing pages live: knobelfuchs.fuchsnest.ch (+/de/, /privacy/). Remaining:
+  iOS Mac step (`HANDOVER_IOS_MAC.md`), family verdict on bot-vs-P75 targets
+  (P75 shows in debug builds only), music audition (12 tracks),
   match/collapse motion pass.
+- 2026-07-15 full review + fix pass: backup import transactional (staged
+  temp + `.bak` swap, `user_version` cross-check, zip-bomb caps), challenge
+  payloads range-checked, board ceiling 540, atomic run-end commit,
+  Nachlegen follow-scroll fixed, music survives shade-peeks, §6.1 discard
+  guard on every start path, DST-safe calendar. Rule changes are in
+  design-concept.md §13 (2026-07-15 entry).
 - Release flow: write 4 changelogs → `tool/cut_release.sh x.y.z` → v-tag → CI
-  ships to Play internal+alpha and TestFlight. 87 tests green.
+  ships to Play internal+alpha and TestFlight. 106 tests green.
 - Debug installs via `flutter build apk --debug` +
   `adb install -r build\app\outputs\flutter-apk\app-debug.apk`.

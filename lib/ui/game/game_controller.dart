@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/game_repository.dart';
 import '../../domain/board.dart';
 import '../../domain/game.dart';
 import '../providers.dart';
@@ -26,6 +28,7 @@ class GameView {
   final Set<int> justMatchedIds; // emerald flash before ghosting (mockup 07)
   final Set<int> digitsPresent; // legend: which of 1–9 still survive
   final bool targetBeaten;
+  final bool canAdd; // budget left AND under the board ceiling (§3.4)
 
   const GameView({
     required this.config,
@@ -44,6 +47,7 @@ class GameView {
     required this.justMatchedIds,
     required this.digitsPresent,
     required this.targetBeaten,
+    required this.canAdd,
   });
 
   bool get isDaily => slot.startsWith('daily:');
@@ -69,6 +73,7 @@ class GameController extends Notifier<GameView?> {
     _game = GameState.fresh(config);
     _slot = slot;
     _selectedId = null;
+    _justMatched = const {}; // no flash may leak across run boundaries
     _startedAt = DateTime.now();
     _publish();
     _persist(GameStatus.playing);
@@ -86,6 +91,7 @@ class GameController extends Notifier<GameView?> {
     );
     _slot = slot;
     _selectedId = null;
+    _justMatched = const {}; // resumed ids can collide with the old run's
     _startedAt = saved.startedAt;
     _publish();
     return true;
@@ -95,10 +101,18 @@ class GameController extends Notifier<GameView?> {
   /// the result was already recorded at run end.
   Future<void> quit() async {
     final slot = _slot;
+    final repo = ref.read(gameRepositoryProvider);
     _game = null;
     _selectedId = null;
+    _justMatched = const {};
     _publish();
-    await ref.read(gameRepositoryProvider).clearRun(slot);
+    // Chain behind the write queue: a queued run-end commit re-saves the
+    // run inside its transaction — an unordered clear here would let that
+    // save resurrect the just-quit run as a ghost resume card.
+    _pending = _pending.then((_) => repo.clearRun(slot)).catchError((Object e) {
+      debugPrint('knobelfuchs: quit clear failed: $e');
+    });
+    await _pending;
     _invalidate(slot);
   }
 
@@ -111,8 +125,12 @@ class GameController extends Notifier<GameView?> {
     if (idx == null || game.board.cells[idx].cleared) return;
     final before = game.status;
 
+    final hint = game.activeHint;
+    final willRelease =
+        hint != null && hint.involves(id) && !hint.isReleased(id);
     game.releaseHintCell(id);
 
+    var matched = false;
     final selected = _selectedId;
     if (selected == null) {
       _selectedId = id;
@@ -122,6 +140,7 @@ class GameController extends Notifier<GameView?> {
       final selectedIdx = game.board.indexOfId(selected);
       if (selectedIdx != null && game.board.canMatch(selectedIdx, idx)) {
         game.match(selected, id);
+        matched = true;
         _selectedId = null;
         _flashMatched({selected, id});
       } else {
@@ -130,7 +149,10 @@ class GameController extends Notifier<GameView?> {
       }
     }
     _publish();
-    _persist(before);
+    // Selection isn't persisted state — only a match or a released hint
+    // changes anything the autosave stores; don't rewrite identical bytes
+    // on every selection tap.
+    if (matched || willRelease) _persist(before);
   }
 
   bool addRows() {
@@ -178,30 +200,44 @@ class GameController extends Notifier<GameView?> {
     });
   }
 
+  /// Writes queue behind this future so a later persist can never overtake
+  /// an earlier one (undo-back-in racing the run-end commit corrupted the
+  /// slot ordering before).
+  Future<void> _pending = Future.value();
+
   /// Autosave + commit results on the playing→ended transition (§3.7).
-  /// Fire-and-forget, but internally ordered.
+  /// Fire-and-forget, but serialized and snapshotted.
   void _persist(GameStatus before) {
     final game = _game;
     if (game == null) return;
     final repo = ref.read(gameRepositoryProvider);
     final slot = _slot;
     final now = DateTime.now();
-    final after = game.status;
     final startedAt = _startedAt;
+    // Captured synchronously: the chain runs behind awaits while the player
+    // keeps playing (or undoes back in) — the writes must see the state at
+    // THIS transition, not a later one. O(log) scalar capture, no replay.
+    final snap = RunSnapshot.of(game);
+    final after = snap.status;
 
-    Future<void> run() async {
-      await repo.saveRun(slot, game, startedAt: startedAt, now: now);
+    _pending = _pending.then((_) async {
       if (before == GameStatus.playing && after != GameStatus.playing) {
-        await repo.recordResult(slot, game, startedAt: startedAt, endedAt: now);
-        if (after == GameStatus.cleared) {
-          // No way back into a cleared board — the slot is done (§3.7).
-          await repo.clearRun(slot);
-        }
+        // Atomic run-end: autosave, result row and — on cleared — the slot
+        // clear land together; process death can't leave a "cleared" ghost
+        // resume or a result-less end (§3.7).
+        await repo.commitRunEnd(slot, snap,
+            startedAt: startedAt,
+            endedAt: now,
+            clear: after == GameStatus.cleared);
+      } else {
+        await repo.saveRun(slot, snap, startedAt: startedAt, now: now);
       }
       _invalidate(slot);
-    }
-
-    run();
+    }).catchError((Object e) {
+      // An autosave failure must never throw into the zone; the next action
+      // re-persists the full log anyway.
+      debugPrint('knobelfuchs: persist failed: $e');
+    });
   }
 
   void _invalidate(String slot) {
@@ -250,6 +286,7 @@ class GameController extends Notifier<GameView?> {
           if (!c.cleared) c.digit,
       },
       targetBeaten: game.targetBeaten,
+      canAdd: game.canAdd,
     );
   }
 }

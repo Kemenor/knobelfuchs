@@ -1,8 +1,12 @@
 default_platform(:android)
 
 # Knobelfuchs — Play Store metadata & releases (ported from knabberfuchs).
-# All lanes upload as a DRAFT (changes_not_sent_for_review) so nothing goes
-# live without you pressing "send for review" in the Play Console.
+# The METADATA lanes below upload as a DRAFT (changes_not_sent_for_review),
+# so listing edits never go live without "send for review" in the Console.
+# BINARY releases ride the CI tag flow instead: tool/play_upload_aab.py
+# assigns status "completed" — internal/alpha testers get the build
+# immediately, and production is gated only by the GitHub environment
+# approval. Don't dispatch a release run expecting a staged draft.
 
 platform :android do
   desc "Validate the metadata locally — no upload, catches length/format errors"

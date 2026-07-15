@@ -15,6 +15,7 @@ import '../game/game_controller.dart';
 import '../game/game_screen.dart';
 import '../settings/settings.dart';
 import '../settings/settings_screen.dart';
+import '../single_flight.dart';
 
 /// Home (§12): each mode card does the most-wanted thing. The three modes
 /// wear the three triad colours; the home screen *is* the palette.
@@ -27,6 +28,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   StreamSubscription<Uri>? _links;
+  final _flight = SingleFlight(); // one screen-open at a time
 
   @override
   void initState() {
@@ -37,6 +39,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _links = appLinks.uriLinkStream.listen((uri) {
       final config = decodeChallenge(uri);
       if (config != null && mounted) {
+        // The link can arrive mid-game: come back home first, so the
+        // sheet's Start doesn't stack a second GameScreen over a live one.
+        // The running game is autosaved per move and stays resumable.
+        Navigator.of(context).popUntil((r) => r.isFirst);
         showNewGameSheet(context, prefill: config);
       }
     });
@@ -144,26 +150,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     trailing: resumeScore != null
                         ? '${l.resume}\n$resumeScore ${l.score}'
                         : null,
-                    onTap: () async {
+                    // The pushes are awaited so the flight stays busy until
+                    // the route settles — a double-tap can never stack two
+                    // screens, even on the synchronous live-run branch.
+                    onTap: () => _flight.run(() async {
                       final nav = Navigator.of(context);
                       if (liveFree != null) {
-                        nav.push(MaterialPageRoute(
+                        await nav.push(MaterialPageRoute(
                             builder: (_) => const GameScreen()));
                         return;
                       }
-                      if (saved != null) {
-                        // One tap back into the autosaved run (§12).
-                        final ok = await ref
-                            .read(gameControllerProvider.notifier)
-                            .resumeSaved();
-                        if (ok) {
-                          nav.push(MaterialPageRoute(
-                              builder: (_) => const GameScreen()));
-                          return;
-                        }
+                      // Ask the DB, not the provider's .value: during the
+                      // first load null means "still loading", and falling
+                      // through to the sheet on that null silently
+                      // overwrote the autosave (cold-start race).
+                      final ok = await ref
+                          .read(gameControllerProvider.notifier)
+                          .resumeSaved();
+                      if (ok) {
+                        await nav.push(MaterialPageRoute(
+                            builder: (_) => const GameScreen()));
+                        return;
                       }
-                      if (context.mounted) showNewGameSheet(context);
-                    },
+                      if (context.mounted) await showNewGameSheet(context);
+                    }),
                   ),
                   const SizedBox(height: 14),
                   _ModeCard(
@@ -171,8 +181,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: Icons.calendar_today_outlined,
                     title: l.modeDaily,
                     subtitle: l.modeDailyDesc,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => const DailyCalendarScreen())),
+                    onTap: () => _flight.run(() async {
+                      await Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => const DailyCalendarScreen()));
+                    }),
                   ),
                   const SizedBox(height: 14),
                   _ModeCard(
@@ -180,8 +192,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: Icons.map_outlined,
                     title: l.modeStory,
                     subtitle: l.modeStoryDesc,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => const AdventureScreen())),
+                    onTap: () => _flight.run(() async {
+                      await Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => const AdventureScreen()));
+                    }),
                   ),
                   const Spacer(),
                   Text(

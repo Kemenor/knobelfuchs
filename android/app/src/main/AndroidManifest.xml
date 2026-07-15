@@ -1,10 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- In-app challenge-QR scanner (§7); no other camera use. -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- allowBackup=false: the privacy policy promises game data never leave
+         the device and vanish on uninstall — Google Auto Backup would upload
+         the database to Drive. Device moves use the in-app backup (§9.1). -->
     <application
-        android:label="knobelfuchs"
+        android:label="Knobelfuchs"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,6 +37,12 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="knobelfuchs" android:host="c"/>
             </intent-filter>
+            <!-- Challenge links are handled by app_links exclusively; keep
+                 Flutter's own deep-link routing (on by default since 3.24)
+                 from consuming them as named routes (app_links 7.x setup). -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

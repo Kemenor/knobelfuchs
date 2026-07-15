@@ -97,6 +97,13 @@ game has an **add budget** — default **5**, up to **limitless** where the mode
 The remaining count sits on the button as neutral information; at 0 the button turns
 **gray** (quietly unavailable, not alarmed — nothing red).
 
+**Board ceiling (amended 2026-07-15):** an add that would push the board past
+**540 cells** (60 full rows) is refused like an exhausted budget — the run ends
+normally when no pair remains. Each add doubles the material, so without a ceiling a
+hostile saved-run log (or a very patient ∞-adds player) grows the board past what any
+device can replay. Three back-to-back adds on an untouched opening reach the ceiling;
+normal play never does.
+
 ### 3.5 Hints
 The **hint button** highlights **the first valid pair in reading order** (fox orange,
 and it stays highlighted until both cells are tapped — impossible to miss;
@@ -222,7 +229,9 @@ parameter sheet:
 - **Adds** — stepper, 0 … 20, then ∞. Default 5.
 - **Hints** — stepper, 0 … 20, then ∞. Default 5.
 - **Score to beat** — optional number, default off (manual or QR-filled; never
-  computed here).
+  computed here). When switched on, the field must hold 1…800 (§4's ceiling) —
+  Start stays quietly disabled otherwise, so the switch never lies about a
+  target that doesn't exist (amended 2026-07-15).
 
 Sensible defaults mean the sheet is one tap ("Los!") for players who don't care —
 parameters are power, summoned not imposed.
@@ -269,6 +278,11 @@ board." Fully offline, peer-to-peer, no server; the QR *is* the challenge.
 - **Payload:** a deep link, `knobelfuchs://c?v=1&s=<seed>&a=<adds>&h=<hints>&t=<target>`
   — the **`v` version field is mandatory from day one** (a v2 app reads old codes and
   politely declines future ones). The seed travels in normalized form (§2.1).
+- **Range-checked on decode (amended 2026-07-15):** budgets outside 0…20/∞ (§6.1's
+  stepper range) or a target outside 1…800 (§4's ceiling) reject the whole payload —
+  values the sheet itself cannot produce are typos or hostile, and e.g. a negative add
+  budget would quietly break §3.7's auto-detected run end. The seed is re-normalized
+  on decode; decoding never trusts the wire.
 - **No names, no message field** — the target *is* the personal touch, and shareable
   artifacts carry no personal data.
 - **Scanning pre-fills the parameter sheet — never auto-starts.** The sheet stays
@@ -417,6 +431,12 @@ payload with versioning on both platforms · run slots (FF single, per-date, per
 match the reference game) · record-all stats · music default on · word seeds
 with normalization + FNV-1a · daily epoch 2026-07-01 · Swiss German · home-card
 semantics · scroll policy · hint/selection layering.
+
+**Resolved (closed-testing review, 2026-07-15):** board ceiling 540 cells — amends
+the earlier "no cap" (§3.4) · challenge payloads range-checked on decode (§7) ·
+backup import transactional — a failed import leaves the previous state untouched
+(§9.1) · restore of an unknown scoring name falls back to the frozen originals-only
+formula, never classic (§4).
 
 **Deferred (v2 candidates):** difficulty setting (target-factor shift) · Free Form
 multi-slot · lifetime statistics page · https App/Universal

@@ -81,7 +81,7 @@
   "scanChallenge": "Herausforderung scannen",
   "share": "Teilen",
   "shareText": "Schlag mich bei Knobelfuchs: {target} Punkte auf Brett {seed}! {link}",
-  "cameraDenied": "Kein Kamera-Zugriff — bitte in den Android-Einstellungen erlauben.",
+  "cameraDenied": "Kein Kamera-Zugriff — bitte in den Systemeinstellungen erlauben.",
   "resume": "Weiterspielen",
   "footerOffline": "Alles offline · keine Werbung · keine Käufe — einfach knobeln.",
   "score": "Punkte",

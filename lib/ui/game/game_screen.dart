@@ -108,22 +108,28 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   void _animateToRow(int row) {
-    if (!_scroll.hasClients) return;
-    final target = (row * _rowExtent).clamp(
-      0.0,
-      _scroll.position.maxScrollExtent,
-    );
-    // §10.2: instant jump under Reduziert/Aus.
-    final motion = ref.read(settingsProvider).effectiveMotion(context);
-    if (motion == MotionMode.full) {
-      _scroll.animateTo(
-        target,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
+    // Post-frame: the listener fires synchronously inside the controller's
+    // publish, BEFORE the ListView has rebuilt with the appended rows —
+    // clamping now would use the stale maxScrollExtent and stop exactly one
+    // add short of the new content (§10.2's whole point).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      final target = (row * _rowExtent).clamp(
+        0.0,
+        _scroll.position.maxScrollExtent,
       );
-    } else {
-      _scroll.jumpTo(target);
-    }
+      // §10.2: instant jump under Reduziert/Aus.
+      final motion = ref.read(settingsProvider).effectiveMotion(context);
+      if (motion == MotionMode.full) {
+        _scroll.animateTo(
+          target,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      } else {
+        _scroll.jumpTo(target);
+      }
+    });
   }
 
   @override
@@ -253,26 +259,12 @@ class _NewGameButton extends ConsumerWidget {
       tooltip: view.slot == kFreeSlot ? l.newGameTitle : l.again,
       icon: const Icon(Icons.restart_alt),
       onPressed: () async {
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: Text(l.discardTitle),
-            content: Text(l.discardBody(view.score)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: Text(l.cancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: Text(l.discard),
-              ),
-            ],
-          ),
-        );
-        if (confirmed != true || !context.mounted) return;
+        final confirmed = await confirmDiscardRun(context, view.score);
+        if (!confirmed || !context.mounted) return;
         if (view.slot == kFreeSlot) {
-          showNewGameSheet(context, pushGameScreen: false);
+          // The §6.1 discard confirmation was just shown above.
+          showNewGameSheet(context,
+              pushGameScreen: false, skipDiscardGuard: true);
         } else {
           // Daily / Adventure: the challenge is fixed — just restart it.
           ref
@@ -475,7 +467,9 @@ class _ActionBar extends ConsumerWidget {
         icon: Icons.add_circle_outline,
         label: l.actionAdd,
         count: budget(view.addsRemaining),
-        enabled: view.addsRemaining == null || view.addsRemaining! > 0,
+        // canAdd, not the raw budget: at the board ceiling (§3.4) the button
+        // grays out like an exhausted budget instead of silently no-opping.
+        enabled: view.canAdd,
         onPressed: controller.addRows,
       ),
       _ActionButton(

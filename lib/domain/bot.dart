@@ -9,8 +9,15 @@ import 'game.dart';
 /// finite add budget (Free Form targets are never computed, §4.1).
 int botScore(GameConfig config) {
   assert(config.adds != null, 'bot requires a finite add budget');
+  // The bot plays under the same scoring variant as the run (daily.dart's
+  // contract) — dropping it here would compute targets under the wrong
+  // formula the moment a playtest flips the variant.
   final state = GameState.fresh(
-    GameConfig(seed: config.seed, adds: config.adds, hints: 0),
+    GameConfig(
+        seed: config.seed,
+        adds: config.adds,
+        hints: 0,
+        scoring: config.scoring),
   );
   while (true) {
     if (state.board.isEmpty) break;
@@ -20,9 +27,10 @@ int botScore(GameConfig config) {
         state.board.cells[pair.$1].id,
         state.board.cells[pair.$2].id,
       );
-    } else if ((state.addsRemaining ?? 0) > 0) {
-      state.addRows();
-    } else {
+    } else if (!state.addRows()) {
+      // Budget spent OR board ceiling reached (§3.4). Never gate on
+      // addsRemaining alone: addRows can refuse at the ceiling with budget
+      // left, and this loop must terminate on every config.
       break;
     }
   }

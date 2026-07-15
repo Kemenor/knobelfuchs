@@ -89,7 +89,7 @@
   "share": "Share",
   "shareText": "Beat me at Knobelfuchs: {target} points on board {seed}! {link}",
   "@shareText": { "placeholders": { "target": { "type": "int" }, "seed": { "type": "String" }, "link": { "type": "String" } } },
-  "cameraDenied": "No camera access — please allow it in the Android settings.",
+  "cameraDenied": "No camera access — please allow it in the system settings.",
   "resume": "Resume",
   "footerOffline": "Fully offline · no ads · no purchases — just puzzling.",
   "score": "Score",

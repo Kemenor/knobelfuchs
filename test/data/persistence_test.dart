@@ -84,7 +84,8 @@ void main() {
       state.requestHint();
 
       final started = DateTime(2026, 7, 12, 9);
-      await repo.saveRun('free', state, startedAt: started, now: started);
+      await repo.saveRun('free', RunSnapshot.of(state),
+          startedAt: started, now: started);
 
       final summary = await repo.loadSummary('free');
       expect(summary!.score, state.score);
@@ -108,8 +109,9 @@ void main() {
       const config = GameConfig(seed: 'a', adds: 5, hints: 5);
       final state = GameState.fresh(config);
       final t = DateTime(2026, 7, 12);
-      await repo.saveRun('free', state, startedAt: t, now: t);
-      await repo.saveRun('free', state, startedAt: t, now: t); // upsert
+      await repo.saveRun('free', RunSnapshot.of(state), startedAt: t, now: t);
+      await repo.saveRun('free', RunSnapshot.of(state),
+          startedAt: t, now: t); // upsert
       expect(await repo.loadSummary('free'), isNotNull);
       await repo.clearRun('free');
       expect(await repo.loadSummary('free'), isNull);
@@ -120,13 +122,43 @@ void main() {
       const config = GameConfig(seed: 'best', adds: 0, hints: 0);
       final state = GameState.fresh(config);
       final t = DateTime(2026, 7, 12);
-      await repo.recordResult('free', state, startedAt: t, endedAt: t);
+      await repo.recordResult('free', RunSnapshot.of(state),
+          startedAt: t, endedAt: t);
       final p = state.board.firstPair()!;
       state.match(state.board.cells[p.$1].id, state.board.cells[p.$2].id);
-      await repo.recordResult('free', state,
+      await repo.recordResult('free', RunSnapshot.of(state),
           startedAt: t, endedAt: t.add(const Duration(minutes: 1)));
       expect(await repo.bestScore('free', 'best'), state.score);
       expect(await repo.bestScore('free', 'other'), isNull);
+    });
+
+    test('commitRunEnd is atomic: result + cleared slot land together',
+        () async {
+      const config = GameConfig(seed: 'end', adds: 5, hints: 5);
+      final state = GameState.fresh(config);
+      final t = DateTime(2026, 7, 12);
+      await repo.saveRun('free', RunSnapshot.of(state), startedAt: t, now: t);
+      await repo.commitRunEnd('free', RunSnapshot.of(state),
+          startedAt: t,
+          endedAt: t.add(const Duration(minutes: 2)),
+          clear: true);
+      // Result recorded, autosave slot cleared — one transaction (§3.7).
+      expect(await repo.bestScore('free', 'end'), state.score);
+      expect(await repo.loadSummary('free'), isNull);
+    });
+
+    test('a snapshot is immune to later mutations of the live state',
+        () async {
+      const config = GameConfig(seed: 'snap', adds: 5, hints: 5);
+      final state = GameState.fresh(config);
+      final p = state.board.firstPair()!;
+      state.match(state.board.cells[p.$1].id, state.board.cells[p.$2].id);
+      final snap = RunSnapshot.of(state);
+      final scoreAtCapture = state.score;
+      state.undo(); // player undoes while the write chain is still queued
+      final t = DateTime(2026, 7, 12);
+      await repo.saveRun('free', snap, startedAt: t, now: t);
+      expect((await repo.loadSummary('free'))!.score, scoreAtCapture);
     });
   });
 }

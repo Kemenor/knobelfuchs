@@ -9,6 +9,7 @@ import '../../domain/seed.dart';
 import '../../l10n/app_localizations.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
+import '../single_flight.dart';
 import 'scan_challenge_screen.dart';
 
 /// Free Form parameter sheet (§6.1): one tap for players who don't care —
@@ -16,21 +17,56 @@ import 'scan_challenge_screen.dart';
 /// when the sheet is opened from *within* the game screen (§12's "new game
 /// anyway" path) — the controller swap re-renders the screen in place.
 /// [prefill] carries a scanned/deep-linked challenge (§7) — still editable,
-/// never auto-started.
+/// never auto-started. [skipDiscardGuard] is for callers that have ALREADY
+/// shown the §6.1 discard confirmation (the in-game restart button); every
+/// other path gets it from the sheet itself.
 Future<void> showNewGameSheet(BuildContext context,
-    {bool pushGameScreen = true, GameConfig? prefill}) {
+    {bool pushGameScreen = true,
+    GameConfig? prefill,
+    bool skipDiscardGuard = false}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (_) =>
-        _NewGameSheet(pushGameScreen: pushGameScreen, prefill: prefill),
+    builder: (_) => _NewGameSheet(
+        pushGameScreen: pushGameScreen,
+        prefill: prefill,
+        skipDiscardGuard: skipDiscardGuard),
   );
+}
+
+/// The §6.1 calm discard confirmation — the ONE implementation for every
+/// path that would overwrite a live run (sheet start, in-game restart), so
+/// the wording and styling can never drift between them.
+Future<bool> confirmDiscardRun(BuildContext context, int score) async {
+  final l = AppLocalizations.of(context)!;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(l.discardTitle),
+      content: Text(l.discardBody(score)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(l.discard),
+        ),
+      ],
+    ),
+  );
+  return confirmed == true;
 }
 
 class _NewGameSheet extends ConsumerStatefulWidget {
   final bool pushGameScreen;
   final GameConfig? prefill;
-  const _NewGameSheet({required this.pushGameScreen, this.prefill});
+  final bool skipDiscardGuard;
+  const _NewGameSheet(
+      {required this.pushGameScreen,
+      this.prefill,
+      this.skipDiscardGuard = false});
 
   @override
   ConsumerState<_NewGameSheet> createState() => _NewGameSheetState();
@@ -43,10 +79,16 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
   int? _hints = 5;
   bool _targetOn = false;
 
+  int? get _parsedTarget => int.tryParse(_target.text.trim());
+
   /// No board can pay more than [kMaxScore] (§4) — a higher target is a typo,
   /// not a challenge. Also guards QR payloads.
-  bool get _targetTooHigh =>
-      _targetOn && (int.tryParse(_target.text.trim()) ?? 0) > kMaxScore;
+  bool get _targetTooHigh => _targetOn && (_parsedTarget ?? 0) > kMaxScore;
+
+  /// The switch is on but the field holds no usable number (empty, garbage,
+  /// zero or negative) — starting now would silently launch a run that
+  /// contradicts the visible switch state.
+  bool get _targetMissing => _targetOn && (_parsedTarget ?? 0) < 1;
 
   @override
   void initState() {
@@ -71,27 +113,49 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
     super.dispose();
   }
 
-  void _start() {
-    var seed = normalizeSeed(_seed.text);
-    if (seed.isEmpty) {
-      // Random seeds are 6-digit strings — easy to read out loud (§2.1).
-      seed = '${100000 + Random().nextInt(900000)}';
-    }
-    final target = _targetOn ? int.tryParse(_target.text.trim()) : null;
-    final config = GameConfig(
-      seed: seed,
-      adds: _adds,
-      hints: _hints,
-      target: target,
-    );
-    ref.read(gameControllerProvider.notifier).start(config);
-    Navigator.of(context).pop();
-    if (widget.pushGameScreen) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const GameScreen()),
-      );
-    }
-  }
+  final _flight = SingleFlight(); // double-tap guard across the discard dialog
+
+  Future<void> _start() => _flight.run(() async {
+        // §6.1 (frozen): "starting a new game over a live run confirms
+        // calmly first". The guard lives HERE, next to the destructive
+        // start — not only on the in-game restart button — so the
+        // deep-link, scan and home-card paths can't silently overwrite the
+        // free autosave.
+        if (!widget.skipDiscardGuard) {
+          final live = ref.read(gameControllerProvider);
+          final liveScore =
+              live != null && live.slot == kFreeSlot ? live.score : null;
+          // The DB is the source of truth; the provider may still be loading.
+          final savedScore = liveScore ??
+              (await ref.read(gameRepositoryProvider).loadSummary(kFreeSlot))
+                  ?.score;
+          if (savedScore != null) {
+            if (!mounted) return;
+            if (!await confirmDiscardRun(context, savedScore)) return;
+          }
+        }
+        if (!mounted) return;
+
+        var seed = normalizeSeed(_seed.text);
+        if (seed.isEmpty) {
+          // Random seeds are 6-digit strings — easy to read out loud (§2.1).
+          seed = '${100000 + Random().nextInt(900000)}';
+        }
+        final target = _targetOn ? _parsedTarget : null;
+        final config = GameConfig(
+          seed: seed,
+          adds: _adds,
+          hints: _hints,
+          target: target,
+        );
+        ref.read(gameControllerProvider.notifier).start(config);
+        Navigator.of(context).pop();
+        if (widget.pushGameScreen) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const GameScreen()),
+          );
+        }
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +217,11 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       isDense: true,
-                      errorText: _targetTooHigh
+                      // Calm gray, not error red: "a target no board can pay
+                      // is a typo, not a challenge" — red is reserved for
+                      // destructive actions. The disabled start button
+                      // already blocks submission.
+                      helperText: _targetTooHigh
                           ? l.targetTooHigh(kMaxScore)
                           : null,
                     ),
@@ -173,7 +241,7 @@ class _NewGameSheetState extends ConsumerState<_NewGameSheet> {
           ),
           const SizedBox(height: 12),
           FilledButton(
-            onPressed: _targetTooHigh ? null : _start,
+            onPressed: _targetTooHigh || _targetMissing ? null : _start,
             style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(56)),
             child: Text(l.startGame,
@@ -222,7 +290,7 @@ class _Stepper extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     void minus() {
       if (value == null) {
-        onChanged(20);
+        onChanged(kMaxBudget);
       } else if (value! > 0) {
         onChanged(value! - 1);
       }
@@ -230,7 +298,7 @@ class _Stepper extends StatelessWidget {
 
     void plus() {
       if (value == null) return;
-      onChanged(value! >= 20 ? null : value! + 1);
+      onChanged(value! >= kMaxBudget ? null : value! + 1);
     }
 
     return Padding(

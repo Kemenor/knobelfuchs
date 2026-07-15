@@ -7,6 +7,8 @@ import '../../domain/daily.dart';
 import '../../l10n/app_localizations.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
+import '../providers.dart';
+import '../single_flight.dart';
 import 'daily_providers.dart';
 
 /// The calendar IS the mode's home (§6.2, mockup 06): every past day
@@ -22,17 +24,20 @@ class DailyCalendarScreen extends ConsumerStatefulWidget {
 
 class _DailyCalendarScreenState extends ConsumerState<DailyCalendarScreen> {
   late DateTime _month; // first of the shown month
+  final _flight = SingleFlight(); // one day cell, one GameScreen
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    // The injectable clock, same as the providers — a test-frozen or
+    // otherwise overridden now must not disagree with the day states.
+    final now = ref.read(nowProvider)();
     _month = DateTime(now.year, now.month, 1);
   }
 
   DateTime get _epochMonth => DateTime(kDailyEpoch.year, kDailyEpoch.month, 1);
   DateTime get _currentMonth {
-    final now = DateTime.now();
+    final now = ref.read(nowProvider)();
     return DateTime(now.year, now.month, 1);
   }
 
@@ -43,16 +48,26 @@ class _DailyCalendarScreenState extends ConsumerState<DailyCalendarScreen> {
     setState(() => _month = DateTime(_month.year, _month.month + delta, 1));
   }
 
-  Future<void> _openDay(DayInfo day) async {
-    final controller = ref.read(gameControllerProvider.notifier);
-    final slot = dailySlot(day.date);
-    final nav = Navigator.of(context);
-    final resumed = await controller.resumeSaved(slot: slot);
-    if (!resumed) {
-      controller.start(dailyConfig(day.date), slot: slot);
-    }
-    nav.push(MaterialPageRoute(builder: (_) => const GameScreen()));
-  }
+  Future<void> _openDay(DayInfo day) => _flight.run(() async {
+        final controller = ref.read(gameControllerProvider.notifier);
+        final slot = dailySlot(day.date);
+        final nav = Navigator.of(context);
+        final now = ref.read(nowProvider);
+        final dayBefore = DateUtils.dateOnly(now());
+        final resumed = await controller.resumeSaved(slot: slot);
+        if (!resumed) {
+          controller.start(dailyConfig(day.date), slot: slot);
+        }
+        await nav.push(
+            MaterialPageRoute(builder: (_) => const GameScreen()));
+        // The screen can be gone by now (deep link popped the stack) — ref
+        // on a disposed State throws. And only a crossed midnight needs the
+        // recompute; the run's own persists already bump on every move.
+        if (!mounted) return;
+        if (DateUtils.dateOnly(now()) != dayBefore) {
+          ref.read(dailyVersionProvider.notifier).bump();
+        }
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -117,15 +132,15 @@ class _WeekdayHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // Monday-first (family convention); 2026-01-05 is a Monday.
-    final monday = DateTime(2026, 1, 5);
+    // Monday-first (family convention); 2026-01-05 is a Monday. Calendar
+    // arithmetic, not Duration: +24h breaks across DST switches (§6.2).
     return Row(
       children: [
         for (var i = 0; i < 7; i++)
           Expanded(
             child: Text(
               DateFormat.E(locale)
-                  .format(monday.add(Duration(days: i)))
+                  .format(DateTime(2026, 1, 5 + i))
                   .toUpperCase(),
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -184,7 +199,7 @@ class _DayCell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final now = DateTime.now();
+    final now = ref.watch(nowProvider)();
     final isToday = day.date.year == now.year &&
         day.date.month == now.month &&
         day.date.day == now.day;

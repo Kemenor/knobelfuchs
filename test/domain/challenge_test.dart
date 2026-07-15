@@ -6,12 +6,12 @@ void main() {
   group('encode/decode roundtrip', () {
     test('finite budgets with target', () {
       const config =
-          GameConfig(seed: 'herbst-fuchs', adds: 5, hints: 3, target: 1840);
+          GameConfig(seed: 'herbst-fuchs', adds: 5, hints: 3, target: 640);
       final decoded = decodeChallenge(encodeChallenge(config))!;
       expect(decoded.seed, 'herbst-fuchs');
       expect(decoded.adds, 5);
       expect(decoded.hints, 3);
-      expect(decoded.target, 1840);
+      expect(decoded.target, 640);
     });
 
     test('limitless budgets and no target survive', () {
@@ -58,6 +58,45 @@ void main() {
       expect(
         decodeChallenge(Uri.parse('knobelfuchs://c?v=1&s=x&a=lots&h=5')),
         isNull,
+      );
+      expect(
+        decodeChallenge(Uri.parse('knobelfuchs://c?v=1&s=x&a=5&h=5&t=oops')),
+        isNull, // a malformed target is a typo'd payload, not "no target"
+      );
+    });
+
+    test('out-of-range budgets and targets are hostile, not configs (§7)',
+        () {
+      // A negative add budget would disable stuck detection; negative hints
+      // would grant unlimited ones; a negative target is auto-beaten at 0.
+      for (final link in [
+        'knobelfuchs://c?v=1&s=x&a=-1&h=5',
+        'knobelfuchs://c?v=1&s=x&a=5&h=-2',
+        'knobelfuchs://c?v=1&s=x&a=999999&h=5',
+        'knobelfuchs://c?v=1&s=x&a=5&h=21',
+        'knobelfuchs://c?v=1&s=x&a=5&h=5&t=-50',
+        'knobelfuchs://c?v=1&s=x&a=5&h=5&t=0',
+        'knobelfuchs://c?v=1&s=x&a=5&h=5&t=99999',
+      ]) {
+        expect(decodeChallenge(Uri.parse(link)), isNull, reason: link);
+      }
+      // The full valid range still decodes.
+      expect(
+        decodeChallenge(
+            Uri.parse('knobelfuchs://c?v=1&s=x&a=0&h=20&t=800')),
+        isNotNull,
+      );
+    });
+
+    test('the seed is normalized on decode — no namespace smuggling (§7)',
+        () {
+      final decoded = decodeChallenge(
+          Uri.parse('knobelfuchs://c?v=1&s=Daily%3A20260712&a=5&h=5'))!;
+      // ':' is not a seed character; the namespace prefix cannot survive.
+      expect(decoded.seed, 'daily20260712');
+      expect(
+        decodeChallenge(Uri.parse('knobelfuchs://c?v=1&s=%3A%3A&a=5&h=5')),
+        isNull, // nothing left after normalization
       );
     });
   });

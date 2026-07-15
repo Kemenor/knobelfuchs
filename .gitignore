@@ -28,6 +28,9 @@ play-store-key.json
 AuthKey_*.p8
 asc_api_key.json
 *.env
+*.p12
+*.mobileprovision
+key.properties
 
 # Music audition files — too heavy for git; see examples/ui/README.md to re-fetch
 examples/ui/music/*.mp3

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,16 +6,39 @@ import '../../domain/adventure.dart';
 import '../../l10n/app_localizations.dart';
 import '../game/game_controller.dart';
 import '../game/game_screen.dart';
+import '../single_flight.dart';
 import 'adventure_providers.dart';
 
 /// The level list (§6.3, mockup 05): emerald = beaten, indigo = the action
 /// forward, locked = calm gray. Beaten levels stay tappable — emerald play =
 /// beat your own best; indigo play = the next step.
-class AdventureScreen extends ConsumerWidget {
+class AdventureScreen extends ConsumerStatefulWidget {
   const AdventureScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AdventureScreen> createState() => _AdventureScreenState();
+}
+
+class _AdventureScreenState extends ConsumerState<AdventureScreen> {
+  // Screen-level, not per-row: a second ROW tapped during the first row's
+  // replay await must be ignored too, side effects included — a post-push
+  // route check would still let it swap the live run.
+  final _flight = SingleFlight();
+
+  Future<void> _play(LevelInfo info) => _flight.run(() async {
+        final controller = ref.read(gameControllerProvider.notifier);
+        final slot = adventureSlot(info.level);
+        final nav = Navigator.of(context);
+        final resumed = await controller.resumeSaved(slot: slot);
+        if (!resumed) {
+          controller.start(adventureConfig(info.level), slot: slot);
+        }
+        if (!mounted) return;
+        await nav.push(MaterialPageRoute(builder: (_) => const GameScreen()));
+      });
+
+  @override
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final levels = ref.watch(adventureProvider);
@@ -64,7 +88,7 @@ class AdventureScreen extends ConsumerWidget {
                       itemCount: list.length,
                       separatorBuilder: (_, i) => const SizedBox(height: 10),
                       itemBuilder: (context, i) =>
-                          _LevelRow(info: list[i]),
+                          _LevelRow(info: list[i], onPlay: _play),
                     ),
                   ),
                 ],
@@ -79,18 +103,8 @@ class AdventureScreen extends ConsumerWidget {
 
 class _LevelRow extends ConsumerWidget {
   final LevelInfo info;
-  const _LevelRow({required this.info});
-
-  Future<void> _play(BuildContext context, WidgetRef ref) async {
-    final controller = ref.read(gameControllerProvider.notifier);
-    final slot = adventureSlot(info.level);
-    final nav = Navigator.of(context);
-    final resumed = await controller.resumeSaved(slot: slot);
-    if (!resumed) {
-      controller.start(adventureConfig(info.level), slot: slot);
-    }
-    nav.push(MaterialPageRoute(builder: (_) => const GameScreen()));
-  }
+  final Future<void> Function(LevelInfo) onPlay;
+  const _LevelRow({required this.info, required this.onPlay});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -107,7 +121,7 @@ class _LevelRow extends ConsumerWidget {
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: locked ? null : () => _play(context, ref),
+          onTap: locked ? null : () => onPlay(info),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
@@ -157,7 +171,12 @@ class _LevelRow extends ConsumerWidget {
                       ),
                       if (!locked)
                         Text(
-                          '${l.target} ${info.target} · P75 ${kAdventureP75[info.level - 1]} · ${l.actionAdd} ${info.adds} · ${l.actionHint} ${info.hints}'
+                          // P75 is a playtest instrument for the pending
+                          // bot-vs-P75 target verdict — debug builds only;
+                          // testers see the canonical row (mockup 05).
+                          '${l.target} ${info.target}'
+                          '${kDebugMode ? ' · P75 ${kAdventureP75[info.level - 1]}' : ''}'
+                          ' · ${l.actionAdd} ${info.adds} · ${l.actionHint} ${info.hints}'
                           '${info.hasSavedRun ? ' · …' : ''}',
                           style: TextStyle(
                             fontSize: 12,
@@ -195,7 +214,7 @@ class _LevelRow extends ConsumerWidget {
                             ? scheme.onTertiary
                             : scheme.onSecondary,
                       ),
-                      onPressed: () => _play(context, ref),
+                      onPressed: () => onPlay(info),
                       child: Text(l.play),
                     ),
                   ),

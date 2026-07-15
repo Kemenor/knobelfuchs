@@ -37,3 +37,13 @@ final DateTime kDailyEpoch = DateTime(2026, 7, 1);
 /// Default budgets (§6).
 const int kDefaultAdds = 5;
 const int kDefaultHints = 5;
+
+/// The parameter sheet's budget ceiling (§6.1: steppers run 0…20, then ∞).
+/// Challenge payloads outside this range are rejected (§7).
+const int kMaxBudget = 20;
+
+/// Hard board ceiling (§3.4): an add that would push the board past this is
+/// refused. Keeps ∞-add runs finite and stops a hostile saved-run log from
+/// doubling the board into the billions on replay (each add copies every
+/// survivor).
+const int kMaxBoardCells = 540; // 60 full rows of 9

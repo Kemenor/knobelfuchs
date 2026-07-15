@@ -22,6 +22,13 @@ void main() {
       const config = GameConfig(seed: 'bot-test', adds: 0, hints: 5);
       expect(botScore(config), greaterThan(0));
     });
+
+    test('terminates with a large add budget too (board ceiling, §3.4)', () {
+      // Pre-ceiling, the loop gated on addsRemaining alone; an add refused
+      // at the 540-cell ceiling with budget left would have spun forever.
+      const config = GameConfig(seed: 'ceiling-check', adds: 20, hints: 0);
+      expect(botScore(config), greaterThan(0));
+    });
   });
 
   group('targets', () {

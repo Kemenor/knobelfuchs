@@ -81,7 +81,7 @@
   "scanChallenge": "Scanner un défi",
   "share": "Partager",
   "shareText": "Bats-moi à Knobelfuchs : {target} points sur le plateau {seed} ! {link}",
-  "cameraDenied": "Pas d'accès à la caméra — autorise-le dans les réglages Android.",
+  "cameraDenied": "Pas d'accès à la caméra — autorise-le dans les réglages du système.",
   "resume": "Continuer",
   "footerOffline": "Tout hors ligne · sans pub · sans achats — juste du jeu.",
   "score": "Points",

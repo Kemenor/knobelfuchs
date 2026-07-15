@@ -81,7 +81,7 @@
   "scanChallenge": "Scansiona una sfida",
   "share": "Condividi",
   "shareText": "Battimi a Knobelfuchs: {target} punti sulla tavola {seed}! {link}",
-  "cameraDenied": "Nessun accesso alla fotocamera — consentilo nelle impostazioni Android.",
+  "cameraDenied": "Nessun accesso alla fotocamera — consentilo nelle impostazioni di sistema.",
   "resume": "Continua",
   "footerOffline": "Tutto offline · niente pubblicità · niente acquisti — solo gioco.",
   "score": "Punti",

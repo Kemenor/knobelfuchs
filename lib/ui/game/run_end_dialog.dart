@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../domain/adventure.dart';
 import '../../domain/challenge.dart';
+import '../../domain/constants.dart';
 import '../../domain/game.dart';
 import '../../l10n/app_localizations.dart';
 import 'game_controller.dart';
@@ -148,7 +149,11 @@ class _ChallengeCard extends StatelessWidget {
         seed: view.config.seed,
         adds: view.config.adds,
         hints: view.config.hints,
-        target: view.score,
+        // Clamp into decode's accepted range (§7): a pre-scoring-freeze run
+        // restored with the classic formula can exceed the 800 ceiling, and
+        // an out-of-range target would make the QR silently undecodable on
+        // the recipient's device.
+        target: view.score.clamp(1, kMaxScore),
       ));
 
   /// The QR as a white-margined PNG (QR needs its own contrast island).

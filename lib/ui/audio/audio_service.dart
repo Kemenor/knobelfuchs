@@ -101,7 +101,10 @@ class AudioService with WidgetsBindingObserver {
     ref.listen<Settings>(settingsProvider, (prev, next) {
       _guard(() async {
         await _music.setVolume(next.musicVolume);
-        if (prev?.musicOn == true && !next.musicOn) await _music.stop();
+        if (prev?.musicOn == true && !next.musicOn) {
+          await _music.stop();
+          ref.read(nowPlayingProvider.notifier).set(null);
+        }
         if (prev?.musicOn == false && next.musicOn) await _restart();
         // Jukebox: if the playing track was switched off (or the pool was
         // empty and a track came back), re-pick. A pool change that leaves
@@ -209,6 +212,14 @@ class AudioService with WidgetsBindingObserver {
       ref.read(nowPlayingProvider.notifier).set(null);
       return;
     }
+    if (_backgrounded) {
+      // Never a sound from a closed den: a play request landing while
+      // backgrounded (a pending tap handler finishing after the pause)
+      // parks itself for the next resume instead of starting music now.
+      _resumeShouldRestart = true;
+      ref.read(nowPlayingProvider.notifier).set(null);
+      return;
+    }
     await _music.play(AssetSource(track), volume: settings.musicVolume);
     ref.read(nowPlayingProvider.notifier).set(track);
   }
@@ -222,6 +233,18 @@ class AudioService with WidgetsBindingObserver {
         ref.read(nowPlayingProvider.notifier).set(null);
       });
 
+  /// The service's own record of "are we backgrounded" — _restart consults
+  /// it so no code path (settings listener, a tap handler completing after
+  /// the pause) can start music from the background.
+  bool _backgrounded = false;
+
+  /// Set when the lifecycle stopped a playing track OR a play request was
+  /// deferred while backgrounded. `resumed` also fires after a mere
+  /// inactive spell (notification shade, Control Center, permission
+  /// dialogs) — restarting then would skip the still-playing track to 0:00,
+  /// so resume only restarts when this flag says there is something to do.
+  bool _resumeShouldRestart = false;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Backgrounding always stops music — never a sound from a closed den.
@@ -229,12 +252,18 @@ class AudioService with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
+      _backgrounded = true;
       _guard(() async {
+        _resumeShouldRestart = _track != null;
         await _music.stop();
         ref.read(nowPlayingProvider.notifier).set(null);
       });
     } else if (state == AppLifecycleState.resumed) {
-      _guard(_restart);
+      _backgrounded = false;
+      if (_resumeShouldRestart) {
+        _resumeShouldRestart = false;
+        _guard(_restart);
+      }
     }
   }
 

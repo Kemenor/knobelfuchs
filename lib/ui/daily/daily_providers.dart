@@ -34,7 +34,6 @@ final dailyMonthProvider =
   final now = ref.watch(nowProvider)();
 
   final first = DateTime(month.year, month.month, 1);
-  final nextMonth = DateTime(month.year, month.month + 1, 1);
   final prefix = 'daily:';
 
   final saved = await (db.select(db.savedRuns)
@@ -56,9 +55,13 @@ final dailyMonthProvider =
     );
   }
 
+  // Calendar arithmetic, not Duration(days: 1): adding 24h across the
+  // fall-back DST switch (Europe/Zurich, e.g. 2026-10-25) lands on the SAME
+  // local day and would deal October a 32-day month with a duplicate cell.
+  final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
   final days = <DayInfo>[];
-  for (var d = first; d.isBefore(nextMonth); d = d.add(const Duration(days: 1))) {
-    final date = DateTime(d.year, d.month, d.day);
+  for (var i = 1; i <= daysInMonth; i++) {
+    final date = DateTime(month.year, month.month, i);
     if (!isDailyPlayable(date, now)) {
       days.add(DayInfo(date, DayState.locked));
       continue;

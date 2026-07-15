@@ -53,12 +53,40 @@ void main() {
       expect(s.addRows(), isFalse);
     });
 
-    test('limitless adds never block', () {
+    test('limitless adds block only at the board ceiling (§3.4)', () {
       final s = fresh(adds: null);
-      for (var i = 0; i < 6; i++) {
+      // 35 → 70 → 140 → 280 cells; a fourth add would double past the cap.
+      for (var i = 0; i < 3; i++) {
         expect(s.addRows(), isTrue);
       }
       expect(s.addsRemaining, isNull);
+      expect(s.canAdd, isFalse);
+      expect(s.addRows(), isFalse);
+      expect(s.board.cells.length, lessThanOrEqualTo(kMaxBoardCells));
+    });
+
+    test('a hostile add-spam log replays bounded, not into the billions', () {
+      final actions = <GameAction>[for (var i = 0; i < 30; i++) AddAction()];
+      final s = GameState.replay(
+        const GameConfig(seed: 'game-test', adds: null, hints: null),
+        actions,
+      );
+      expect(s.board.cells.length, lessThanOrEqualTo(kMaxBoardCells));
+      expect(s.log.length, 3); // the refused adds fell out of the log
+    });
+
+    test('the ceiling also binds finite budgets — with budget left over', () {
+      // Brand-new §13 semantics: pre-ceiling, stuck required budget 0, and
+      // a "cleanup" back to a budget-only canAdd would reopen unbounded
+      // growth without any test noticing. This pins it.
+      final s = fresh(adds: 20);
+      for (var i = 0; i < 3; i++) {
+        expect(s.addRows(), isTrue);
+      }
+      expect(s.addsRemaining, 17); // budget clearly not the limiter
+      expect(s.canAdd, isFalse);
+      expect(s.addRows(), isFalse);
+      expect(s.board.cells.length, lessThanOrEqualTo(kMaxBoardCells));
     });
 
     test('add appends a full copy of survivors', () {
@@ -156,6 +184,40 @@ void main() {
       expect(s.activeHint!.aId, 0);
       s.match(2, 3); // the 1-1 pair
       expect(s.activeHint, isNotNull);
+    });
+
+    test('matching a released hinted cell with a third cell drops the '
+        'highlight (§3.5)', () {
+      final s = GameState.forBoard(
+        const GameConfig(seed: 'x', adds: 5, hints: 5),
+        b('5 5 5 1 6 4 9 3 8'),
+      );
+      s.requestHint(); // hints (5,5) — ids 0,1
+      s.releaseHintCell(1); // player taps the second hinted cell…
+      expect(s.match(1, 2), isTrue); // …and matches it with the third 5
+      // Its partner can never complete the hinted pair now — no orange ghost.
+      expect(s.activeHint, isNull);
+    });
+  });
+
+  group('hostile configs (corrupt link or import)', () {
+    test('a negative add budget still ends the run (§3.7)', () {
+      final s = GameState.forBoard(
+        const GameConfig(seed: 'x', adds: -1, hints: 5),
+        b('1 2 3 4 5 6 7 8 9'),
+      );
+      expect(s.addRows(), isFalse);
+      // `addsRemaining == 0` never fires at -1; stuck must use <= 0.
+      expect(s.status, GameStatus.stuck);
+    });
+
+    test('a negative hint budget is exhausted, not unlimited', () {
+      final s = GameState.forBoard(
+        const GameConfig(seed: 'x', adds: 5, hints: -2),
+        b('5 5 1 1 6 4 9 3 8'),
+      );
+      expect(s.requestHint(), HintOutcome.exhausted);
+      expect(s.hintsUsed, 0);
     });
   });
 
