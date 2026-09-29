@@ -1,0 +1,1 @@
+Bei einem Abenteuer-Level festgefahren? Nach drei Versuchen unter dem Ziel öffnet sich das nächste Level trotzdem. Das übersprungene Level bleibt offen — du kannst es jederzeit nachholen. Wer zu einem schon angefangenen Level weiterzieht, spielt jetzt dort weiter, statt neu zu beginnen.

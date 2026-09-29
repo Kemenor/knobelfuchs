@@ -1,0 +1,1 @@
+Stuck on an adventure level? After three tries that miss the target, the next level opens anyway. The skipped level stays open — come back and beat it whenever you like. Moving on to a level you already started now continues your saved game instead of starting over.

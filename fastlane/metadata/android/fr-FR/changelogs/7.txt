@@ -1,0 +1,1 @@
+Bloqué sur un niveau de l'aventure ? Après trois essais sous l'objectif, le niveau suivant s'ouvre quand même. Le niveau passé reste ouvert — reviens le battre quand tu veux. Passer à un niveau déjà commencé reprend maintenant ta partie sauvegardée au lieu de recommencer.

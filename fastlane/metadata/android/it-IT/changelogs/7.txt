@@ -1,0 +1,1 @@
+Bloccato su un livello dell'avventura? Dopo tre tentativi sotto l'obiettivo, il livello successivo si apre comunque. Il livello saltato resta aperto — torna a batterlo quando vuoi. Passare a un livello già iniziato ora riprende la partita salvata invece di ricominciare.
