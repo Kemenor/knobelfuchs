@@ -77,6 +77,18 @@ String adventureSlot(int level) => 'level:$level';
 int adventureAdds(int level) => _addsCurve[_position(level)];
 int adventureHints(int level) => _hintsCurve[_position(level)];
 
+/// Skip rule (§6.3, amended 2026-09-29): after this many finished runs that
+/// missed the target, the next level opens anyway. The level itself stays
+/// un-beaten — the skip opens the way forward, it never marks anything done.
+const int kAdventureSkipAfter = 3;
+
+/// Whether a level lets the player through to the next one: beaten, or
+/// honestly tried [kAdventureSkipAfter] times. [missedRuns] counts distinct
+/// runs (one per start), not run-end occurrences — undoing back in and
+/// ending again is still the same run.
+bool adventureOpensNext({required bool beaten, required int missedRuns}) =>
+    beaten || missedRuns >= kAdventureSkipAfter;
+
 /// Target factor ramps 0.9 (forgiving) → 1.0 across the whole run — §4.1.
 double adventureFactor(int level) =>
     0.9 + (level - 1) * (0.1 / (kAdventureLevels - 1));

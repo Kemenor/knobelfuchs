@@ -13,6 +13,7 @@ import '../../domain/challenge.dart';
 import '../../domain/constants.dart';
 import '../../domain/game.dart';
 import '../../l10n/app_localizations.dart';
+import '../adventure/adventure_providers.dart';
 import 'game_controller.dart';
 
 /// Run end (§3.7): never "GAME OVER", never red. Stuck ends offer the quiet
@@ -40,6 +41,21 @@ class _RunEndDialog extends ConsumerWidget {
     const tabular = [FontFeature.tabularFigures()];
 
     String budget(int? b) => b == null ? '∞' : '$b';
+
+    // Skip rule (§6.3): after the third missed run the next level is open
+    // anyway — offer it quietly. Reads the derived list, so it appears as
+    // soon as this run's result row lands (never before the third miss).
+    final level = view.adventureLevel;
+    final skipTo = level != null &&
+            !view.targetBeaten &&
+            (ref
+                    .watch(adventureProvider)
+                    .value
+                    ?.elementAtOrNull(level - 1)
+                    ?.canSkip ??
+                false)
+        ? level + 1
+        : null;
 
     return Dialog(
       child: ConstrainedBox(
@@ -112,6 +128,14 @@ class _RunEndDialog extends ConsumerWidget {
                     ref.read(gameControllerProvider.notifier).undo();
                   },
                   child: Text(l.backToBoard),
+                ),
+              if (skipTo != null)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    goToLevel(controller, skipTo);
+                  },
+                  child: Text(l.skipToLevel(skipTo)),
                 ),
               Row(
                 children: [
@@ -268,13 +292,23 @@ class _PrimaryEndButton extends StatelessWidget {
       onPressed: () {
         Navigator.of(context).pop();
         if (next != null) {
-          controller.start(adventureConfig(next), slot: adventureSlot(next));
+          goToLevel(controller, next);
         } else {
           controller.start(view.config, slot: view.slot); // same board, retry
         }
       },
       child: Text(next != null ? l.nextLevel : l.again),
     );
+  }
+}
+
+/// Moving forward from a run end resumes the level's saved run if it has
+/// one: with the skip rule (§6.3) the next level may already be half-played,
+/// and a forward tap must never silently discard it (§6.1 guard spirit).
+Future<void> goToLevel(GameController controller, int level) async {
+  final slot = adventureSlot(level);
+  if (!await controller.resumeSaved(slot: slot)) {
+    controller.start(adventureConfig(level), slot: slot);
   }
 }
 

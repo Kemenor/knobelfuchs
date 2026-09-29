@@ -46,6 +46,14 @@ void main() {
       }
     });
 
+    test('skip rule: three misses open the way, fewer never (§6.3)', () {
+      expect(kAdventureSkipAfter, 3);
+      expect(adventureOpensNext(beaten: false, missedRuns: 0), isFalse);
+      expect(adventureOpensNext(beaten: false, missedRuns: 2), isFalse);
+      expect(adventureOpensNext(beaten: false, missedRuns: 3), isTrue);
+      expect(adventureOpensNext(beaten: true, missedRuns: 0), isTrue);
+    });
+
     test('slots stay level:N — re-curating seeds never breaks progress', () {
       expect(adventureSlot(7), 'level:7');
       expect(adventureSeedKey(7), isNot('level:7')); // curated, decoupled
@@ -88,8 +96,9 @@ void main() {
 
     tearDown(() => container.dispose());
 
-    Future<void> beat(int level, {int score = 500, bool beaten = true}) {
-      final t = DateTime(2026, 7, 10);
+    Future<void> beat(int level,
+        {int score = 500, bool beaten = true, DateTime? startedAt}) {
+      final t = startedAt ?? DateTime(2026, 7, 10);
       return db.into(db.runResults).insert(RunResultsCompanion.insert(
             slot: 'level:$level',
             seed: adventureSeedKey(level),
@@ -125,6 +134,75 @@ void main() {
       expect(list[1].best, 900); // best kept
       expect(list[2].state, LevelState.current);
       expect(list[3].state, LevelState.locked);
+    });
+
+    // Distinct starts = distinct runs (§6.3 skip rule).
+    Future<void> miss(int level, int run) => beat(level,
+        score: 100, beaten: false, startedAt: DateTime(2026, 9, 1, 10, run));
+
+    test('two missed runs keep the next level locked', () async {
+      await miss(1, 1);
+      await miss(1, 2);
+      final list = await container.read(adventureProvider.future);
+      expect(list[0].state, LevelState.current);
+      expect(list[0].missedRuns, 2);
+      expect(list[0].canSkip, isFalse);
+      expect(list[1].state, LevelState.locked);
+    });
+
+    test('three missed runs open the next level; the skipped one stays '
+        'un-beaten', () async {
+      await miss(1, 1);
+      await miss(1, 2);
+      await miss(1, 3);
+      final list = await container.read(adventureProvider.future);
+      expect(list[0].state, LevelState.skipped);
+      expect(list[0].canSkip, isTrue);
+      expect(list[1].state, LevelState.current);
+      expect(list[2].state, LevelState.locked);
+    });
+
+    test('undoing back in and ending again is still the same run', () async {
+      await miss(1, 1);
+      await miss(1, 1); // same startedAt — undo-back-in re-end
+      await miss(1, 1);
+      await miss(1, 2);
+      final list = await container.read(adventureProvider.future);
+      expect(list[0].missedRuns, 2);
+      expect(list[1].state, LevelState.locked);
+    });
+
+    test('a skipped level can still be beaten later', () async {
+      for (var run = 1; run <= 3; run++) {
+        await miss(1, run);
+      }
+      await beat(1, score: 700, startedAt: DateTime(2026, 9, 2));
+      final list = await container.read(adventureProvider.future);
+      expect(list[0].state, LevelState.beaten);
+      expect(list[0].canSkip, isFalse);
+      expect(list[1].state, LevelState.current);
+    });
+
+    test('misses on an unreachable level never tunnel past a lock', () async {
+      for (var run = 1; run <= 3; run++) {
+        await miss(3, run); // level 3 isn't open yet
+      }
+      final list = await container.read(adventureProvider.future);
+      expect(list[1].state, LevelState.locked);
+      expect(list[2].state, LevelState.locked);
+      expect(list[3].state, LevelState.locked);
+    });
+
+    test('the last level has nothing to skip to', () async {
+      for (var level = 1; level < kAdventureLevels; level++) {
+        await beat(level);
+      }
+      for (var run = 1; run <= 3; run++) {
+        await miss(kAdventureLevels, run);
+      }
+      final list = await container.read(adventureProvider.future);
+      expect(list.last.state, LevelState.current);
+      expect(list.last.canSkip, isFalse);
     });
   });
 }

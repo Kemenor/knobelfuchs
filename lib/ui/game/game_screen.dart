@@ -83,13 +83,18 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   /// Scroll policy (§10.2): the view only follows the player's own action.
   void _onViewChange(GameView? prev, GameView? next) {
     if (prev == null || next == null) return;
-    if (prev.slot != next.slot || prev.config.seed != next.config.seed) {
+    final switched =
+        prev.slot != next.slot || prev.config.seed != next.config.seed;
+    if (switched) {
       // New game started in place ("Nochmal" / new-game sheet) — fresh track.
       ref
           .read(audioServiceProvider)
           .playGameMusic(slot: next.slot, seed: next.config.seed);
+    } else {
+      // Counter deltas across two different runs (a resumed next level)
+      // aren't the player's action — no sounds for them (§10).
+      _playFor(prev, next);
     }
-    _playFor(prev, next);
     if (next.addsUsed > prev.addsUsed) {
       // Nachlegen: bring the first appended row into view.
       final row = prev.board.cells.length ~/ kColumns;
@@ -99,8 +104,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       final row = (next.board.cells.length ~/ kColumns) - 1;
       _animateToRow(row < 0 ? 0 : row);
     }
+    // Switching to a resumed run that already ended (the next level after a
+    // skip, §6.3) greets with its result, like opening it from the list.
     if (next.status != GameStatus.playing &&
-        prev.status == GameStatus.playing &&
+        (prev.status == GameStatus.playing || switched) &&
         !_endShown) {
       _endShown = true;
       showRunEndDialog(context, ref).then((_) => _endShown = false);

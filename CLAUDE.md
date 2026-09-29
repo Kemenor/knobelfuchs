@@ -42,7 +42,10 @@ Tablet-first (Xiaomi Pad 5), ad-free, local-first, no dark patterns.
   Nachlegen follow-scroll fixed, music survives shade-peeks, §6.1 discard
   guard on every start path, DST-safe calendar. Rule changes are in
   design-concept.md §13 (2026-07-15 entry).
+- 2026-09-29 Abenteuer skip rule (family feedback): 3 finished runs below
+  target open the next level; derived from run_results, no schema change
+  (§6.3). Unreleased.
 - Release flow: write 4 changelogs → `tool/cut_release.sh x.y.z` → v-tag → CI
-  ships to Play internal+alpha and TestFlight. 106 tests green.
+  ships to Play internal+alpha and TestFlight. 117 tests green.
 - Debug installs via `flutter build apk --debug` +
   `adb install -r build\app\outputs\flutter-apk\app-debug.apk`.

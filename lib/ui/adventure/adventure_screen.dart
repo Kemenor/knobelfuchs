@@ -10,7 +10,7 @@ import '../single_flight.dart';
 import 'adventure_providers.dart';
 
 /// The level list (§6.3, mockup 05): emerald = beaten, indigo = the action
-/// forward, locked = calm gray. Beaten levels stay tappable — emerald play =
+/// forward, soft indigo = skipped (open, still waiting), locked = calm gray. Beaten levels stay tappable — emerald play =
 /// beat your own best; indigo play = the next step.
 class AdventureScreen extends ConsumerStatefulWidget {
   const AdventureScreen({super.key});
@@ -113,6 +113,7 @@ class _LevelRow extends ConsumerWidget {
     final beaten = info.state == LevelState.beaten;
     final locked = info.state == LevelState.locked;
     final current = info.state == LevelState.current;
+    final skipped = info.state == LevelState.skipped;
 
     return Opacity(
       opacity: locked ? .55 : 1,
@@ -139,7 +140,9 @@ class _LevelRow extends ConsumerWidget {
                         ? scheme.tertiaryContainer
                         : current
                             ? scheme.secondary // indigo = the action forward
-                            : scheme.outlineVariant.withValues(alpha: .5),
+                            : skipped
+                                ? scheme.secondaryContainer // still waiting
+                                : scheme.outlineVariant.withValues(alpha: .5),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: beaten
@@ -150,7 +153,9 @@ class _LevelRow extends ConsumerWidget {
                           : Text(
                               '${info.level}',
                               style: TextStyle(
-                                color: scheme.onSecondary,
+                                color: skipped
+                                    ? scheme.onSecondaryContainer
+                                    : scheme.onSecondary,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 18,
                               ),
@@ -161,8 +166,21 @@ class _LevelRow extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l.levelN(info.level),
+                      Text.rich(
+                        TextSpan(
+                          text: l.levelN(info.level),
+                          children: [
+                            if (skipped)
+                              TextSpan(
+                                text: ' · ${l.levelSkipped}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
+                        ),
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
@@ -207,12 +225,18 @@ class _LevelRow extends ConsumerWidget {
                     padding: const EdgeInsets.only(left: 10),
                     child: FilledButton(
                       style: FilledButton.styleFrom(
-                        // emerald play = replay a beaten level; indigo = next
-                        backgroundColor:
-                            beaten ? scheme.tertiary : scheme.secondary,
+                        // emerald play = replay a beaten level; indigo =
+                        // next; soft indigo = a skipped level, still open
+                        backgroundColor: beaten
+                            ? scheme.tertiary
+                            : skipped
+                                ? scheme.secondaryContainer
+                                : scheme.secondary,
                         foregroundColor: beaten
                             ? scheme.onTertiary
-                            : scheme.onSecondary,
+                            : skipped
+                                ? scheme.onSecondaryContainer
+                                : scheme.onSecondary,
                       ),
                       onPressed: () => onPlay(info),
                       child: Text(l.play),

@@ -114,6 +114,8 @@
   "again": "Ancora!",
   "toMenu": "Al menu",
   "backToBoard": "Torna alla tavola",
+  "levelSkipped": "saltato",
+  "skipToLevel": "Passa al livello {n}",
   "discardTitle": "Abbandonare la partita in corso?",
   "discardBody": "La partita in corso ({points} punti) sarà abbandonata.",
   "discard": "Abbandona",

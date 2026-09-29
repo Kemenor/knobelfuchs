@@ -114,6 +114,8 @@
   "again": "Nochmal!",
   "toMenu": "Zum Menü",
   "backToBoard": "Zurück aufs Brett",
+  "levelSkipped": "übersprungen",
+  "skipToLevel": "Weiter zu Level {n}",
   "discardTitle": "Laufendes Spiel verwerfen?",
   "discardBody": "Das laufende Spiel ({points} Punkte) wird verworfen.",
   "discard": "Verwerfen",

@@ -270,6 +270,18 @@ playtesting. Progress is stored locally; **each level keeps its own saved run** 
 replaying beaten level 5 never touches half-finished level 6. Replaying is always
 allowed (best score kept).
 
+**Skip after three misses (amended 2026-09-29, family feedback).** A wall is not a
+lesson: once a level has **three finished runs that missed the target**, the next
+level opens anyway. A *run* is one start of the board — undoing back in after a run
+end and ending again is still the same run (same `startedAt`); runs abandoned before
+a natural end don't count. The level stays **un-beaten** (no check, not counted in
+the progress bar), keeps its saved run, and can be beaten any time later — the
+skip only opens the way forward, it never marks anything done. Derived from the
+run records, not stored: no new state, backups carry it for free, and records
+written before this rule count retroactively. The run-end screen of a skippable
+level offers a quiet *"Weiter zu Level N"* beside "Nochmal"; nothing nags, nothing
+is red, and the offer never appears before the third miss.
+
 ## 7. Challenge sharing (QR)
 
 Free Form settings encode into a QR code on the run-end screen — "beat me on this
@@ -437,6 +449,10 @@ the earlier "no cap" (§3.4) · challenge payloads range-checked on decode (§7)
 backup import transactional — a failed import leaves the previous state untouched
 (§9.1) · restore of an unknown scoring name falls back to the frozen originals-only
 formula, never classic (§4).
+
+**Resolved (family feedback, 2026-09-29):** Adventure skip rule — three finished,
+target-missing runs of a level open the next one; the skipped level stays un-beaten
+and replayable; derived from `run_results`, no schema change (§6.3).
 
 **Deferred (v2 candidates):** difficulty setting (target-factor shift) · Free Form
 multi-slot · lifetime statistics page · https App/Universal
